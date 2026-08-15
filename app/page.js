@@ -17,4 +17,576 @@ function Images({data,images,setImages}){const [busy,setBusy]=useState(false);us
 function About(){return <><h1>About Cancer Insight</h1><p>Cancer Insight is an educational cancer-research exploration platform. It combines a cancer-research API with PubMed/NCBI metadata so users can inspect papers, research themes, treatment evidence, and free-full-text availability while keeping the original sources visible.</p><h2>How treatment descriptions work</h2><p>Cancer Insight gives a plain-language definition of the treatment itself, then displays cancer-specific statements extracted from multiple PubMed-indexed abstracts. Each displayed research statement is linked back to identifiable PubMed sources through PMID references and source cards.</p><h2>Access labels</h2><ul><li><b>Free full text in PMC:</b> freely readable in PubMed Central; this does not automatically mean unrestricted reuse.</li><li><b>Full-text source link:</b> a publisher or research-source link is available; access rules may vary.</li><li><b>PubMed abstract:</b> an abstract is available even if Cancer Insight did not identify a free PMC copy.</li></ul><h2>Limitations</h2><p>Paper counts and research summaries describe retrieved literature, not treatment effectiveness, safety, or suitability for an individual patient. Automated extraction can miss context, so users should read the cited papers and consult qualified healthcare professionals for personal medical decisions.</p></>}
 function simpleProfile(papers){const years=[],journals=new Set();let free=0,trials=0,reviews=0,meta=0;papers.forEach(p=>{if(p.pmc_id)free++;const y=(String(best(p,'pubmed_date','publicationDate')).match(/\b(19|20)\d{2}\b/)||[])[0];if(y)years.push(+y);const j=best(p,'pubmed_journal','journal');if(j)journals.add(j);const t=arr(p.publication_types).join(' ').toLowerCase();if(t.includes('clinical trial'))trials++;if(t.includes('review'))reviews++;if(t.includes('meta-analysis'))meta++});return{paper_count:papers.length,free_full_text_count:free,latest_year:years.length?Math.max(...years):null,journals:[...journals],journal_count:journals.size,clinical_trials:trials,reviews,meta_analyses:meta}}
 function download(name,text,type){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([text],{type}));a.download=name;a.click();URL.revokeObjectURL(a.href)}
-function pdfReport(cancer,papers,treatments){const d=new jsPDF();let y=18;d.setFontSize(20);d.text('Cancer Insight Research Report',15,y);y+=10;d.setFontSize(11);d.text(`${title(cancer)} cancer — ${papers.length} retrieved papers`,15,y);y+=10;papers.slice(0,18).forEach((p,i)=>{const lines=d.splitTextToSize(`${i+1}. ${best(p,'pubmed_title','title')||'Untitled'}\n${best(p,'pubmed_journal','journal')} ${best(p,'pubmed_date','publicationDate')}\n${clean(best(p,'pubmed_abstract','abstract')).slice(0,500)}`,180);if(y+lines.length*5>280){d.addPage();y=18}d.text(lines,15,y);y+=lines.length*5+5});d.save(`cancer_insight_${cancer.replaceAll(' ','_')}_research_report.pdf`)}
+function pdfReport(cancer, papers, treatments) {
+  const d = new jsPDF({
+    orientation: "portrait",
+    unit: "mm",
+    format: "a4",
+  });
+
+  // Cancer Insight PDF palette
+  const NAVY = [20, 61, 82];
+  const TEAL = [31, 174, 174];
+  const LIGHT = [239, 246, 248];
+  const TEXT = [25, 54, 70];
+  const MUTED = [92, 120, 136];
+  const BORDER = [210, 225, 231];
+  const WHITE = [255, 255, 255];
+
+  const pageW = 210;
+  const pageH = 297;
+  const margin = 16;
+  const contentW = pageW - margin * 2;
+
+  let pageNumber = 1;
+  let y = 0;
+
+  // -----------------------------
+  // Helpers
+  // -----------------------------
+
+  const safe = (value) => clean(value || "");
+
+  const paperTitle = (p) =>
+    safe(best(p, "pubmed_title", "title")) || "Untitled research paper";
+
+  const journal = (p) =>
+    safe(best(p, "pubmed_journal", "journal"));
+
+  const date = (p) =>
+    safe(best(p, "pubmed_date", "publicationDate"));
+
+  const abstract = (p) =>
+    safe(best(p, "pubmed_abstract", "abstract"));
+
+  const authors = (p) =>
+    safe(p.pubmed_authors);
+
+  function footer() {
+    d.setDrawColor(...BORDER);
+    d.line(margin, 282, pageW - margin, 282);
+
+    d.setFont("helvetica", "normal");
+    d.setFontSize(7.5);
+    d.setTextColor(...MUTED);
+
+    d.text(
+      "Educational use only. Cancer Insight does not provide medical diagnosis or individualized treatment advice.",
+      margin,
+      287
+    );
+
+    d.text(
+      `Page ${pageNumber}`,
+      pageW - margin,
+      287,
+      { align: "right" }
+    );
+  }
+
+  function smallHeader() {
+    d.setFillColor(...NAVY);
+    d.rect(0, 0, pageW, 15, "F");
+
+    d.setFillColor(...TEAL);
+    d.roundedRect(margin, 4, 7, 7, 1.5, 1.5, "F");
+
+    d.setTextColor(...WHITE);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(9.5);
+    d.text("+", margin + 3.5, 9.1, { align: "center" });
+
+    d.setFontSize(10);
+    d.text("Cancer Insight", margin + 11, 9.5);
+
+    d.setFont("helvetica", "normal");
+    d.setFontSize(7.5);
+    d.text(
+      `${title(cancer)} Cancer Research Report`,
+      pageW - margin,
+      9.5,
+      { align: "right" }
+    );
+  }
+
+  function newPage() {
+    footer();
+    d.addPage();
+    pageNumber++;
+    smallHeader();
+    y = 24;
+  }
+
+  function ensureSpace(required) {
+    if (y + required > 277) {
+      newPage();
+    }
+  }
+
+  // -----------------------------
+  // COVER / REPORT HEADER
+  // -----------------------------
+
+  d.setFillColor(...NAVY);
+  d.rect(0, 0, pageW, 54, "F");
+
+  // Logo mark
+  d.setFillColor(...TEAL);
+  d.roundedRect(margin, 12, 13, 13, 2.5, 2.5, "F");
+
+  d.setTextColor(...WHITE);
+  d.setFont("helvetica", "bold");
+  d.setFontSize(17);
+  d.text("+", margin + 6.5, 21.3, { align: "center" });
+
+  d.setFontSize(18);
+  d.text("Cancer Insight", margin + 18, 20);
+
+  d.setFont("helvetica", "normal");
+  d.setFontSize(8.5);
+  d.text(
+    "Evidence-first cancer research explorer",
+    margin + 18,
+    26
+  );
+
+  d.setFont("helvetica", "bold");
+  d.setFontSize(22);
+  d.text("Research Report", margin, 43);
+
+  // Cancer title
+  y = 67;
+
+  d.setTextColor(...TEXT);
+  d.setFont("helvetica", "bold");
+  d.setFontSize(24);
+  d.text(`${title(cancer)} Cancer`, margin, y);
+
+  y += 8;
+
+  d.setFont("helvetica", "normal");
+  d.setFontSize(10);
+  d.setTextColor(...MUTED);
+  d.text(
+    "Research literature overview generated by Cancer Insight",
+    margin,
+    y
+  );
+
+  y += 13;
+
+  // -----------------------------
+  // SUMMARY CARDS
+  // -----------------------------
+
+  const freeCount = papers.filter((p) => p.pmc_id).length;
+
+  const years = papers
+    .map((p) => {
+      const m = String(
+        best(p, "pubmed_date", "publicationDate") || ""
+      ).match(/\b(19|20)\d{2}\b/);
+
+      return m ? Number(m[0]) : null;
+    })
+    .filter(Boolean);
+
+  const latestYear = years.length
+    ? Math.max(...years)
+    : "—";
+
+  const journals = new Set(
+    papers
+      .map((p) => journal(p))
+      .filter(Boolean)
+  ).size;
+
+  const cards = [
+    ["Research Papers", papers.length],
+    ["Free Full Text", freeCount],
+    ["Latest Year", latestYear],
+    ["Treatment Types", treatments?.length || 0],
+  ];
+
+  const gap = 4;
+  const cardW = (contentW - gap * 3) / 4;
+
+  cards.forEach(([label, value], i) => {
+    const x = margin + i * (cardW + gap);
+
+    d.setFillColor(...LIGHT);
+    d.setDrawColor(...BORDER);
+    d.roundedRect(x, y, cardW, 25, 2.5, 2.5, "FD");
+
+    d.setTextColor(...MUTED);
+    d.setFont("helvetica", "normal");
+    d.setFontSize(7.5);
+    d.text(label, x + 4, y + 7);
+
+    d.setTextColor(...NAVY);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(16);
+    d.text(String(value), x + 4, y + 18);
+  });
+
+  y += 35;
+
+  // -----------------------------
+  // REPORT OVERVIEW
+  // -----------------------------
+
+  d.setTextColor(...NAVY);
+  d.setFont("helvetica", "bold");
+  d.setFontSize(15);
+  d.text("Research Overview", margin, y);
+
+  y += 7;
+
+  d.setTextColor(...TEXT);
+  d.setFont("helvetica", "normal");
+  d.setFontSize(9);
+
+  const intro =
+    `This report summarizes ${papers.length} research papers retrieved for ` +
+    `${title(cancer)} cancer. Cancer Insight presents publication metadata, ` +
+    `abstracts, treatment research coverage, and links to original scientific sources. ` +
+    `The report describes retrieved research literature and does not rank treatments ` +
+    `or provide medical recommendations.`;
+
+  const introLines = d.splitTextToSize(intro, contentW);
+  d.text(introLines, margin, y);
+
+  y += introLines.length * 4.5 + 9;
+
+  // -----------------------------
+  // TREATMENT COVERAGE
+  // -----------------------------
+
+  if (treatments && treatments.length) {
+    d.setTextColor(...NAVY);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(15);
+    d.text("Treatment Research Coverage", margin, y);
+
+    y += 8;
+
+    const treatmentList = treatments.slice(0, 8);
+
+    const max = Math.max(
+      1,
+      ...treatmentList.map((x) => Number(x[1]) || 0)
+    );
+
+    treatmentList.forEach(([name, count]) => {
+      ensureSpace(10);
+
+      d.setTextColor(...TEXT);
+      d.setFont("helvetica", "normal");
+      d.setFontSize(8.5);
+
+      const label = title(name);
+      d.text(label.slice(0, 36), margin, y + 3);
+
+      const barX = margin + 60;
+      const barW = 90;
+
+      d.setFillColor(224, 235, 239);
+      d.roundedRect(barX, y, barW, 4, 1, 1, "F");
+
+      d.setFillColor(...TEAL);
+
+      const fill =
+        Math.max(
+          3,
+          (Number(count) / max) * barW
+        );
+
+      d.roundedRect(barX, y, fill, 4, 1, 1, "F");
+
+      d.setFont("helvetica", "bold");
+      d.setTextColor(...NAVY);
+      d.text(String(count), pageW - margin, y + 3, {
+        align: "right",
+      });
+
+      y += 8;
+    });
+
+    y += 7;
+  }
+
+  // -----------------------------
+  // RESEARCH PAPERS
+  // -----------------------------
+
+  ensureSpace(20);
+
+  d.setTextColor(...NAVY);
+  d.setFont("helvetica", "bold");
+  d.setFontSize(17);
+  d.text("Research Papers", margin, y);
+
+  y += 5;
+
+  d.setDrawColor(...TEAL);
+  d.setLineWidth(0.8);
+  d.line(margin, y, margin + 35, y);
+
+  y += 10;
+
+  papers.slice(0, 20).forEach((p, i) => {
+    const t = paperTitle(p);
+    const j = journal(p);
+    const dt = date(p);
+    const auth = authors(p);
+    const abs = abstract(p);
+
+    const titleLines = d.splitTextToSize(
+      `${i + 1}. ${t}`,
+      contentW - 12
+    );
+
+    const metaText = [j, dt, auth]
+      .filter(Boolean)
+      .join("  |  ");
+
+    const metaLines = d.splitTextToSize(
+      metaText,
+      contentW - 12
+    );
+
+    let absText = abs;
+
+    if (absText.length > 650) {
+      absText = absText.slice(0, 647) + "...";
+    }
+
+    const abstractLines = absText
+      ? d.splitTextToSize(absText, contentW - 12)
+      : [];
+
+    const treatmentsMentioned =
+      arr(p.treatmentTypes).length
+        ? arr(p.treatmentTypes)
+            .map(title)
+            .join(", ")
+        : "";
+
+    const treatmentLines = treatmentsMentioned
+      ? d.splitTextToSize(
+          `Treatments mentioned: ${treatmentsMentioned}`,
+          contentW - 12
+        )
+      : [];
+
+    const cardHeight =
+      12 +
+      titleLines.length * 5 +
+      metaLines.length * 4 +
+      abstractLines.length * 4 +
+      treatmentLines.length * 4 +
+      (p.pmc_id ? 6 : 0);
+
+    ensureSpace(Math.min(cardHeight + 7, 80));
+
+    const startY = y;
+
+    d.setFillColor(250, 252, 253);
+    d.setDrawColor(...BORDER);
+
+    const renderHeight = Math.min(
+      Math.max(cardHeight, 30),
+      78
+    );
+
+    d.roundedRect(
+      margin,
+      startY,
+      contentW,
+      renderHeight,
+      2.5,
+      2.5,
+      "FD"
+    );
+
+    // Paper number accent
+    d.setFillColor(...TEAL);
+    d.roundedRect(
+      margin + 4,
+      startY + 5,
+      7,
+      7,
+      1.5,
+      1.5,
+      "F"
+    );
+
+    d.setTextColor(...WHITE);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(7);
+    d.text(
+      String(i + 1),
+      margin + 7.5,
+      startY + 9.8,
+      { align: "center" }
+    );
+
+    let py = startY + 9;
+
+    // Title
+    d.setTextColor(...NAVY);
+    d.setFont("helvetica", "bold");
+    d.setFontSize(10);
+
+    d.text(
+      titleLines,
+      margin + 15,
+      py
+    );
+
+    py += titleLines.length * 5 + 2;
+
+    // Metadata
+    if (metaLines.length) {
+      d.setTextColor(...MUTED);
+      d.setFont("helvetica", "normal");
+      d.setFontSize(7.5);
+
+      d.text(
+        metaLines,
+        margin + 15,
+        py
+      );
+
+      py += metaLines.length * 4 + 3;
+    }
+
+    // Access badge
+    if (p.pmc_id) {
+      d.setFillColor(225, 245, 239);
+      d.setTextColor(25, 115, 88);
+
+      d.roundedRect(
+        margin + 15,
+        py - 3,
+        30,
+        5.5,
+        1.5,
+        1.5,
+        "F"
+      );
+
+      d.setFont("helvetica", "bold");
+      d.setFontSize(6.5);
+      d.text(
+        "FREE FULL TEXT",
+        margin + 18,
+        py + 0.7
+      );
+
+      py += 7;
+    }
+
+    // Abstract
+    if (abstractLines.length) {
+      d.setTextColor(...TEXT);
+      d.setFont("helvetica", "normal");
+      d.setFontSize(8);
+
+      const availableLines = Math.max(
+        1,
+        Math.floor(
+          (startY + renderHeight - py - 8) / 4
+        )
+      );
+
+      const visibleAbstract =
+        abstractLines.slice(0, availableLines);
+
+      d.text(
+        visibleAbstract,
+        margin + 15,
+        py
+      );
+
+      py += visibleAbstract.length * 4 + 3;
+    }
+
+    // Treatment information
+    if (
+      treatmentLines.length &&
+      py < startY + renderHeight - 6
+    ) {
+      d.setTextColor(...TEAL);
+      d.setFont("helvetica", "bold");
+      d.setFontSize(7);
+
+      d.text(
+        treatmentLines.slice(0, 2),
+        margin + 15,
+        py
+      );
+    }
+
+    y = startY + renderHeight + 6;
+  });
+
+  // -----------------------------
+  // SOURCES / FINAL NOTE
+  // -----------------------------
+
+  ensureSpace(40);
+
+  d.setFillColor(...LIGHT);
+  d.setDrawColor(...BORDER);
+  d.roundedRect(
+    margin,
+    y,
+    contentW,
+    31,
+    2.5,
+    2.5,
+    "FD"
+  );
+
+  d.setTextColor(...NAVY);
+  d.setFont("helvetica", "bold");
+  d.setFontSize(10);
+  d.text("Sources & Interpretation", margin + 6, y + 8);
+
+  d.setTextColor(...TEXT);
+  d.setFont("helvetica", "normal");
+  d.setFontSize(7.8);
+
+  const sourceText =
+    "Cancer Insight keeps original research sources visible whenever available, " +
+    "including PubMed, PubMed Central (PMC), DOI, and publisher links. " +
+    "Paper counts and treatment coverage describe the retrieved literature only " +
+    "and should not be interpreted as evidence that one treatment is superior.";
+
+  d.text(
+    d.splitTextToSize(sourceText, contentW - 12),
+    margin + 6,
+    y + 14
+  );
+
+  // Footer for final page
+  footer();
+
+  // -----------------------------
+  // PDF metadata
+  // -----------------------------
+
+  d.setProperties({
+    title: `Cancer Insight - ${title(cancer)} Cancer Research Report`,
+    subject: `${title(cancer)} cancer research literature`,
+    author: "Cancer Insight",
+    creator: "Cancer Insight",
+  });
+
+  d.save(
+    `cancer_insight_${String(cancer)
+      .replace(/\s+/g, "_")
+      .toLowerCase()}_research_report.pdf`
+  );
+}
