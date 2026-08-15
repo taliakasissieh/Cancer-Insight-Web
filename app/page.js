@@ -1945,103 +1945,101 @@ function pdfReport(cancer, papers, treatments) {
     return s;
   }
 
-  function pdfText(value) {
-    return decodeEntities(
-      clean(value || '')
-    )
-      .replace(/\u00a0/g, ' ')
+ function pdfText(value) {
+  return decodeEntities(
+    clean(value || '')
+  )
+    // Normal spaces
+    .replace(/\u00a0/g, ' ')
 
-      .replace(
-        /[\u2010\u2011\u2012\u2013\u2014\u2212]/g,
-        '-'
-      )
+    // Dashes
+    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-')
 
-      .replace(
-        /[\u2018\u2019]/g,
-        "'"
-      )
+    // Quotes
+    .replace(/[\u2018\u2019]/g, "'")
+    .replace(/[\u201c\u201d]/g, '"')
 
-      .replace(
-        /[\u201c\u201d]/g,
-        '"'
-      )
+    // Ellipsis
+    .replace(/\u2026/g, '...')
 
-      .replace(
-        /\u2026/g,
-        '...'
-      )
+    // Mathematical / scientific symbols
+    .replace(/≤/g, '<=')
+    .replace(/≥/g, '>=')
+    .replace(/≠/g, '!=')
+    .replace(/≈/g, '~')
+    .replace(/±/g, '+/-')
+    .replace(/×/g, 'x')
+    .replace(/÷/g, '/')
+    .replace(/∞/g, 'infinity')
 
-      .replace(
-        /≤/g,
-        '<='
-      )
+    // Greek letters commonly used in research
+    .replace(/α/g, 'alpha')
+    .replace(/β/g, 'beta')
+    .replace(/γ/g, 'gamma')
+    .replace(/δ/g, 'delta')
+    .replace(/ε/g, 'epsilon')
+    .replace(/κ/g, 'kappa')
+    .replace(/λ/g, 'lambda')
+    .replace(/μ/g, 'u')
+    .replace(/µ/g, 'u')
+    .replace(/π/g, 'pi')
+    .replace(/ρ/g, 'rho')
+    .replace(/σ/g, 'sigma')
+    .replace(/τ/g, 'tau')
+    .replace(/φ/g, 'phi')
+    .replace(/χ/g, 'chi')
+    .replace(/ω/g, 'omega')
 
-      .replace(
-        /≥/g,
-        '>='
-      )
+    // Capital Greek letters
+    .replace(/Δ/g, 'Delta')
+    .replace(/Σ/g, 'Sigma')
+    .replace(/Ω/g, 'Omega')
 
-      .replace(
-        /±/g,
-        '+/-'
-      )
+    // Superscript characters
+    .replace(/⁰/g, '0')
+    .replace(/¹/g, '1')
+    .replace(/²/g, '2')
+    .replace(/³/g, '3')
+    .replace(/⁴/g, '4')
+    .replace(/⁵/g, '5')
+    .replace(/⁶/g, '6')
+    .replace(/⁷/g, '7')
+    .replace(/⁸/g, '8')
+    .replace(/⁹/g, '9')
+    .replace(/⁺/g, '+')
+    .replace(/⁻/g, '-')
 
-      .replace(
-        /×/g,
-        'x'
-      )
+    // Subscript characters
+    .replace(/₀/g, '0')
+    .replace(/₁/g, '1')
+    .replace(/₂/g, '2')
+    .replace(/₃/g, '3')
+    .replace(/₄/g, '4')
+    .replace(/₅/g, '5')
+    .replace(/₆/g, '6')
+    .replace(/₇/g, '7')
+    .replace(/₈/g, '8')
+    .replace(/₉/g, '9')
+    .replace(/₊/g, '+')
+    .replace(/₋/g, '-')
 
-      .replace(
-        /µ/g,
-        'u'
-      )
+    // Common scientific symbols
+    .replace(/°/g, ' degrees ')
+    .replace(/→/g, ' -> ')
+    .replace(/←/g, ' <- ')
+    .replace(/↔/g, ' <-> ')
 
-      .replace(
-        /μ/g,
-        'u'
-      )
+    /*
+      Remove only characters that Helvetica
+      still cannot safely render AFTER converting
+      important scientific symbols above.
+    */
+    .replace(/[^\x20-\x7E\xA0-\xFF]/g, ' ')
 
-      .replace(
-        /α/g,
-        'alpha'
-      )
-
-      .replace(
-        /β/g,
-        'beta'
-      )
-
-      .replace(
-        /γ/g,
-        'gamma'
-      )
-
-      .replace(
-        /δ/g,
-        'delta'
-      )
-
-      .replace(
-        /Δ/g,
-        'Delta'
-      )
-
-      /*
-        Helvetica inside jsPDF cannot reliably
-        display every Unicode character.
-      */
-      .replace(
-        /[^\x20-\x7E\xA0-\xFF]/g,
-        ' '
-      )
-
-      .replace(
-        /\s+/g,
-        ' '
-      )
-
-      .trim();
-  }
+    // Clean duplicate spaces
+    .replace(/\s+/g, ' ')
+    .trim();
+}
 
   function validUrl(url) {
     return (
