@@ -11,7 +11,9 @@ const CANCER_ALIASES = {
     "non small cell lung cancer",
     "nsclc",
     "small cell lung cancer",
+    "small-cell lung cancer",
     "sclc",
+    "bronchogenic carcinoma",
   ],
 
   breast: [
@@ -181,197 +183,61 @@ function clean(value) {
 
 function getField(paper, ...names) {
   for (const name of names) {
+    const value = paper?.[name];
+
     if (
-      paper?.[name] !== undefined &&
-      paper?.[name] !== null &&
-      paper?.[name] !== ""
+      value !== undefined &&
+      value !== null &&
+      value !== ""
     ) {
-      return paper[name];
+      return value;
     }
   }
 
   return "";
 }
 
-function getCancerBase(cancer) {
+function normalizeCancer(cancer) {
   return String(cancer || "")
     .trim()
     .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function getCancerBase(cancer) {
+  return normalizeCancer(cancer)
     .replace(/\bcancer\b/g, "")
-    .replace(/\s+/g, " ")
     .trim();
 }
 
 function aliasesForCancer(cancer) {
-  const target = String(cancer || "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
-
-  const base = getCancerBase(target);
+  const normalized = normalizeCancer(cancer);
+  const base = getCancerBase(normalized);
 
   const aliases = [
-    target.includes("cancer")
-      ? target
-      : `${target} cancer`,
-
-    `${base} carcinoma`,
-
+    normalized.includes("cancer")
+      ? normalized
+      : `${normalized} cancer`,
     ...(CANCER_ALIASES[base] || []),
   ];
 
   return [
     ...new Set(
       aliases
-        .map(x => x.trim().toLowerCase())
+        .map(x => clean(x))
         .filter(Boolean)
     ),
   ];
 }
 
-function paperRelevanceScore(paper, cancer) {
-  const aliases = aliasesForCancer(cancer);
-  const base = getCancerBase(cancer);
-
-  const title = clean(
-    getField(
-      paper,
-      "pubmed_title",
-      "title"
-    )
+function fieldContainsAny(field, aliases) {
+  return aliases.some(alias =>
+    field.includes(alias)
   );
+}
 
-  const abstract = clean(
-    getField(
-      paper,
-      "pubmed_abstract",
-      "abstract"
-    )
-  );
-
-  const mesh = clean(
-    Array.isArray(paper?.mesh_terms)
-      ? paper.mesh_terms.join(" ")
-      : paper?.mesh_terms
-  );
-
-  const keywords = clean(
-    Array.isArray(paper?.keywords)
-      ? paper.keywords.join(" ")
-      : paper?.keywords
-  );
-
-  const cancerType = clean(
-    getField(
-      paper,
-      "cancerType",
-      "cancer_type"
-    )
-  );
-
-  const combined =
-    `${title} ${abstract} ${mesh} ${keywords} ${cancerType}`;
-
-  let score = 0;
-
-  // ---------------------------------------------
-  // Strong matches
-  // ---------------------------------------------
-
-  const titleHits =
-    aliases.filter(alias =>
-      title.includes(alias)
-    );
-
-  const abstractHits =
-    aliases.filter(alias =>
-      abstract.includes(alias)
-    );
-
-  const meshHits =
-    aliases.filter(alias =>
-      mesh.includes(alias)
-    );
-
-  const cancerFieldHits =
-    aliases.filter(alias =>
-      cancerType.includes(alias)
-    );
-
-  if (titleHits.length) {
-    score += 18;
-  }
-
-  if (abstractHits.length) {
-    score += 8;
-  }
-
-  if (meshHits.length) {
-    score += 10;
-  }
-
-  if (cancerFieldHits.length) {
-    score += 14;
-  }
-
-  // ---------------------------------------------
-  // Target-specific medical phrases
-  // ---------------------------------------------
-
-  if (base === "lung") {
-    const strongLungCancerTerms = [
-      "lung adenocarcinoma",
-      "non-small cell lung",
-      "non small cell lung",
-      "nsclc",
-      "small cell lung",
-      "sclc",
-      "pulmonary carcinoma",
-      "bronchogenic carcinoma",
-      "lung tumour",
-      "lung tumor",
-    ];
-
-    if (
-      strongLungCancerTerms.some(term =>
-        combined.includes(term)
-      )
-    ) {
-      score += 14;
-    }
-
-    // Lung alone is NOT enough.
-    // These are frequent false matches.
-    const lungFalseContexts = [
-      "lung transplant",
-      "lung transplantation",
-      "transplant recipient",
-      "pulmonary fibrosis",
-      "idiopathic pulmonary fibrosis",
-      "acute lung injury",
-      "acute respiratory distress syndrome",
-      "ards",
-      "pneumonia",
-      "tuberculosis",
-      "tuberculoma",
-      "pulmonary infection",
-    ];
-
-    if (
-      lungFalseContexts.some(term =>
-        title.includes(term)
-      ) &&
-      !titleHits.length
-    ) {
-      score -= 30;
-    }
-  }
-
-  // ---------------------------------------------
-  // Penalize obvious papers about another cancer
-  // ---------------------------------------------
-
-  const otherCancerTerms = [
+function titleLooksLikeOtherCancer(titleText, selectedAliases) {
+  const OTHER_CANCERS = [
     "breast cancer",
     "gastric cancer",
     "stomach cancer",
@@ -398,76 +264,207 @@ function paperRelevanceScore(paper, cancer) {
     "sarcoma",
   ];
 
-  const selectedAliases =
-    new Set(aliases);
-
-  for (const other of otherCancerTerms) {
-    if (
-      selectedAliases.has(other)
-    ) {
-      continue;
+  return OTHER_CANCERS.some(other => {
+    if (selectedAliases.includes(other)) {
+      return false;
     }
 
-    if (title.includes(other)) {
-      score -= 25;
-    }
+    return titleText.includes(other);
+  });
+}
+
+function paperRelevanceScore(paper, cancer) {
+  const aliases = aliasesForCancer(cancer);
+  const base = getCancerBase(cancer);
+
+  const titleText = clean(
+    getField(
+      paper,
+      "pubmed_title",
+      "title"
+    )
+  );
+
+  const abstractText = clean(
+    getField(
+      paper,
+      "pubmed_abstract",
+      "abstract"
+    )
+  );
+
+  const meshText = clean(
+    Array.isArray(paper?.mesh_terms)
+      ? paper.mesh_terms.join(" ")
+      : paper?.mesh_terms
+  );
+
+  const keywordText = clean(
+    Array.isArray(paper?.keywords)
+      ? paper.keywords.join(" ")
+      : paper?.keywords
+  );
+
+  const cancerField = clean(
+    getField(
+      paper,
+      "cancerType",
+      "cancer_type"
+    )
+  );
+
+  const titleMatch =
+    fieldContainsAny(
+      titleText,
+      aliases
+    );
+
+  const meshMatch =
+    fieldContainsAny(
+      meshText,
+      aliases
+    );
+
+  const keywordMatch =
+    fieldContainsAny(
+      keywordText,
+      aliases
+    );
+
+  const cancerFieldMatch =
+    fieldContainsAny(
+      cancerField,
+      aliases
+    );
+
+  const abstractMatch =
+    fieldContainsAny(
+      abstractText,
+      aliases
+    );
+
+  // -------------------------------------------------
+  // Main rule:
+  // abstract-only matches are NOT enough.
+  // -------------------------------------------------
+
+  const strongMatch =
+    titleMatch ||
+    meshMatch ||
+    keywordMatch ||
+    cancerFieldMatch;
+
+  if (!strongMatch) {
+    return null;
   }
 
-  // ---------------------------------------------
-  // Generic cancer papers should not automatically
-  // enter a specific cancer search.
-  // ---------------------------------------------
-
-  const genericOnlyTerms = [
-    "pan-cancer",
-    "pan cancer",
-    "solid tumors",
-    "solid tumours",
-    "cancer therapy",
-    "tumor therapy",
-    "tumour therapy",
-    "anti-tumor",
-    "anti tumor",
-    "oncology",
-  ];
+  // -------------------------------------------------
+  // If title is clearly about another cancer,
+  // reject it even if the abstract mentions target.
+  // -------------------------------------------------
 
   if (
-    genericOnlyTerms.some(term =>
-      title.includes(term)
+    titleLooksLikeOtherCancer(
+      titleText,
+      aliases
     ) &&
-    !titleHits.length
+    !titleMatch
   ) {
-    score -= 10;
-  }
-
-  // ---------------------------------------------
-  // Require explicit disease evidence.
-  // ---------------------------------------------
-
-  const hasExplicitDiseaseMatch =
-    titleHits.length > 0 ||
-    abstractHits.length > 0 ||
-    meshHits.length > 0 ||
-    cancerFieldHits.length > 0;
-
-  if (!hasExplicitDiseaseMatch) {
     return null;
   }
 
-  // Strong preference for papers clearly centered
-  // on the requested cancer.
-  if (titleHits.length) {
-    score += 5;
-  } else if (
-    !meshHits.length &&
-    !cancerFieldHits.length
-  ) {
-    // Disease only mentioned in abstract.
-    score -= 5;
+  // -------------------------------------------------
+  // Lung-specific false positive rejection
+  // -------------------------------------------------
+
+  if (base === "lung") {
+    const FALSE_LUNG_TOPICS = [
+      "lung transplant",
+      "lung transplantation",
+      "transplantation",
+      "transplant recipient",
+      "pulmonary fibrosis",
+      "idiopathic pulmonary fibrosis",
+      "acute respiratory distress syndrome",
+      "ards",
+      "acute lung injury",
+      "pneumonia",
+      "tuberculosis",
+      "pulmonary infection",
+      "lung infection",
+    ];
+
+    const falseLungTopic =
+      FALSE_LUNG_TOPICS.some(term =>
+        titleText.includes(term)
+      );
+
+    // A transplantation/fibrosis/ARDS paper only survives
+    // if its title is explicitly about lung cancer too.
+    if (
+      falseLungTopic &&
+      !titleMatch
+    ) {
+      return null;
+    }
   }
 
-  if (score < 10) {
-    return null;
+  let score = 0;
+
+  if (titleMatch) {
+    score += 100;
+  }
+
+  if (cancerFieldMatch) {
+    score += 70;
+  }
+
+  if (meshMatch) {
+    score += 55;
+  }
+
+  if (keywordMatch) {
+    score += 35;
+  }
+
+  // Abstract can help ranking but can no longer
+  // make an irrelevant paper qualify by itself.
+  if (abstractMatch) {
+    score += 10;
+  }
+
+  // -------------------------------------------------
+  // Extra lung-cancer phrases
+  // -------------------------------------------------
+
+  if (base === "lung") {
+    const LUNG_TERMS = [
+      "lung adenocarcinoma",
+      "non-small cell lung",
+      "non small cell lung",
+      "nsclc",
+      "small cell lung",
+      "small-cell lung",
+      "sclc",
+      "pulmonary carcinoma",
+      "bronchogenic carcinoma",
+    ];
+
+    if (
+      LUNG_TERMS.some(term =>
+        titleText.includes(term)
+      )
+    ) {
+      score += 35;
+    }
+
+    if (
+      LUNG_TERMS.some(term =>
+        meshText.includes(term)
+      )
+    ) {
+      score += 20;
+    }
   }
 
   return score;
@@ -505,28 +502,27 @@ function treatmentCounts(papers) {
   const counts = new Map();
 
   for (const paper of papers) {
-    const treatments =
+    const values =
       Array.isArray(paper?.treatmentTypes)
         ? paper.treatmentTypes
         : paper?.treatmentTypes
           ? [paper.treatmentTypes]
           : [];
 
-    for (const treatment of treatments) {
-      const raw =
-        String(treatment || "").trim();
-
-      if (!raw) continue;
-
-      const key = raw
+    for (const value of values) {
+      const normalized = String(value || "")
+        .trim()
         .toLowerCase()
         .replace(/[_-]/g, " ")
-        .replace(/\s+/g, " ")
-        .trim();
+        .replace(/\s+/g, " ");
+
+      if (!normalized) {
+        continue;
+      }
 
       counts.set(
-        key,
-        (counts.get(key) || 0) + 1
+        normalized,
+        (counts.get(normalized) || 0) + 1
       );
     }
   }
@@ -538,14 +534,13 @@ function treatmentCounts(papers) {
 function buildProfile(papers) {
   const years = [];
   const journals = new Set();
+  const yearCounts = {};
+  const journalCounts = {};
 
   let freeFullText = 0;
   let clinicalTrials = 0;
   let reviews = 0;
   let metaAnalyses = 0;
-
-  const yearCounts = {};
-  const journalCounts = {};
 
   for (const paper of papers) {
     if (paper?.pmc_id) {
@@ -564,8 +559,7 @@ function buildProfile(papers) {
       date.match(/\b(19|20)\d{2}\b/);
 
     if (yearMatch) {
-      const year =
-        Number(yearMatch[0]);
+      const year = Number(yearMatch[0]);
 
       years.push(year);
 
@@ -573,14 +567,13 @@ function buildProfile(papers) {
         (yearCounts[year] || 0) + 1;
     }
 
-    const journal =
-      String(
-        getField(
-          paper,
-          "pubmed_journal",
-          "journal"
-        ) || ""
-      ).trim();
+    const journal = String(
+      getField(
+        paper,
+        "pubmed_journal",
+        "journal"
+      ) || ""
+    ).trim();
 
     if (journal) {
       journals.add(journal);
@@ -589,14 +582,11 @@ function buildProfile(papers) {
         (journalCounts[journal] || 0) + 1;
     }
 
-    const publicationTypes =
-      (
-        Array.isArray(
-          paper?.publication_types
-        )
-          ? paper.publication_types.join(" ")
-          : paper?.publication_types || ""
-      ).toLowerCase();
+    const publicationTypes = (
+      Array.isArray(paper?.publication_types)
+        ? paper.publication_types.join(" ")
+        : paper?.publication_types || ""
+    ).toLowerCase();
 
     if (
       publicationTypes.includes(
@@ -625,11 +615,6 @@ function buildProfile(papers) {
       metaAnalyses++;
     }
   }
-
-  const topJournals =
-    Object.entries(journalCounts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 10);
 
   return {
     paper_count: papers.length,
@@ -660,7 +645,9 @@ function buildProfile(papers) {
       yearCounts,
 
     top_journals:
-      topJournals,
+      Object.entries(journalCounts)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10),
   };
 }
 
@@ -670,10 +657,7 @@ export async function POST(req) {
       await req.json();
 
     const normalizedCancer =
-      String(cancer || "")
-        .trim()
-        .toLowerCase()
-        .replace(/\s+/g, " ");
+      normalizeCancer(cancer);
 
     if (!normalizedCancer) {
       return NextResponse.json(
@@ -687,10 +671,6 @@ export async function POST(req) {
       );
     }
 
-    // ---------------------------------------------
-    // Existing Cancer Insight search
-    // ---------------------------------------------
-
     const result =
       await searchCancer(
         normalizedCancer
@@ -700,10 +680,6 @@ export async function POST(req) {
       Array.isArray(result?.papers)
         ? result.papers
         : [];
-
-    // ---------------------------------------------
-    // Final relevance filter
-    // ---------------------------------------------
 
     const scored =
       rawPapers
@@ -730,11 +706,6 @@ export async function POST(req) {
           item => item.paper
         )
       ).slice(0, 20);
-
-    // ---------------------------------------------
-    // Recalculate analytics AFTER filtering
-    // so the website/PDF counts match the papers.
-    // ---------------------------------------------
 
     const treatments =
       treatmentCounts(
