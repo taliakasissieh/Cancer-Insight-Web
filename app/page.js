@@ -13,6 +13,46 @@ const pages = [
   'About'
 ];
 
+const cancerTypes = [
+  'Adrenal',
+  'Anal',
+  'Bile Duct',
+  'Bladder',
+  'Bone',
+  'Brain',
+  'Breast',
+  'Cervical',
+  'Colorectal',
+  'Endometrial',
+  'Esophageal',
+  'Eye',
+  'Gallbladder',
+  'Head and Neck',
+  'Kidney',
+  'Leukemia',
+  'Liver',
+  'Lung',
+  'Lymphoma',
+  'Melanoma',
+  'Mesothelioma',
+  'Multiple Myeloma',
+  'Neuroendocrine',
+  'Oral',
+  'Ovarian',
+  'Pancreatic',
+  'Penile',
+  'Prostate',
+  'Sarcoma',
+  'Skin',
+  'Stomach',
+  'Testicular',
+  'Thymus',
+  'Thyroid',
+  'Uterine',
+  'Vaginal',
+  'Vulvar'
+];
+
 const clean = s =>
   String(s || '')
     .replace(/<[^>]+>/g, ' ')
@@ -246,7 +286,7 @@ export default function App() {
 
     if (!q) {
       setError(
-        'Enter a cancer type to search.'
+        'Select a cancer type to search.'
       );
       return;
     }
@@ -482,13 +522,26 @@ function Search({
         <label>
           Cancer type
 
-          <input
+          <select
             value={input}
             onChange={e =>
               setInput(e.target.value)
             }
-            placeholder="For example: lung"
-          />
+            required
+          >
+            <option value="">
+              Select a cancer type
+            </option>
+
+            {cancerTypes.map(cancer => (
+              <option
+                key={cancer}
+                value={cancer}
+              >
+                {cancer}
+              </option>
+            ))}
+          </select>
         </label>
 
         <br />
@@ -1945,101 +1998,77 @@ function pdfReport(cancer, papers, treatments) {
     return s;
   }
 
- function pdfText(value) {
-  return decodeEntities(
-    clean(value || '')
-  )
-    // Normal spaces
-    .replace(/\u00a0/g, ' ')
-
-    // Dashes
-    .replace(/[\u2010\u2011\u2012\u2013\u2014\u2212]/g, '-')
-
-    // Quotes
-    .replace(/[\u2018\u2019]/g, "'")
-    .replace(/[\u201c\u201d]/g, '"')
-
-    // Ellipsis
-    .replace(/\u2026/g, '...')
-
-    // Mathematical / scientific symbols
-    .replace(/≤/g, '<=')
-    .replace(/≥/g, '>=')
-    .replace(/≠/g, '!=')
-    .replace(/≈/g, '~')
-    .replace(/±/g, '+/-')
-    .replace(/×/g, 'x')
-    .replace(/÷/g, '/')
-    .replace(/∞/g, 'infinity')
-
-    // Greek letters commonly used in research
-    .replace(/α/g, 'alpha')
-    .replace(/β/g, 'beta')
-    .replace(/γ/g, 'gamma')
-    .replace(/δ/g, 'delta')
-    .replace(/ε/g, 'epsilon')
-    .replace(/κ/g, 'kappa')
-    .replace(/λ/g, 'lambda')
-    .replace(/μ/g, 'u')
-    .replace(/µ/g, 'u')
-    .replace(/π/g, 'pi')
-    .replace(/ρ/g, 'rho')
-    .replace(/σ/g, 'sigma')
-    .replace(/τ/g, 'tau')
-    .replace(/φ/g, 'phi')
-    .replace(/χ/g, 'chi')
-    .replace(/ω/g, 'omega')
-
-    // Capital Greek letters
-    .replace(/Δ/g, 'Delta')
-    .replace(/Σ/g, 'Sigma')
-    .replace(/Ω/g, 'Omega')
-
-    // Superscript characters
-    .replace(/⁰/g, '0')
-    .replace(/¹/g, '1')
-    .replace(/²/g, '2')
-    .replace(/³/g, '3')
-    .replace(/⁴/g, '4')
-    .replace(/⁵/g, '5')
-    .replace(/⁶/g, '6')
-    .replace(/⁷/g, '7')
-    .replace(/⁸/g, '8')
-    .replace(/⁹/g, '9')
-    .replace(/⁺/g, '+')
-    .replace(/⁻/g, '-')
-
-    // Subscript characters
-    .replace(/₀/g, '0')
-    .replace(/₁/g, '1')
-    .replace(/₂/g, '2')
-    .replace(/₃/g, '3')
-    .replace(/₄/g, '4')
-    .replace(/₅/g, '5')
-    .replace(/₆/g, '6')
-    .replace(/₇/g, '7')
-    .replace(/₈/g, '8')
-    .replace(/₉/g, '9')
-    .replace(/₊/g, '+')
-    .replace(/₋/g, '-')
-
-    // Common scientific symbols
-    .replace(/°/g, ' degrees ')
-    .replace(/→/g, ' -> ')
-    .replace(/←/g, ' <- ')
-    .replace(/↔/g, ' <-> ')
-
-    /*
-      Remove only characters that Helvetica
-      still cannot safely render AFTER converting
-      important scientific symbols above.
-    */
-    .replace(/[^\x20-\x7E\xA0-\xFF]/g, ' ')
-
-    // Clean duplicate spaces
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+  function pdfText(value) {
+    return decodeEntities(
+      clean(value || '')
+    )
+      .replace(/\u00a0/g, ' ')
+      .replace(
+        /[\u2010\u2011\u2012\u2013\u2014\u2212]/g,
+        '-'
+      )
+      .replace(/[\u2018\u2019]/g, "'")
+      .replace(/[\u201c\u201d]/g, '"')
+      .replace(/\u2026/g, '...')
+      .replace(/≤/g, '<=')
+      .replace(/≥/g, '>=')
+      .replace(/≠/g, '!=')
+      .replace(/≈/g, '~')
+      .replace(/±/g, '+/-')
+      .replace(/×/g, 'x')
+      .replace(/÷/g, '/')
+      .replace(/∞/g, 'infinity')
+      .replace(/α/g, 'alpha')
+      .replace(/β/g, 'beta')
+      .replace(/γ/g, 'gamma')
+      .replace(/δ/g, 'delta')
+      .replace(/ε/g, 'epsilon')
+      .replace(/κ/g, 'kappa')
+      .replace(/λ/g, 'lambda')
+      .replace(/μ/g, 'u')
+      .replace(/µ/g, 'u')
+      .replace(/π/g, 'pi')
+      .replace(/ρ/g, 'rho')
+      .replace(/σ/g, 'sigma')
+      .replace(/τ/g, 'tau')
+      .replace(/φ/g, 'phi')
+      .replace(/χ/g, 'chi')
+      .replace(/ω/g, 'omega')
+      .replace(/Δ/g, 'Delta')
+      .replace(/Σ/g, 'Sigma')
+      .replace(/Ω/g, 'Omega')
+      .replace(/⁰/g, '0')
+      .replace(/¹/g, '1')
+      .replace(/²/g, '2')
+      .replace(/³/g, '3')
+      .replace(/⁴/g, '4')
+      .replace(/⁵/g, '5')
+      .replace(/⁶/g, '6')
+      .replace(/⁷/g, '7')
+      .replace(/⁸/g, '8')
+      .replace(/⁹/g, '9')
+      .replace(/⁺/g, '+')
+      .replace(/⁻/g, '-')
+      .replace(/₀/g, '0')
+      .replace(/₁/g, '1')
+      .replace(/₂/g, '2')
+      .replace(/₃/g, '3')
+      .replace(/₄/g, '4')
+      .replace(/₅/g, '5')
+      .replace(/₆/g, '6')
+      .replace(/₇/g, '7')
+      .replace(/₈/g, '8')
+      .replace(/₉/g, '9')
+      .replace(/₊/g, '+')
+      .replace(/₋/g, '-')
+      .replace(/°/g, ' degrees ')
+      .replace(/→/g, ' -> ')
+      .replace(/←/g, ' <- ')
+      .replace(/↔/g, ' <-> ')
+      .replace(/[^\x20-\x7E\xA0-\xFF]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
 
   function validUrl(url) {
     return (
@@ -2063,11 +2092,6 @@ function pdfReport(cancer, papers, treatments) {
 
     d.setFontSize(size);
 
-    /*
-      Explicit line-height factor.
-      We will use jsPDF's own line height
-      when calculating every card.
-    */
     d.setLineHeightFactor(1.2);
   }
 
@@ -2095,14 +2119,6 @@ function pdfReport(cancer, papers, treatments) {
     );
   }
 
-  /*
-    This is the important fix.
-
-    Instead of guessing:
-        line count * 4
-
-    we ask jsPDF how tall one line ACTUALLY is.
-  */
   function realLineHeight() {
     return (
       d.getLineHeight() /
@@ -2133,10 +2149,6 @@ function pdfReport(cancer, papers, treatments) {
     );
   }
 
-  /*
-    Used only where we intentionally shorten
-    very large sections such as abstracts.
-  */
   function limitLines(
     lines,
     maxLines
@@ -2856,16 +2868,6 @@ function pdfReport(cancer, papers, treatments) {
 
   reportPapers.forEach(
     (p, index) => {
-      /*
-        CARD DIMENSIONS
-
-        Card itself:
-        178 mm wide
-
-        Text starts farther inside the card
-        and stops well before the right edge.
-      */
-
       const CARD_X =
         MARGIN;
 
@@ -2876,10 +2878,6 @@ function pdfReport(cancer, papers, treatments) {
         CARD_X +
         CARD_W;
 
-      /*
-        Paper number occupies the left.
-        Main content gets a separate safe column.
-      */
       const TEXT_X =
         CARD_X + 17;
 
@@ -2889,10 +2887,6 @@ function pdfReport(cancer, papers, treatments) {
       const TEXT_W =
         TEXT_RIGHT -
         TEXT_X;
-
-      /* -----------------------------------------
-         TITLE
-         ----------------------------------------- */
 
       let titleLines =
         wrapText(
@@ -2907,10 +2901,6 @@ function pdfReport(cancer, papers, treatments) {
           8.5
         );
 
-      /*
-        A title normally fits in 1–3 lines.
-        Safety cap prevents pathological records.
-      */
       titleLines =
         limitLines(
           titleLines,
@@ -2923,10 +2913,6 @@ function pdfReport(cancer, papers, treatments) {
           'bold',
           8.5
         );
-
-      /* -----------------------------------------
-         METADATA
-         ----------------------------------------- */
 
       const metaText =
         [
@@ -2962,10 +2948,6 @@ function pdfReport(cancer, papers, treatments) {
           6
         );
 
-      /*
-        Very long author lists can be enormous.
-        Three wrapped lines are enough for PDF.
-      */
       metaLines =
         limitLines(
           metaLines,
@@ -2978,10 +2960,6 @@ function pdfReport(cancer, papers, treatments) {
           'normal',
           6
         );
-
-      /* -----------------------------------------
-         ABSTRACT
-         ----------------------------------------- */
 
       const abstractText =
         best(
@@ -2998,17 +2976,6 @@ function pdfReport(cancer, papers, treatments) {
           6.8
         );
 
-      /*
-        IMPORTANT:
-
-        Keep the PDF concise and safe.
-
-        The full abstract remains on the website
-        and via PubMed.
-
-        Six properly measured wrapped lines are
-        shown in the PDF.
-      */
       abstractLines =
         limitLines(
           abstractLines,
@@ -3021,10 +2988,6 @@ function pdfReport(cancer, papers, treatments) {
           'normal',
           6.8
         );
-
-      /* -----------------------------------------
-         TREATMENTS
-         ----------------------------------------- */
 
       const treatmentText =
         arr(
@@ -3058,10 +3021,6 @@ function pdfReport(cancer, papers, treatments) {
           6.2
         );
 
-      /* -----------------------------------------
-         LINKS
-         ----------------------------------------- */
-
       const hasPubMed =
         validUrl(
           p.pubmed_url
@@ -3081,10 +3040,6 @@ function pdfReport(cancer, papers, treatments) {
         hasPubMed ||
         hasPMC ||
         hasPublisher;
-
-      /* -----------------------------------------
-         EXACT CARD HEIGHT
-         ----------------------------------------- */
 
       const TOP_PADDING =
         7;
@@ -3147,20 +3102,12 @@ function pdfReport(cancer, papers, treatments) {
           38
         );
 
-      /*
-        Move whole card to next page BEFORE
-        drawing anything if it does not fit.
-      */
       ensureSpace(
         cardHeight + 6
       );
 
       const startY =
         y;
-
-      /* -----------------------------------------
-         CARD BACKGROUND
-         ----------------------------------------- */
 
       d.setFillColor(
         250,
@@ -3185,10 +3132,6 @@ function pdfReport(cancer, papers, treatments) {
         2.5,
         'FD'
       );
-
-      /* -----------------------------------------
-         PAPER NUMBER
-         ----------------------------------------- */
 
       d.setFillColor(
         ...TEAL
@@ -3226,17 +3169,10 @@ function pdfReport(cancer, papers, treatments) {
         }
       );
 
-      /*
-        First text baseline.
-      */
       let py =
         startY +
         TOP_PADDING +
         1.5;
-
-      /* -----------------------------------------
-         TITLE
-         ----------------------------------------- */
 
       d.setTextColor(
         ...NAVY
@@ -3260,10 +3196,6 @@ function pdfReport(cancer, papers, treatments) {
       py +=
         titleHeight +
         SPACE_AFTER_TITLE;
-
-      /* -----------------------------------------
-         METADATA
-         ----------------------------------------- */
 
       if (
         metaLines.length
@@ -3291,10 +3223,6 @@ function pdfReport(cancer, papers, treatments) {
           metaHeight +
           SPACE_AFTER_META;
       }
-
-      /* -----------------------------------------
-         FREE FULL TEXT BADGE
-         ----------------------------------------- */
 
       if (p.pmc_id) {
         d.setFillColor(
@@ -3330,10 +3258,6 @@ function pdfReport(cancer, papers, treatments) {
           PMC_HEIGHT;
       }
 
-      /* -----------------------------------------
-         ABSTRACT
-         ----------------------------------------- */
-
       if (
         abstractLines.length
       ) {
@@ -3360,10 +3284,6 @@ function pdfReport(cancer, papers, treatments) {
           abstractHeight +
           SPACE_AFTER_ABSTRACT;
       }
-
-      /* -----------------------------------------
-         TREATMENT
-         ----------------------------------------- */
 
       if (
         treatmentLines.length
@@ -3392,15 +3312,7 @@ function pdfReport(cancer, papers, treatments) {
           SPACE_AFTER_TREATMENT;
       }
 
-      /* -----------------------------------------
-         SOURCE BUTTONS
-         ----------------------------------------- */
-
       if (hasLinks) {
-        /*
-          Anchored relative to the BOTTOM OF CARD.
-          This guarantees they cannot drift outside.
-        */
         const buttonY =
           startY +
           cardHeight -
@@ -3446,9 +3358,6 @@ function pdfReport(cancer, papers, treatments) {
         }
       }
 
-      /*
-        Next card starts BELOW the current card.
-      */
       y =
         startY +
         cardHeight +
@@ -3543,10 +3452,6 @@ function pdfReport(cancer, papers, treatments) {
 
   footer();
 
-  /* =========================================================
-     PDF METADATA
-     ========================================================= */
-
   d.setProperties({
     title:
       `Cancer Insight - ${title(cancer)} Cancer Research Report`,
@@ -3560,10 +3465,6 @@ function pdfReport(cancer, papers, treatments) {
     creator:
       'Cancer Insight'
   });
-
-  /* =========================================================
-     SAVE
-     ========================================================= */
 
   d.save(
     `cancer_insight_${String(
