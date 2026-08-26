@@ -13,46 +13,6 @@ const pages = [
   'About'
 ];
 
-const cancerTypes = [
-  'Adrenal',
-  'Anal',
-  'Bile Duct',
-  'Bladder',
-  'Bone',
-  'Brain',
-  'Breast',
-  'Cervical',
-  'Colorectal',
-  'Endometrial',
-  'Esophageal',
-  'Eye',
-  'Gallbladder',
-  'Head and Neck',
-  'Kidney',
-  'Leukemia',
-  'Liver',
-  'Lung',
-  'Lymphoma',
-  'Melanoma',
-  'Mesothelioma',
-  'Multiple Myeloma',
-  'Neuroendocrine',
-  'Oral',
-  'Ovarian',
-  'Pancreatic',
-  'Penile',
-  'Prostate',
-  'Sarcoma',
-  'Skin',
-  'Stomach',
-  'Testicular',
-  'Thymus',
-  'Thyroid',
-  'Uterine',
-  'Vaginal',
-  'Vulvar'
-];
-
 const clean = s =>
   String(s || '')
     .replace(/<[^>]+>/g, ' ')
@@ -86,30 +46,62 @@ function key(p) {
   );
 }
 
-function Paper({ p, n, saved, toggle }) {
+function Paper({
+  p,
+  n,
+  saved,
+  toggle
+}) {
   const t =
-    best(p, 'pubmed_title', 'title') ||
+    best(
+      p,
+      'pubmed_title',
+      'title'
+    ) ||
     'Untitled research paper';
 
   const a =
-    best(p, 'pubmed_abstract', 'abstract');
+    best(
+      p,
+      'pubmed_abstract',
+      'abstract'
+    );
 
   const j =
-    best(p, 'pubmed_journal', 'journal');
+    best(
+      p,
+      'pubmed_journal',
+      'journal'
+    );
 
   const d =
-    best(p, 'pubmed_date', 'publicationDate');
+    best(
+      p,
+      'pubmed_date',
+      'publicationDate'
+    );
 
   return (
-    <div className={'paper ' + (saved ? 'saved' : '')}>
+    <div
+      className={
+        'paper ' +
+        (saved ? 'saved' : '')
+      }
+    >
       <div className="muted">
-        {n ? `Paper ${n}` : 'Research paper'}
+        {n
+          ? `Paper ${n}`
+          : 'Research paper'}
       </div>
 
       <h3>{t}</h3>
 
       <div className="muted">
-        {[j, d, p.pubmed_authors]
+        {[
+          j,
+          d,
+          p.pubmed_authors
+        ]
           .filter(Boolean)
           .join(' · ')}
       </div>
@@ -127,19 +119,31 @@ function Paper({ p, n, saved, toggle }) {
           </span>
         )}
 
-        {(p.pmc_url || p.publisher_url) && (
+        {(p.pmc_url ||
+          p.publisher_url) && (
           <span className="badge link">
             Full-text source link
           </span>
         )}
       </div>
 
-      {a && <p>{clean(a)}</p>}
-
-      {arr(p.treatmentTypes).length > 0 && (
+      {a && (
         <p>
-          <b>Treatments mentioned in evidence:</b>{' '}
-          {arr(p.treatmentTypes)
+          {clean(a)}
+        </p>
+      )}
+
+      {arr(
+        p.treatmentTypes
+      ).length > 0 && (
+        <p>
+          <b>
+            Treatments mentioned
+            in evidence:
+          </b>{' '}
+          {arr(
+            p.treatmentTypes
+          )
             .map(title)
             .join(', ')}
         </p>
@@ -147,114 +151,201 @@ function Paper({ p, n, saved, toggle }) {
 
       <div className="paperlinks">
         {p.pubmed_url && (
-          <a href={p.pubmed_url} target="_blank">
+          <a
+            href={p.pubmed_url}
+            target="_blank"
+          >
             PubMed
           </a>
         )}
 
         {p.pmc_url && (
-          <a href={p.pmc_url} target="_blank">
+          <a
+            href={p.pmc_url}
+            target="_blank"
+          >
             Free full text
           </a>
         )}
 
         {p.publisher_url && (
-          <a href={p.publisher_url} target="_blank">
+          <a
+            href={
+              p.publisher_url
+            }
+            target="_blank"
+          >
             Publisher
           </a>
         )}
 
-        <button onClick={() => toggle(key(p))}>
-          {saved ? '★ Saved' : '☆ Save paper'}
+        <button
+          onClick={() =>
+            toggle(key(p))
+          }
+        >
+          {saved
+            ? '★ Saved'
+            : '☆ Save paper'}
         </button>
       </div>
     </div>
   );
 }
 
-function Metrics({ p, tcount }) {
+function Metrics({
+  p,
+  tcount
+}) {
   const vals = [
-    ['Research papers', p.paper_count],
-    ['Free full text', p.free_full_text_count],
-    ['Latest year', p.latest_year || '—'],
-    ['Journals', p.journals?.length || 0],
-    ['Clinical trials', p.clinical_trials || 0],
-    ['Treatment types', tcount ?? '—']
+    [
+      'Research papers',
+      p.paper_count
+    ],
+    [
+      'Free full text',
+      p.free_full_text_count
+    ],
+    [
+      'Latest year',
+      p.latest_year || '—'
+    ],
+    [
+      'Journals',
+      p.journals?.length || 0
+    ],
+    [
+      'Clinical trials',
+      p.clinical_trials || 0
+    ],
+    [
+      'Treatment types',
+      tcount ?? '—'
+    ]
   ];
 
   return (
     <div className="grid6">
-      {vals.map(([a, b]) => (
-        <div className="metric" key={a}>
-          <span className="muted">{a}</span>
-          <div className="num">{b}</div>
-        </div>
-      ))}
+      {vals.map(
+        ([a, b]) => (
+          <div
+            className="metric"
+            key={a}
+          >
+            <span className="muted">
+              {a}
+            </span>
+
+            <div className="num">
+              {b}
+            </div>
+          </div>
+        )
+      )}
     </div>
   );
 }
 
 function Bars({ items }) {
-  const max = Math.max(
-    1,
-    ...items.map(x => Number(x[1]) || 0)
-  );
+  const max =
+    Math.max(
+      1,
+      ...items.map(
+        x => x[1]
+      )
+    );
 
   return (
     <div className="panel">
-      {items.map(([k, v]) => (
-        <div className="barrow" key={k}>
-          <div className="barlabel">
-            {title(k)}
-          </div>
-
+      {items.map(
+        ([k, v]) => (
           <div
-            className="bar"
-            style={{
-              width: `${Math.max(
-                3,
-                (Number(v) / max) * 70
-              )}%`
-            }}
-          />
+            className="barrow"
+            key={k}
+          >
+            <div className="barlabel">
+              {title(k)}
+            </div>
 
-          <b>{v}</b>
-        </div>
-      ))}
+            <div
+              className="bar"
+              style={{
+                width:
+                  `${Math.max(
+                    3,
+                    v /
+                      max *
+                      70
+                  )}%`
+              }}
+            />
+
+            <b>{v}</b>
+          </div>
+        )
+      )}
     </div>
   );
 }
 
 export default function App() {
-  const [page, setPage] =
-    useState('Search');
+  const [
+    page,
+    setPage
+  ] =
+    useState(
+      'Search'
+    );
 
-  const [input, setInput] =
+  const [
+    input,
+    setInput
+  ] =
     useState('');
 
-  const [data, setData] =
+  const [
+    data,
+    setData
+  ] =
     useState(null);
 
-  const [error, setError] =
+  const [
+    error,
+    setError
+  ] =
     useState('');
 
-  const [notice, setNotice] =
+  const [
+    notice,
+    setNotice
+  ] =
     useState('');
 
-  const [busy, setBusy] =
+  const [
+    busy,
+    setBusy
+  ] =
     useState(false);
 
-  const [bookmarks, setBookmarks] =
+  const [
+    bookmarks,
+    setBookmarks
+  ] =
     useState([]);
 
-  const [images, setImages] =
+  const [
+    images,
+    setImages
+  ] =
     useState([]);
 
   useEffect(() => {
     try {
       setBookmarks(
         JSON.parse(
-          localStorage.getItem('ci-bookmarks') || '[]'
+          localStorage.getItem(
+            'ci-bookmarks'
+          ) || '[]'
         )
       );
     } catch {}
@@ -262,9 +353,13 @@ export default function App() {
 
   const toggle = k =>
     setBookmarks(b => {
-      const n = b.includes(k)
-        ? b.filter(x => x !== k)
-        : [...b, k];
+      const n =
+        b.includes(k)
+          ? b.filter(
+              x =>
+                x !== k
+            )
+          : [...b, k];
 
       localStorage.setItem(
         'ci-bookmarks',
@@ -282,11 +377,12 @@ export default function App() {
     setData(null);
     setImages([]);
 
-    const q = input.trim();
+    const q =
+      input.trim();
 
     if (!q) {
       setError(
-        'Select a cancer type to search.'
+        'Enter a cancer type to search.'
       );
       return;
     }
@@ -294,23 +390,33 @@ export default function App() {
     setBusy(true);
 
     try {
-      const r = await fetch('/api/search', {
-        method: 'POST',
+      const r =
+        await fetch(
+          '/api/search',
+          {
+            method:
+              'POST',
 
-        headers: {
-          'content-type':
-            'application/json'
-        },
+            headers: {
+              'content-type':
+                'application/json'
+            },
 
-        body: JSON.stringify({
-          cancer: q.toLowerCase()
-        })
-      });
+            body:
+              JSON.stringify({
+                cancer:
+                  q.toLowerCase()
+              })
+          }
+        );
 
-      const j = await r.json();
+      const j =
+        await r.json();
 
       if (!r.ok) {
-        throw Error(j.error);
+        throw Error(
+          j.error
+        );
       }
 
       setData(j);
@@ -319,7 +425,9 @@ export default function App() {
         `Found ${j.papers.length} papers for ${title(q)}.`
       );
     } catch (e) {
-      setError(e.message);
+      setError(
+        e.message
+      );
     } finally {
       setBusy(false);
     }
@@ -340,40 +448,56 @@ export default function App() {
           </div>
 
           <small>
-            Evidence-first cancer research explorer
+            Evidence-first
+            cancer research
+            explorer
           </small>
         </div>
 
         <div className="nav">
-          {pages.map(p => (
-            <button
-              className={
-                page === p
-                  ? 'active'
-                  : ''
-              }
-              onClick={() => {
-                setPage(p);
-                scrollTo(0, 0);
-              }}
-              key={p}
-            >
-              ● &nbsp; {p}
-            </button>
-          ))}
+          {pages.map(
+            p => (
+              <button
+                className={
+                  page === p
+                    ? 'active'
+                    : ''
+                }
+                onClick={() => {
+                  setPage(p);
+                  scrollTo(
+                    0,
+                    0
+                  );
+                }}
+                key={p}
+              >
+                ● &nbsp; {p}
+              </button>
+            )
+          )}
         </div>
 
         {data && (
           <div className="sideinfo">
             <b>
-              {title(data.cancer)} cancer
+              {title(
+                data.cancer
+              )}{' '}
+              cancer
             </b>
 
             <br />
 
-            {data.profile.paper_count}{' '}
+            {
+              data.profile
+                .paper_count
+            }{' '}
             papers ·{' '}
-            {data.treatments.length}{' '}
+            {
+              data.treatments
+                .length
+            }{' '}
             treatment types
 
             <br />
@@ -382,80 +506,128 @@ export default function App() {
               data.profile
                 .free_full_text_count
             }{' '}
-            free full-text in PMC
+            free full-text
+            in PMC
           </div>
         )}
 
         <div className="sideinfo">
-          Educational use only.
-          Not medical advice.
+          Educational use
+          only. Not medical
+          advice.
         </div>
       </aside>
 
       <main className="main">
         <div className="content">
-          {page === 'Search' && (
+          {page ===
+            'Search' && (
             <Search
-              input={input}
-              setInput={setInput}
-              search={search}
-              data={data}
-              error={error}
-              notice={notice}
-              busy={busy}
+              input={
+                input
+              }
+              setInput={
+                setInput
+              }
+              search={
+                search
+              }
+              data={
+                data
+              }
+              error={
+                error
+              }
+              notice={
+                notice
+              }
+              busy={
+                busy
+              }
             />
           )}
 
           {page ===
             'Research Papers' && (
             <Research
-              data={data}
-              bookmarks={bookmarks}
-              toggle={toggle}
+              data={
+                data
+              }
+              bookmarks={
+                bookmarks
+              }
+              toggle={
+                toggle
+              }
             />
           )}
 
           {page ===
             'Research Analytics' && (
-            <Analytics data={data} />
+            <Analytics
+              data={
+                data
+              }
+            />
           )}
 
           {page ===
             'Treatment Research' && (
             <Treatment
-              data={data}
-              bookmarks={bookmarks}
-              toggle={toggle}
+              data={
+                data
+              }
+              bookmarks={
+                bookmarks
+              }
+              toggle={
+                toggle
+              }
             />
           )}
 
           {page ===
             'Compare Treatments' && (
-            <Compare data={data} />
+            <Compare
+              data={
+                data
+              }
+            />
           )}
 
           {page ===
             'Cancer Images' && (
             <Images
-              data={data}
-              images={images}
-              setImages={setImages}
+              data={
+                data
+              }
+              images={
+                images
+              }
+              setImages={
+                setImages
+              }
             />
           )}
 
-          {page === 'About' && (
+          {page ===
+            'About' && (
             <About />
           )}
 
           <div className="disclaimer">
             <b>
-              Educational use only.
+              Educational use
+              only.
             </b>{' '}
-            Cancer Insight does not
-            provide medical diagnosis,
-            individualized treatment
-            recommendations, or
-            professional medical advice.
+            Cancer Insight
+            does not provide
+            medical diagnosis,
+            individualized
+            treatment
+            recommendations,
+            or professional
+            medical advice.
           </div>
         </div>
       </main>
@@ -466,8 +638,9 @@ export default function App() {
 function Need() {
   return (
     <div className="panel">
-      Search for a cancer type first
-      to view this section.
+      Search for a cancer
+      type first to view
+      this section.
     </div>
   );
 }
@@ -485,7 +658,8 @@ function Search({
     <>
       <section className="hero">
         <div className="eyebrow">
-          Evidence-first cancer research
+          Evidence-first
+          cancer research
           platform
         </div>
 
@@ -494,12 +668,17 @@ function Search({
         </h1>
 
         <p>
-          Search cancer research, read
-          PubMed abstracts, identify free
-          full-text papers, explore
-          treatment evidence, and compare
-          research coverage without hiding
-          the original sources.
+          Search cancer
+          research, read
+          PubMed abstracts,
+          identify free
+          full-text papers,
+          explore treatment
+          evidence, and
+          compare research
+          coverage without
+          hiding the original
+          sources.
         </p>
       </section>
 
@@ -522,26 +701,15 @@ function Search({
         <label>
           Cancer type
 
-          <select
+          <input
             value={input}
             onChange={e =>
-              setInput(e.target.value)
+              setInput(
+                e.target.value
+              )
             }
-            required
-          >
-            <option value="">
-              Select a cancer type
-            </option>
-
-            {cancerTypes.map(cancer => (
-              <option
-                key={cancer}
-                value={cancer}
-              >
-                {cancer}
-              </option>
-            ))}
-          </select>
+            placeholder="For example: lung"
+          />
         </label>
 
         <br />
@@ -559,22 +727,31 @@ function Search({
       {data && (
         <>
           <h2>
-            Research Highlights
+            Research
+            Highlights
           </h2>
 
           <Metrics
-            p={data.profile}
+            p={
+              data.profile
+            }
             tcount={
-              data.treatments.length
+              data
+                .treatments
+                .length
             }
           />
 
           <h3>
-            Treatment research coverage
+            Treatment
+            research
+            coverage
           </h3>
 
           <Bars
-            items={data.treatments}
+            items={
+              data.treatments
+            }
           />
         </>
       )}
@@ -587,167 +764,216 @@ function Research({
   bookmarks,
   toggle
 }) {
-  const [q, setQ] =
+  const [
+    q,
+    setQ
+  ] =
     useState('');
 
-  const [access, setAccess] =
+  const [
+    access,
+    setAccess
+  ] =
     useState('All');
 
-  const [tr, setTr] =
-    useState('All treatments');
+  const [
+    tr,
+    setTr
+  ] =
+    useState(
+      'All treatments'
+    );
 
-  const [year, setYear] =
-    useState('All years');
+  const [
+    year,
+    setYear
+  ] =
+    useState(
+      'All years'
+    );
 
-  const [sort, setSort] =
-    useState('Original relevance');
+  const [
+    sort,
+    setSort
+  ] =
+    useState(
+      'Original relevance'
+    );
 
-  const [saved, setSaved] =
+  const [
+    saved,
+    setSaved
+  ] =
     useState(false);
 
-  const papers = useMemo(() => {
-    if (!data) return [];
+  const papers =
+    useMemo(() => {
+      if (!data) {
+        return [];
+      }
 
-    let x = [...data.papers];
+      let x =
+        [...data.papers];
 
-    if (q) {
-      x = x.filter(p =>
-        [
-          best(
-            p,
-            'pubmed_title',
-            'title'
-          ),
-          best(
-            p,
-            'pubmed_abstract',
-            'abstract'
-          ),
-          best(
-            p,
-            'pubmed_journal',
-            'journal'
-          ),
-          p.mesh_terms
-        ]
-          .join(' ')
-          .toLowerCase()
-          .includes(
-            q.toLowerCase()
-          )
-      );
-    }
+      if (q) {
+        x =
+          x.filter(p =>
+            [
+              best(
+                p,
+                'pubmed_title',
+                'title'
+              ),
+              best(
+                p,
+                'pubmed_abstract',
+                'abstract'
+              ),
+              best(
+                p,
+                'pubmed_journal',
+                'journal'
+              ),
+              p.mesh_terms
+            ]
+              .join(' ')
+              .toLowerCase()
+              .includes(
+                q.toLowerCase()
+              )
+          );
+      }
 
-    if (
-      access ===
-      'Free full text in PMC'
-    ) {
-      x = x.filter(
-        p => p.pmc_id
-      );
-    }
+      if (
+        access ===
+        'Free full text in PMC'
+      ) {
+        x =
+          x.filter(
+            p =>
+              p.pmc_id
+          );
+      }
 
-    if (
-      access ===
-      'Has abstract'
-    ) {
-      x = x.filter(p =>
-        best(
-          p,
-          'pubmed_abstract',
-          'abstract'
-        )
-      );
-    }
-
-    if (
-      access ===
-      'Has full-text link'
-    ) {
-      x = x.filter(
-        p =>
-          p.pmc_url ||
-          p.publisher_url
-      );
-    }
-
-    if (
-      tr !==
-      'All treatments'
-    ) {
-      x = x.filter(p =>
-        arr(p.treatmentTypes)
-          .map(norm)
-          .includes(norm(tr))
-      );
-    }
-
-    if (
-      year !==
-      'All years'
-    ) {
-      x = x.filter(p =>
-        String(
-          best(
-            p,
-            'pubmed_date',
-            'publicationDate'
-          )
-        ).includes(year)
-      );
-    }
-
-    if (saved) {
-      x = x.filter(p =>
-        bookmarks.includes(key(p))
-      );
-    }
-
-    if (
-      sort ===
-      'Newest first'
-    ) {
-      x.sort((a, b) =>
-        String(
-          best(
-            b,
-            'pubmed_date',
-            'publicationDate'
-          )
-        ).localeCompare(
-          String(
+      if (
+        access ===
+        'Has abstract'
+      ) {
+        x =
+          x.filter(p =>
             best(
-              a,
-              'pubmed_date',
-              'publicationDate'
+              p,
+              'pubmed_abstract',
+              'abstract'
             )
-          )
-        )
-      );
-    }
+          );
+      }
 
-    if (
-      sort ===
-      'Free full text first'
-    ) {
-      x.sort(
-        (a, b) =>
-          Number(!!b.pmc_id) -
-          Number(!!a.pmc_id)
-      );
-    }
+      if (
+        access ===
+        'Has full-text link'
+      ) {
+        x =
+          x.filter(
+            p =>
+              p.pmc_url ||
+              p.publisher_url
+          );
+      }
 
-    return x;
-  }, [
-    data,
-    q,
-    access,
-    tr,
-    year,
-    sort,
-    saved,
-    bookmarks
-  ]);
+      if (
+        tr !==
+        'All treatments'
+      ) {
+        x =
+          x.filter(p =>
+            arr(
+              p.treatmentTypes
+            )
+              .map(norm)
+              .includes(
+                norm(tr)
+              )
+          );
+      }
+
+      if (
+        year !==
+        'All years'
+      ) {
+        x =
+          x.filter(p =>
+            String(
+              best(
+                p,
+                'pubmed_date',
+                'publicationDate'
+              )
+            ).includes(
+              year
+            )
+          );
+      }
+
+      if (saved) {
+        x =
+          x.filter(p =>
+            bookmarks.includes(
+              key(p)
+            )
+          );
+      }
+
+      if (
+        sort ===
+        'Newest first'
+      ) {
+        x.sort(
+          (a, b) =>
+            String(
+              best(
+                b,
+                'pubmed_date',
+                'publicationDate'
+              )
+            ).localeCompare(
+              String(
+                best(
+                  a,
+                  'pubmed_date',
+                  'publicationDate'
+                )
+              )
+            )
+        );
+      }
+
+      if (
+        sort ===
+        'Free full text first'
+      ) {
+        x.sort(
+          (a, b) =>
+            Number(
+              !!b.pmc_id
+            ) -
+            Number(
+              !!a.pmc_id
+            )
+        );
+      }
+
+      return x;
+    }, [
+      data,
+      q,
+      access,
+      tr,
+      year,
+      sort,
+      saved,
+      bookmarks
+    ]);
 
   if (!data) {
     return (
@@ -761,27 +987,29 @@ function Research({
     );
   }
 
-  const years = [
-    ...new Set(
-      data.papers
-        .map(p =>
-          (
-            String(
-              best(
-                p,
-                'pubmed_date',
-                'publicationDate'
-              )
-            ).match(
-              /\b(19|20)\d{2}\b/
-            ) || []
-          )[0]
-        )
-        .filter(Boolean)
-    )
-  ]
-    .sort()
-    .reverse();
+  const years =
+    [
+      ...new Set(
+        data.papers
+          .map(
+            p =>
+              (
+                String(
+                  best(
+                    p,
+                    'pubmed_date',
+                    'publicationDate'
+                  )
+                ).match(
+                  /\b(19|20)\d{2}\b/
+                ) || []
+              )[0]
+          )
+          .filter(Boolean)
+      )
+    ]
+      .sort()
+      .reverse();
 
   function csv() {
     const cols = [
@@ -821,10 +1049,16 @@ function Research({
       [
         cols.join(','),
 
-        ...papers.map(p =>
-          cols
-            .map(c => esc(p[c]))
-            .join(',')
+        ...papers.map(
+          p =>
+            cols
+              .map(
+                c =>
+                  esc(
+                    p[c]
+                  )
+              )
+              .join(',')
         )
       ].join('\n'),
 
@@ -839,20 +1073,28 @@ function Research({
       </h1>
 
       <p className="muted">
-        {title(data.cancer)} · enriched
-        with PubMed metadata when a PMID
-        is available
+        {title(
+          data.cancer
+        )}{' '}
+        · enriched with
+        PubMed metadata
+        when a PMID is
+        available
       </p>
 
       <div className="filters">
         <label>
-          Search titles, abstracts,
-          journals, or MeSH terms
+          Search titles,
+          abstracts,
+          journals, or
+          MeSH terms
 
           <input
             value={q}
             onChange={e =>
-              setQ(e.target.value)
+              setQ(
+                e.target.value
+              )
             }
           />
         </label>
@@ -874,7 +1116,9 @@ function Research({
               'Has abstract',
               'Has full-text link'
             ].map(x => (
-              <option key={x}>
+              <option
+                key={x}
+              >
                 {x}
               </option>
             ))}
@@ -887,16 +1131,22 @@ function Research({
           <select
             value={tr}
             onChange={e =>
-              setTr(e.target.value)
+              setTr(
+                e.target.value
+              )
             }
           >
             {[
               'All treatments',
-              ...data.treatments.map(
-                x => x[0]
-              )
+              ...data
+                .treatments
+                .map(
+                  x => x[0]
+                )
             ].map(x => (
-              <option key={x}>
+              <option
+                key={x}
+              >
                 {x}
               </option>
             ))}
@@ -920,7 +1170,9 @@ function Research({
               'All years',
               ...years
             ].map(x => (
-              <option key={x}>
+              <option
+                key={x}
+              >
                 {x}
               </option>
             ))}
@@ -943,7 +1195,9 @@ function Research({
               'Newest first',
               'Free full text first'
             ].map(x => (
-              <option key={x}>
+              <option
+                key={x}
+              >
                 {x}
               </option>
             ))}
@@ -962,32 +1216,30 @@ function Research({
               )
             }
           />{' '}
-          Show saved papers only
+          Show saved
+          papers only
         </label>
       </div>
 
       <div className="toolbar">
-        {/*
-          IMPORTANT:
-          The PDF uses data.papers,
-          NOT the filtered papers array.
-          This exports every paper returned
-          by the actual Cancer Insight search.
-        */}
         <button
           onClick={() =>
             pdfReport(
               data.cancer,
-              data.papers,
+              papers,
               data.treatments
             )
           }
         >
-          Download PDF Research Report
+          Download PDF
+          Research Report
         </button>
 
-        <button onClick={csv}>
-          Export Raw Data (CSV)
+        <button
+          onClick={csv}
+        >
+          Export Raw Data
+          (CSV)
         </button>
       </div>
 
@@ -999,27 +1251,38 @@ function Research({
         papers
       </p>
 
-      {papers.map((p, i) => (
-        <Paper
-          p={p}
-          n={i + 1}
-          saved={bookmarks.includes(
-            key(p)
-          )}
-          toggle={toggle}
-          key={key(p) + i}
-        />
-      ))}
+      {papers.map(
+        (p, i) => (
+          <Paper
+            p={p}
+            n={i + 1}
+            saved={
+              bookmarks.includes(
+                key(p)
+              )
+            }
+            toggle={
+              toggle
+            }
+            key={
+              key(p) + i
+            }
+          />
+        )
+      )}
     </>
   );
 }
 
-function Analytics({ data }) {
+function Analytics({
+  data
+}) {
   if (!data) {
     return (
       <>
         <h1>
-          Research Analytics
+          Research
+          Analytics
         </h1>
 
         <Need />
@@ -1034,9 +1297,13 @@ function Analytics({ data }) {
       </h1>
 
       <Metrics
-        p={data.profile}
+        p={
+          data.profile
+        }
         tcount={
-          data.treatments.length
+          data
+            .treatments
+            .length
         }
       />
 
@@ -1045,18 +1312,24 @@ function Analytics({ data }) {
       </h3>
 
       <Bars
-        items={data.treatments}
+        items={
+          data.treatments
+        }
       />
 
       <h3>
-        Publication timeline
+        Publication
+        timeline
       </h3>
 
       <Bars
-        items={Object.entries(
-          data.profile.year_counts ||
-            {}
-        ).sort()}
+        items={
+          Object.entries(
+            data.profile
+              .year_counts ||
+              {}
+          ).sort()
+        }
       />
 
       <h3>
@@ -1065,7 +1338,8 @@ function Analytics({ data }) {
 
       <Bars
         items={
-          data.profile.top_journals ||
+          data.profile
+            .top_journals ||
           []
         }
       />
@@ -1080,7 +1354,8 @@ function Analytics({ data }) {
             )
           }
         >
-          Download PDF Research Report
+          Download PDF
+          Research Report
         </button>
 
         <button
@@ -1094,16 +1369,22 @@ function Analytics({ data }) {
 
               'treatment,paper_count\n' +
                 data.treatments
-                  .map(x =>
-                    x.join(',')
+                  .map(
+                    x =>
+                      x.join(
+                        ','
+                      )
                   )
-                  .join('\n'),
+                  .join(
+                    '\n'
+                  ),
 
               'text/csv'
             )
           }
         >
-          Export Treatment Counts (CSV)
+          Export Treatment
+          Counts (CSV)
         </button>
       </div>
     </>
@@ -1115,61 +1396,101 @@ function Treatment({
   bookmarks,
   toggle
 }) {
-  const [tr, setTr] =
+  const [
+    tr,
+    setTr
+  ] =
     useState('');
 
-  const [evidence, setEvidence] =
+  const [
+    evidence,
+    setEvidence
+  ] =
     useState([]);
 
-  const [busy, setBusy] =
+  const [
+    busy,
+    setBusy
+  ] =
     useState(false);
 
   useEffect(() => {
     if (
-      data?.treatments?.length &&
+      data
+        ?.treatments
+        ?.length &&
       !tr
     ) {
       setTr(
-        data.treatments[0][0]
+        data
+          .treatments[0][0]
       );
     }
-  }, [data, tr]);
+  }, [
+    data,
+    tr
+  ]);
 
   useEffect(() => {
-    if (!data || !tr) return;
+    if (
+      !data ||
+      !tr
+    ) {
+      return;
+    }
 
     setBusy(true);
 
-    fetch('/api/treatment', {
-      method: 'POST',
+    fetch(
+      '/api/treatment',
+      {
+        method:
+          'POST',
 
-      headers: {
-        'content-type':
-          'application/json'
-      },
+        headers: {
+          'content-type':
+            'application/json'
+        },
 
-      body: JSON.stringify({
-        cancer: data.cancer,
-        treatment: tr,
-        limit: 14
-      })
-    })
-      .then(r => r.json())
-      .then(j =>
-        setEvidence(
-          j.papers || []
-        )
+        body:
+          JSON.stringify({
+            cancer:
+              data.cancer,
+            treatment:
+              tr,
+            limit:
+              14
+          })
+      }
+    )
+      .then(
+        r =>
+          r.json()
       )
-      .finally(() =>
-        setBusy(false)
+      .then(
+        j =>
+          setEvidence(
+            j.papers ||
+              []
+          )
+      )
+      .finally(
+        () =>
+          setBusy(
+            false
+          )
       );
-  }, [data, tr]);
+  }, [
+    data,
+    tr
+  ]);
 
   if (!data) {
     return (
       <>
         <h1>
-          Treatment Research
+          Treatment
+          Research
         </h1>
 
         <Need />
@@ -1178,10 +1499,15 @@ function Treatment({
   }
 
   const api =
-    data.papers.filter(p =>
-      arr(p.treatmentTypes)
-        .map(norm)
-        .includes(norm(tr))
+    data.papers.filter(
+      p =>
+        arr(
+          p.treatmentTypes
+        )
+          .map(norm)
+          .includes(
+            norm(tr)
+          )
     );
 
   return (
@@ -1196,17 +1522,25 @@ function Treatment({
         <select
           value={tr}
           onChange={e =>
-            setTr(e.target.value)
+            setTr(
+              e.target.value
+            )
           }
         >
-          {data.treatments.map(x => (
-            <option
-              value={x[0]}
-              key={x[0]}
-            >
-              {title(x[0])}
-            </option>
-          ))}
+          {data.treatments.map(
+            x => (
+              <option
+                key={x[0]}
+                value={
+                  x[0]
+                }
+              >
+                {title(
+                  x[0]
+                )}
+              </option>
+            )
+          )}
         </select>
       </label>
 
@@ -1216,12 +1550,19 @@ function Treatment({
         </h2>
 
         <p>
-          Evidence-focused research view
-          for {title(data.cancer)} cancer.
-          Statements below are based on
-          retrieved PubMed-indexed papers;
-          paper counts do not indicate
-          medical superiority.
+          Evidence-focused
+          research view for{' '}
+          {title(
+            data.cancer
+          )}{' '}
+          cancer. Statements
+          below are based on
+          retrieved
+          PubMed-indexed
+          papers; paper
+          counts do not
+          indicate medical
+          superiority.
         </p>
       </div>
 
@@ -1230,93 +1571,138 @@ function Treatment({
       </h2>
 
       <Metrics
-        p={simpleProfile([
-          ...api,
-          ...evidence
-        ])}
+        p={
+          simpleProfile([
+            ...api,
+            ...evidence
+          ])
+        }
       />
 
       {busy && (
         <p>
-          Retrieving treatment-focused
+          Retrieving
+          treatment-focused
           PubMed evidence…
         </p>
       )}
 
       <h2>
-        Papers in your Cancer Insight
+        Papers in your
+        Cancer Insight
         search
       </h2>
 
       {api.length ? (
-        api.map((p, i) => (
-          <Paper
-            p={p}
-            n={i + 1}
-            saved={bookmarks.includes(
-              key(p)
-            )}
-            toggle={toggle}
-            key={key(p) + i}
-          />
-        ))
+        api.map(
+          (p, i) => (
+            <Paper
+              p={p}
+              n={i + 1}
+              saved={
+                bookmarks.includes(
+                  key(p)
+                )
+              }
+              toggle={
+                toggle
+              }
+              key={
+                key(p) +
+                i
+              }
+            />
+          )
+        )
       ) : (
         <div className="panel">
-          No API-tagged papers for this
-          treatment were returned in the
+          No API-tagged
+          papers for this
+          treatment were
+          returned in the
           current search.
         </div>
       )}
 
       <h2>
-        Additional PubMed evidence
+        Additional PubMed
+        evidence
       </h2>
 
       {evidence
         .slice(0, 8)
-        .map((p, i) => (
-          <Paper
-            p={p}
-            n={i + 1}
-            saved={bookmarks.includes(
-              key(p)
-            )}
-            toggle={toggle}
-            key={key(p) + i}
-          />
-        ))}
+        .map(
+          (p, i) => (
+            <Paper
+              p={p}
+              n={i + 1}
+              saved={
+                bookmarks.includes(
+                  key(p)
+                )
+              }
+              toggle={
+                toggle
+              }
+              key={
+                key(p) +
+                i
+              }
+            />
+          )
+        )}
     </>
   );
 }
 
-function Compare({ data }) {
-  const [a, setA] =
+function Compare({
+  data
+}) {
+  const [
+    a,
+    setA
+  ] =
     useState('');
 
-  const [b, setB] =
+  const [
+    b,
+    setB
+  ] =
     useState('');
 
-  const [ea, setEa] =
+  const [
+    ea,
+    setEa
+  ] =
     useState([]);
 
-  const [eb, setEb] =
+  const [
+    eb,
+    setEb
+  ] =
     useState([]);
 
   useEffect(() => {
     if (
-      data?.treatments?.length
+      data
+        ?.treatments
+        ?.length
     ) {
       setA(
         x =>
           x ||
-          data.treatments[0]?.[0] ||
+          data
+            .treatments[0]
+            ?.[0] ||
           ''
       );
 
       setB(
         x =>
           x ||
-          data.treatments[1]?.[0] ||
+          data
+            .treatments[1]
+            ?.[0] ||
           ''
       );
     }
@@ -1333,27 +1719,52 @@ function Compare({ data }) {
     }
 
     Promise.all(
-      [a, b].map(t =>
-        fetch('/api/treatment', {
-          method: 'POST',
+      [a, b].map(
+        t =>
+          fetch(
+            '/api/treatment',
+            {
+              method:
+                'POST',
 
-          headers: {
-            'content-type':
-              'application/json'
-          },
+              headers: {
+                'content-type':
+                  'application/json'
+              },
 
-          body: JSON.stringify({
-            cancer: data.cancer,
-            treatment: t,
-            limit: 12
-          })
-        }).then(r => r.json())
+              body:
+                JSON.stringify({
+                  cancer:
+                    data.cancer,
+                  treatment:
+                    t,
+                  limit:
+                    12
+                })
+            }
+          ).then(
+            r =>
+              r.json()
+          )
       )
-    ).then(([x, y]) => {
-      setEa(x.papers || []);
-      setEb(y.papers || []);
-    });
-  }, [data, a, b]);
+    ).then(
+      ([x, y]) => {
+        setEa(
+          x.papers ||
+            []
+        );
+
+        setEb(
+          y.papers ||
+            []
+        );
+      }
+    );
+  }, [
+    data,
+    a,
+    b
+  ]);
 
   if (!data) {
     return (
@@ -1368,32 +1779,45 @@ function Compare({ data }) {
   }
 
   if (
-    data.treatments.length < 2
+    data.treatments
+      .length < 2
   ) {
     return (
       <div className="panel">
-        At least two treatment types are
-        needed for comparison.
+        At least two
+        treatment types are
+        needed for
+        comparison.
       </div>
     );
   }
 
   const pa =
     simpleProfile([
-      ...data.papers.filter(p =>
-        arr(p.treatmentTypes)
-          .map(norm)
-          .includes(norm(a))
+      ...data.papers.filter(
+        p =>
+          arr(
+            p.treatmentTypes
+          )
+            .map(norm)
+            .includes(
+              norm(a)
+            )
       ),
       ...ea
     ]);
 
   const pb =
     simpleProfile([
-      ...data.papers.filter(p =>
-        arr(p.treatmentTypes)
-          .map(norm)
-          .includes(norm(b))
+      ...data.papers.filter(
+        p =>
+          arr(
+            p.treatmentTypes
+          )
+            .map(norm)
+            .includes(
+              norm(b)
+            )
       ),
       ...eb
     ]);
@@ -1416,14 +1840,20 @@ function Compare({ data }) {
               )
             }
           >
-            {data.treatments.map(x => (
-              <option
-                value={x[0]}
-                key={x[0]}
-              >
-                {title(x[0])}
-              </option>
-            ))}
+            {data.treatments.map(
+              x => (
+                <option
+                  key={x[0]}
+                  value={
+                    x[0]
+                  }
+                >
+                  {title(
+                    x[0]
+                  )}
+                </option>
+              )
+            )}
           </select>
         </label>
 
@@ -1438,38 +1868,54 @@ function Compare({ data }) {
               )
             }
           >
-            {data.treatments.map(x => (
-              <option
-                value={x[0]}
-                key={x[0]}
-              >
-                {title(x[0])}
-              </option>
-            ))}
+            {data.treatments.map(
+              x => (
+                <option
+                  key={x[0]}
+                  value={
+                    x[0]
+                  }
+                >
+                  {title(
+                    x[0]
+                  )}
+                </option>
+              )
+            )}
           </select>
         </label>
       </div>
 
       {a === b ? (
         <div className="error">
-          Choose two different treatments.
+          Choose two
+          different
+          treatments.
         </div>
       ) : (
         <>
           <div className="panel">
             <b>
-              How to read this comparison:
+              How to read
+              this comparison:
             </b>{' '}
-            the descriptions explain each
-            treatment, while the numbers
-            compare the retrieved research
-            evidence. More papers or newer
-            studies do not mean one
-            treatment is medically better.
+            the descriptions
+            explain each
+            treatment, while
+            the numbers
+            compare the
+            retrieved research
+            evidence. More
+            papers or newer
+            studies do not
+            mean one treatment
+            is medically
+            better.
           </div>
 
           <h2>
-            Research Comparison
+            Research
+            Comparison
           </h2>
 
           <table className="table">
@@ -1480,11 +1926,15 @@ function Compare({ data }) {
                 </th>
 
                 <th>
-                  {title(a)}
+                  {title(
+                    a
+                  )}
                 </th>
 
                 <th>
-                  {title(b)}
+                  {title(
+                    b
+                  )}
                 </th>
               </tr>
             </thead>
@@ -1519,61 +1969,103 @@ function Compare({ data }) {
                   'Meta-analyses',
                   'meta_analyses'
                 ]
-              ].map(([l, k]) => (
-                <tr key={k}>
-                  <td>
-                    {l}
-                  </td>
+              ].map(
+                ([l, k]) => (
+                  <tr key={k}>
+                    <td>
+                      {l}
+                    </td>
 
-                  <td>
-                    {pa[k] || '—'}
-                  </td>
+                    <td>
+                      {pa[k] ||
+                        '—'}
+                    </td>
 
-                  <td>
-                    {pb[k] || '—'}
-                  </td>
-                </tr>
-              ))}
+                    <td>
+                      {pb[k] ||
+                        '—'}
+                    </td>
+                  </tr>
+                )
+              )}
             </tbody>
           </table>
 
           <div className="compare">
             <div>
               <h3>
-                {title(a)} — strongest
-                supporting PubMed evidence
+                {title(a)} —
+                strongest
+                supporting
+                PubMed evidence
               </h3>
 
               {ea
-                .slice(0, 3)
-                .map((p, i) => (
-                  <Paper
-                    p={p}
-                    n={i + 1}
-                    saved={false}
-                    toggle={() => {}}
-                    key={key(p) + i}
-                  />
-                ))}
+                .slice(
+                  0,
+                  3
+                )
+                .map(
+                  (p, i) => (
+                    <Paper
+                      p={p}
+                      n={
+                        i +
+                        1
+                      }
+                      saved={
+                        false
+                      }
+                      toggle={() =>
+                        {}
+                      }
+                      key={
+                        key(
+                          p
+                        ) +
+                        i
+                      }
+                    />
+                  )
+                )}
             </div>
 
             <div>
               <h3>
-                {title(b)} — strongest
-                supporting PubMed evidence
+                {title(b)} —
+                strongest
+                supporting
+                PubMed evidence
               </h3>
 
               {eb
-                .slice(0, 3)
-                .map((p, i) => (
-                  <Paper
-                    p={p}
-                    n={i + 1}
-                    saved={false}
-                    toggle={() => {}}
-                    key={key(p) + i}
-                  />
-                ))}
+                .slice(
+                  0,
+                  3
+                )
+                .map(
+                  (p, i) => (
+                    <Paper
+                      p={p}
+                      n={
+                        i +
+                        1
+                      }
+                      saved={
+                        false
+                      }
+                      toggle={() =>
+                        {}
+                      }
+                      key={
+                        key(
+                          p
+                        ) +
+                        i
+                      }
+                    />
+                  )
+                )}
             </div>
           </div>
         </>
@@ -1587,36 +2079,58 @@ function Images({
   images,
   setImages
 }) {
-  const [busy, setBusy] =
+  const [
+    busy,
+    setBusy
+  ] =
     useState(false);
 
   useEffect(() => {
-    if (!data) return;
+    if (!data) {
+      return;
+    }
 
     setBusy(true);
 
-    fetch('/api/images', {
-      method: 'POST',
+    fetch(
+      '/api/images',
+      {
+        method:
+          'POST',
 
-      headers: {
-        'content-type':
-          'application/json'
-      },
+        headers: {
+          'content-type':
+            'application/json'
+        },
 
-      body: JSON.stringify({
-        cancer: data.cancer
-      })
-    })
-      .then(r => r.json())
-      .then(j =>
-        setImages(
-          j.images || []
-        )
+        body:
+          JSON.stringify({
+            cancer:
+              data.cancer
+          })
+      }
+    )
+      .then(
+        r =>
+          r.json()
       )
-      .finally(() =>
-        setBusy(false)
+      .then(
+        j =>
+          setImages(
+            j.images ||
+              []
+          )
+      )
+      .finally(
+        () =>
+          setBusy(
+            false
+          )
       );
-  }, [data, setImages]);
+  }, [
+    data,
+    setImages
+  ]);
 
   if (!data) {
     return (
@@ -1637,75 +2151,103 @@ function Images({
       </h1>
 
       <p className="muted">
-        Scientific and medically relevant
-        images for {title(data.cancer)}{' '}
-        cancer are retrieved from Wikimedia
-        Commons. The gallery prioritizes
-        MRI/CT, pathology, histology,
-        microscopy, tumor specimens,
-        segmentation, and medical diagrams;
-        documents and unrelated photographs
-        are excluded. Source/license metadata
-        is shown when Commons supplies it.
+        Scientific and
+        medically relevant
+        images for{' '}
+        {title(
+          data.cancer
+        )}{' '}
+        cancer are retrieved
+        from Wikimedia
+        Commons. The gallery
+        prioritizes MRI/CT,
+        pathology, histology,
+        microscopy, tumor
+        specimens,
+        segmentation, and
+        medical diagrams;
+        documents and
+        unrelated photographs
+        are excluded.
+        Source/license
+        metadata is shown
+        when Commons supplies
+        it.
       </p>
 
       {busy && (
         <p>
-          Finding medically relevant
-          scientific images…
+          Finding medically
+          relevant scientific
+          images…
         </p>
       )}
 
       <div className="images">
-        {images.map((x, i) => (
-          <div
-            className="imagecard"
-            key={i}
-          >
-            <img
-              src={x.thumbnail}
-              alt={
-                x.title ||
-                'Medical image'
-              }
-            />
-
-            <h3>
-              {x.title}
-            </h3>
-
-            {x.description && (
-              <p className="muted">
-                {clean(
-                  x.description
-                ).slice(0, 180)}
-              </p>
-            )}
-
-            {x.license && (
-              <p className="muted">
-                License:{' '}
-                {clean(x.license)}
-              </p>
-            )}
-
-            {x.artist && (
-              <p className="muted">
-                Creator:{' '}
-                {clean(
-                  x.artist
-                ).slice(0, 120)}
-              </p>
-            )}
-
-            <a
-              href={x.original}
-              target="_blank"
+        {images.map(
+          (x, i) => (
+            <div
+              className="imagecard"
+              key={i}
             >
-              Open original source
-            </a>
-          </div>
-        ))}
+              <img
+                src={
+                  x.thumbnail
+                }
+                alt={
+                  x.title ||
+                  'Cancer research image'
+                }
+              />
+
+              <h3>
+                {x.title}
+              </h3>
+
+              {x.description && (
+                <p className="muted">
+                  {clean(
+                    x.description
+                  ).slice(
+                    0,
+                    180
+                  )}
+                </p>
+              )}
+
+              {x.license && (
+                <p className="muted">
+                  License:{' '}
+                  {clean(
+                    x.license
+                  )}
+                </p>
+              )}
+
+              {x.artist && (
+                <p className="muted">
+                  Creator:{' '}
+                  {clean(
+                    x.artist
+                  ).slice(
+                    0,
+                    120
+                  )}
+                </p>
+              )}
+
+              <a
+                href={
+                  x.original
+                }
+                target="_blank"
+              >
+                Open original
+                source
+              </a>
+            </div>
+          )
+        )}
       </div>
     </>
   );
@@ -1719,29 +2261,44 @@ function About() {
       </h1>
 
       <p>
-        Cancer Insight is an educational
-        cancer-research exploration platform.
-        It combines a cancer-research API
-        with PubMed/NCBI metadata so users
-        can inspect papers, research themes,
-        treatment evidence, and free-full-text
-        availability while keeping the
-        original sources visible.
+        Cancer Insight is an
+        educational
+        cancer-research
+        exploration
+        platform. It combines
+        a cancer-research API
+        with PubMed/NCBI
+        metadata so users can
+        inspect papers,
+        research themes,
+        treatment evidence,
+        and free-full-text
+        availability while
+        keeping the original
+        sources visible.
       </p>
 
       <h2>
-        How treatment descriptions work
+        How treatment
+        descriptions work
       </h2>
 
       <p>
-        Cancer Insight gives a plain-language
-        definition of the treatment itself,
-        then displays cancer-specific
-        statements extracted from multiple
-        PubMed-indexed abstracts. Each
-        displayed research statement is
-        linked back to identifiable PubMed
-        sources through PMID references and
+        Cancer Insight gives
+        a plain-language
+        definition of the
+        treatment itself,
+        then displays
+        cancer-specific
+        statements extracted
+        from multiple
+        PubMed-indexed
+        abstracts. Each
+        displayed research
+        statement is linked
+        back to identifiable
+        PubMed sources through
+        PMID references and
         source cards.
       </p>
 
@@ -1752,29 +2309,36 @@ function About() {
       <ul>
         <li>
           <b>
-            Free full text in PMC:
+            Free full text in
+            PMC:
           </b>{' '}
-          freely readable in PubMed Central;
-          this does not automatically mean
+          freely readable in
+          PubMed Central; this
+          does not
+          automatically mean
           unrestricted reuse.
         </li>
 
         <li>
           <b>
-            Full-text source link:
+            Full-text source
+            link:
           </b>{' '}
-          a publisher or research-source
-          link is available; access rules
-          may vary.
+          a publisher or
+          research-source link
+          is available; access
+          rules may vary.
         </li>
 
         <li>
           <b>
             PubMed abstract:
           </b>{' '}
-          an abstract is available even if
-          Cancer Insight did not identify a
-          free PMC copy.
+          an abstract is
+          available even if
+          Cancer Insight did
+          not identify a free
+          PMC copy.
         </li>
       </ul>
 
@@ -1783,23 +2347,34 @@ function About() {
       </h2>
 
       <p>
-        Paper counts and research summaries
-        describe retrieved literature, not
-        treatment effectiveness, safety, or
-        suitability for an individual patient.
-        Automated extraction can miss context,
-        so users should read the cited papers
-        and consult qualified healthcare
-        professionals for personal medical
+        Paper counts and
+        research summaries
+        describe retrieved
+        literature, not
+        treatment
+        effectiveness,
+        safety, or suitability
+        for an individual
+        patient. Automated
+        extraction can miss
+        context, so users
+        should read the cited
+        papers and consult
+        qualified healthcare
+        professionals for
+        personal medical
         decisions.
       </p>
     </>
   );
 }
 
-function simpleProfile(papers) {
+function simpleProfile(
+  papers
+) {
   const years = [];
-  const journals = new Set();
+  const journals =
+    new Set();
 
   let free = 0;
   let trials = 0;
@@ -1811,20 +2386,23 @@ function simpleProfile(papers) {
       free++;
     }
 
-    const y = (
-      String(
-        best(
-          p,
-          'pubmed_date',
-          'publicationDate'
-        )
-      ).match(
-        /\b(19|20)\d{2}\b/
-      ) || []
-    )[0];
+    const y =
+      (
+        String(
+          best(
+            p,
+            'pubmed_date',
+            'publicationDate'
+          )
+        ).match(
+          /\b(19|20)\d{2}\b/
+        ) || []
+      )[0];
 
     if (y) {
-      years.push(+y);
+      years.push(
+        +y
+      );
     }
 
     const j =
@@ -1839,7 +2417,9 @@ function simpleProfile(papers) {
     }
 
     const t =
-      arr(p.publication_types)
+      arr(
+        p.publication_types
+      )
         .join(' ')
         .toLowerCase();
 
@@ -1852,7 +2432,9 @@ function simpleProfile(papers) {
     }
 
     if (
-      t.includes('review')
+      t.includes(
+        'review'
+      )
     ) {
       reviews++;
     }
@@ -1875,7 +2457,9 @@ function simpleProfile(papers) {
 
     latest_year:
       years.length
-        ? Math.max(...years)
+        ? Math.max(
+            ...years
+          )
         : null,
 
     journals:
@@ -1900,7 +2484,9 @@ function download(
   type
 ) {
   const a =
-    document.createElement('a');
+    document.createElement(
+      'a'
+    );
 
   a.href =
     URL.createObjectURL(
@@ -1910,7 +2496,8 @@ function download(
       )
     );
 
-  a.download = name;
+  a.download =
+    name;
 
   a.click();
 
@@ -1919,273 +2506,175 @@ function download(
   );
 }
 
-/* =========================================================
-   PDF REPORT
-   ========================================================= */
+function pdfReport(
+  cancer,
+  papers,
+  treatments
+) {
+  const d =
+    new jsPDF({
+      orientation:
+        'portrait',
+      unit:
+        'mm',
+      format:
+        'a4'
+    });
 
-function pdfReport(cancer, papers, treatments) {
-  const reportPapers =
-    Array.isArray(papers)
-      ? papers.slice(0, 20)
-      : [];
+  const NAVY =
+    [20, 61, 82];
 
-  const d = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4'
-  });
+  const TEAL =
+    [31, 174, 174];
 
-  /* =========================================================
-     COLORS
-     ========================================================= */
+  const LIGHT =
+    [239, 246, 248];
 
-  const NAVY = [20, 61, 82];
-  const TEAL = [31, 174, 174];
-  const LIGHT = [239, 246, 248];
-  const TEXT = [25, 54, 70];
-  const MUTED = [92, 120, 136];
-  const BORDER = [210, 225, 231];
-  const WHITE = [255, 255, 255];
+  const TEXT =
+    [25, 54, 70];
 
-  const GREEN_BG = [225, 245, 239];
-  const GREEN_TEXT = [25, 115, 88];
+  const MUTED =
+    [92, 120, 136];
 
-  /* =========================================================
-     PAGE SETTINGS
-     ========================================================= */
+  const BORDER =
+    [210, 225, 231];
 
-  const PAGE_W = 210;
+  const WHITE =
+    [255, 255, 255];
 
-  const MARGIN = 16;
+  const GREEN_BG =
+    [225, 245, 239];
 
-  const CONTENT_W =
-    PAGE_W - MARGIN * 2;
+  const GREEN_TEXT =
+    [25, 115, 88];
 
-  const FOOTER_Y = 282;
+  const pageW = 210;
+  const margin = 16;
+  const contentW =
+    pageW -
+    margin * 2;
 
-  /*
-    Nothing from a research card is allowed below here.
-    This leaves a comfortable gap before the footer.
-  */
-  const SAFE_BOTTOM = 274;
+  const footerY =
+    282;
 
-  let pageNumber = 1;
+  let pageNumber =
+    1;
+
   let y = 0;
 
-  /* =========================================================
-     TEXT CLEANING
-     ========================================================= */
+  const decodeEntities =
+    value => {
+      if (
+        typeof document ===
+        'undefined'
+      ) {
+        return String(
+          value || ''
+        );
+      }
 
-  function decodeEntities(value) {
-    if (!value) return '';
-
-    let s = String(value);
-
-    if (
-      typeof document !==
-      'undefined'
-    ) {
-      const textarea =
+      const area =
         document.createElement(
           'textarea'
         );
 
-      textarea.innerHTML = s;
+      area.innerHTML =
+        String(
+          value || ''
+        );
 
-      s = textarea.value;
-    }
+      return area.value;
+    };
 
-    return s;
-  }
-
-  function pdfText(value) {
-    return decodeEntities(
-      clean(value || '')
-    )
-      .replace(/\u00a0/g, ' ')
-      .replace(
-        /[\u2010\u2011\u2012\u2013\u2014\u2212]/g,
-        '-'
-      )
-      .replace(/[\u2018\u2019]/g, "'")
-      .replace(/[\u201c\u201d]/g, '"')
-      .replace(/\u2026/g, '...')
-      .replace(/≤/g, '<=')
-      .replace(/≥/g, '>=')
-      .replace(/≠/g, '!=')
-      .replace(/≈/g, '~')
-      .replace(/±/g, '+/-')
-      .replace(/×/g, 'x')
-      .replace(/÷/g, '/')
-      .replace(/∞/g, 'infinity')
-      .replace(/α/g, 'alpha')
-      .replace(/β/g, 'beta')
-      .replace(/γ/g, 'gamma')
-      .replace(/δ/g, 'delta')
-      .replace(/ε/g, 'epsilon')
-      .replace(/κ/g, 'kappa')
-      .replace(/λ/g, 'lambda')
-      .replace(/μ/g, 'u')
-      .replace(/µ/g, 'u')
-      .replace(/π/g, 'pi')
-      .replace(/ρ/g, 'rho')
-      .replace(/σ/g, 'sigma')
-      .replace(/τ/g, 'tau')
-      .replace(/φ/g, 'phi')
-      .replace(/χ/g, 'chi')
-      .replace(/ω/g, 'omega')
-      .replace(/Δ/g, 'Delta')
-      .replace(/Σ/g, 'Sigma')
-      .replace(/Ω/g, 'Omega')
-      .replace(/⁰/g, '0')
-      .replace(/¹/g, '1')
-      .replace(/²/g, '2')
-      .replace(/³/g, '3')
-      .replace(/⁴/g, '4')
-      .replace(/⁵/g, '5')
-      .replace(/⁶/g, '6')
-      .replace(/⁷/g, '7')
-      .replace(/⁸/g, '8')
-      .replace(/⁹/g, '9')
-      .replace(/⁺/g, '+')
-      .replace(/⁻/g, '-')
-      .replace(/₀/g, '0')
-      .replace(/₁/g, '1')
-      .replace(/₂/g, '2')
-      .replace(/₃/g, '3')
-      .replace(/₄/g, '4')
-      .replace(/₅/g, '5')
-      .replace(/₆/g, '6')
-      .replace(/₇/g, '7')
-      .replace(/₈/g, '8')
-      .replace(/₉/g, '9')
-      .replace(/₊/g, '+')
-      .replace(/₋/g, '-')
-      .replace(/°/g, ' degrees ')
-      .replace(/→/g, ' -> ')
-      .replace(/←/g, ' <- ')
-      .replace(/↔/g, ' <-> ')
-      .replace(/[^\x20-\x7E\xA0-\xFF]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim();
-  }
-
-  function validUrl(url) {
-    return (
-      typeof url === 'string' &&
-      /^https?:\/\//i.test(url)
-    );
-  }
-
-  /* =========================================================
-     FONT / WRAPPING HELPERS
-     ========================================================= */
-
-  function setPdfFont(
-    style,
-    size
-  ) {
-    d.setFont(
-      'helvetica',
-      style
-    );
-
-    d.setFontSize(size);
-
-    d.setLineHeightFactor(1.2);
-  }
-
-  function wrapText(
-    value,
-    width,
-    style,
-    size
-  ) {
-    setPdfFont(
-      style,
-      size
-    );
-
-    const cleaned =
-      pdfText(value);
-
-    if (!cleaned) {
-      return [];
-    }
-
-    return d.splitTextToSize(
-      cleaned,
-      width
-    );
-  }
-
-  function realLineHeight() {
-    return (
-      d.getLineHeight() /
-      d.internal.scaleFactor
-    );
-  }
-
-  function blockHeight(
-    lines,
-    style,
-    size
-  ) {
-    if (
-      !lines ||
-      !lines.length
-    ) {
-      return 0;
-    }
-
-    setPdfFont(
-      style,
-      size
-    );
-
-    return (
-      lines.length *
-      realLineHeight()
-    );
-  }
-
-  function limitLines(
-    lines,
-    maxLines
-  ) {
-    if (
-      lines.length <=
-      maxLines
-    ) {
-      return lines;
-    }
-
-    const out =
-      lines.slice(
-        0,
-        maxLines
-      );
-
-    const last =
-      out.length - 1;
-
-    out[last] =
-      String(
-        out[last] || ''
+  const pdfText =
+    value =>
+      decodeEntities(
+        clean(
+          value || ''
+        )
       )
         .replace(
-          /\.*$/,
-          ''
+          /\u00a0/g,
+          ' '
         )
-        .trimEnd() +
-      '...';
+        .replace(
+          /[\u2010\u2011\u2012\u2013\u2014\u2212]/g,
+          '-'
+        )
+        .replace(
+          /[\u2018\u2019]/g,
+          "'"
+        )
+        .replace(
+          /[\u201c\u201d]/g,
+          '"'
+        )
+        .replace(
+          /\u2026/g,
+          '...'
+        )
+        .replace(
+          /[^\x20-\x7E\xA0-\xFF]/g,
+          ' '
+        )
+        .replace(
+          /\s+/g,
+          ' '
+        )
+        .trim();
 
-    return out;
-  }
+  const paperTitle =
+    p =>
+      pdfText(
+        best(
+          p,
+          'pubmed_title',
+          'title'
+        )
+      ) ||
+      'Untitled research paper';
 
-  /* =========================================================
-     FOOTER
-     ========================================================= */
+  const journal =
+    p =>
+      pdfText(
+        best(
+          p,
+          'pubmed_journal',
+          'journal'
+        )
+      );
+
+  const date =
+    p =>
+      pdfText(
+        best(
+          p,
+          'pubmed_date',
+          'publicationDate'
+        )
+      );
+
+  const abstract =
+    p =>
+      pdfText(
+        best(
+          p,
+          'pubmed_abstract',
+          'abstract'
+        )
+      );
+
+  const authors =
+    p =>
+      pdfText(
+        Array.isArray(
+          p.pubmed_authors
+        )
+          ? p.pubmed_authors.join(
+              ', '
+            )
+          : p.pubmed_authors
+      );
 
   function footer() {
     d.setDrawColor(
@@ -2197,15 +2686,20 @@ function pdfReport(cancer, papers, treatments) {
     );
 
     d.line(
-      MARGIN,
-      FOOTER_Y,
-      PAGE_W - MARGIN,
-      FOOTER_Y
+      margin,
+      footerY,
+      pageW -
+        margin,
+      footerY
     );
 
-    setPdfFont(
-      'normal',
-      6.5
+    d.setFont(
+      'helvetica',
+      'normal'
+    );
+
+    d.setFontSize(
+      7.2
     );
 
     d.setTextColor(
@@ -2214,23 +2708,21 @@ function pdfReport(cancer, papers, treatments) {
 
     d.text(
       'Educational use only. Cancer Insight does not provide medical diagnosis or individualized treatment advice.',
-      MARGIN,
-      287
+      margin,
+      footerY + 5
     );
 
     d.text(
       `Page ${pageNumber}`,
-      PAGE_W - MARGIN,
-      287,
+      pageW -
+        margin,
+      footerY + 5,
       {
-        align: 'right'
+        align:
+          'right'
       }
     );
   }
-
-  /* =========================================================
-     SMALL HEADER
-     ========================================================= */
 
   function smallHeader() {
     d.setFillColor(
@@ -2240,7 +2732,7 @@ function pdfReport(cancer, papers, treatments) {
     d.rect(
       0,
       0,
-      PAGE_W,
+      pageW,
       15,
       'F'
     );
@@ -2250,7 +2742,7 @@ function pdfReport(cancer, papers, treatments) {
     );
 
     d.roundedRect(
-      MARGIN,
+      margin,
       4,
       7,
       7,
@@ -2263,42 +2755,53 @@ function pdfReport(cancer, papers, treatments) {
       ...WHITE
     );
 
-    setPdfFont(
-      'bold',
-      9
+    d.setFont(
+      'helvetica',
+      'bold'
+    );
+
+    d.setFontSize(
+      9.5
     );
 
     d.text(
       '+',
-      MARGIN + 3.5,
+      margin +
+        3.5,
       9.1,
       {
-        align: 'center'
+        align:
+          'center'
       }
     );
 
-    setPdfFont(
-      'bold',
-      9.5
+    d.setFontSize(
+      10
     );
 
     d.text(
       'Cancer Insight',
-      MARGIN + 11,
+      margin + 11,
       9.5
     );
 
-    setPdfFont(
-      'normal',
-      6.8
+    d.setFont(
+      'helvetica',
+      'normal'
+    );
+
+    d.setFontSize(
+      7.5
     );
 
     d.text(
       `${title(cancer)} Cancer Research Report`,
-      PAGE_W - MARGIN,
+      pageW -
+        margin,
       9.5,
       {
-        align: 'right'
+        align:
+          'right'
       }
     );
   }
@@ -2308,25 +2811,67 @@ function pdfReport(cancer, papers, treatments) {
 
     d.addPage();
 
-    pageNumber++;
+    pageNumber +=
+      1;
 
     smallHeader();
 
     y = 24;
   }
 
-  function ensureSpace(height) {
+  function ensureSpace(
+    required
+  ) {
     if (
-      y + height >
-      SAFE_BOTTOM
+      y +
+        required >
+      footerY - 5
     ) {
       newPage();
     }
   }
 
-  /* =========================================================
-     LINK BUTTON
-     ========================================================= */
+  function drawSectionTitle(
+    label
+  ) {
+    d.setTextColor(
+      ...NAVY
+    );
+
+    d.setFont(
+      'helvetica',
+      'bold'
+    );
+
+    d.setFontSize(
+      16
+    );
+
+    d.text(
+      label,
+      margin,
+      y
+    );
+
+    y += 5;
+
+    d.setDrawColor(
+      ...TEAL
+    );
+
+    d.setLineWidth(
+      0.8
+    );
+
+    d.line(
+      margin,
+      y,
+      margin + 35,
+      y
+    );
+
+    y += 9;
+  }
 
   function drawLinkButton(
     label,
@@ -2335,8 +2880,8 @@ function pdfReport(cancer, papers, treatments) {
     top,
     width
   ) {
-    if (!validUrl(url)) {
-      return;
+    if (!url) {
+      return 0;
     }
 
     d.setFillColor(
@@ -2351,35 +2896,39 @@ function pdfReport(cancer, papers, treatments) {
       x,
       top,
       width,
-      6.2,
-      1.4,
-      1.4,
+      6.5,
+      1.5,
+      1.5,
       'FD'
+    );
+
+    d.setFont(
+      'helvetica',
+      'bold'
+    );
+
+    d.setFontSize(
+      7
     );
 
     d.setTextColor(
       ...TEAL
     );
 
-    setPdfFont(
-      'bold',
-      6.3
-    );
-
     d.textWithLink(
       label,
-      x + width / 2,
-      top + 4,
+      x +
+        width / 2,
+      top + 4.3,
       {
         url,
-        align: 'center'
+        align:
+          'center'
       }
     );
-  }
 
-  /* =========================================================
-     PAGE 1 — COVER
-     ========================================================= */
+    return width;
+  }
 
   d.setFillColor(
     ...NAVY
@@ -2388,7 +2937,7 @@ function pdfReport(cancer, papers, treatments) {
   d.rect(
     0,
     0,
-    PAGE_W,
+    pageW,
     54,
     'F'
   );
@@ -2398,7 +2947,7 @@ function pdfReport(cancer, papers, treatments) {
   );
 
   d.roundedRect(
-    MARGIN,
+    margin,
     12,
     13,
     13,
@@ -2411,172 +2960,189 @@ function pdfReport(cancer, papers, treatments) {
     ...WHITE
   );
 
-  setPdfFont(
-    'bold',
+  d.setFont(
+    'helvetica',
+    'bold'
+  );
+
+  d.setFontSize(
     17
   );
 
   d.text(
     '+',
-    MARGIN + 6.5,
+    margin + 6.5,
     21.3,
     {
-      align: 'center'
+      align:
+        'center'
     }
   );
 
-  setPdfFont(
-    'bold',
+  d.setFontSize(
     18
   );
 
   d.text(
     'Cancer Insight',
-    MARGIN + 18,
+    margin + 18,
     20
   );
 
-  setPdfFont(
-    'normal',
+  d.setFont(
+    'helvetica',
+    'normal'
+  );
+
+  d.setFontSize(
     8.5
   );
 
   d.text(
     'Evidence-first cancer research explorer',
-    MARGIN + 18,
+    margin + 18,
     26
   );
 
-  setPdfFont(
-    'bold',
+  d.setFont(
+    'helvetica',
+    'bold'
+  );
+
+  d.setFontSize(
     22
   );
 
   d.text(
     'Research Report',
-    MARGIN,
+    margin,
     43
   );
 
   y = 67;
 
-  /* =========================================================
-     CANCER TITLE
-     ========================================================= */
-
   d.setTextColor(
     ...TEXT
   );
 
-  setPdfFont(
-    'bold',
-    23
+  d.setFont(
+    'helvetica',
+    'bold'
+  );
+
+  d.setFontSize(
+    24
   );
 
   d.text(
     `${title(cancer)} Cancer`,
-    MARGIN,
+    margin,
     y
   );
 
   y += 8;
 
+  d.setFont(
+    'helvetica',
+    'normal'
+  );
+
+  d.setFontSize(
+    10
+  );
+
   d.setTextColor(
     ...MUTED
   );
 
-  setPdfFont(
-    'normal',
-    9
-  );
-
   d.text(
     'Research literature overview generated by Cancer Insight',
-    MARGIN,
+    margin,
     y
   );
 
   y += 13;
 
-  /* =========================================================
-     SUMMARY
-     ========================================================= */
-
   const freeCount =
-    reportPapers.filter(
-      p => p.pmc_id
+    papers.filter(
+      p =>
+        p.pmc_id
     ).length;
 
   const years =
-    reportPapers
-      .map(
-        p => {
-          const found =
-            String(
-              best(
-                p,
-                'pubmed_date',
-                'publicationDate'
-              ) || ''
-            ).match(
-              /\b(19|20)\d{2}\b/
-            );
+    papers
+      .map(p => {
+        const m =
+          String(
+            best(
+              p,
+              'pubmed_date',
+              'publicationDate'
+            ) || ''
+          ).match(
+            /\b(19|20)\d{2}\b/
+          );
 
-          return found
-            ? Number(
-                found[0]
-              )
-            : null;
-        }
-      )
-      .filter(Boolean);
+        return m
+          ? Number(
+              m[0]
+            )
+          : null;
+      })
+      .filter(
+        Boolean
+      );
 
   const latestYear =
     years.length
       ? Math.max(
           ...years
         )
-      : '—';
+      : '-';
 
   const cards = [
     [
       'Research Papers',
-      reportPapers.length
+      papers.length
     ],
-
     [
       'Free Full Text',
       freeCount
     ],
-
     [
       'Latest Year',
       latestYear
     ],
-
     [
       'Treatment Types',
-      treatments?.length || 0
+      treatments
+        ?.length ||
+        0
     ]
   ];
 
-  const summaryGap =
-    4;
+  const gap = 4;
 
-  const summaryW =
+  const cardW =
     (
-      CONTENT_W -
-      summaryGap * 3
+      contentW -
+      gap * 3
     ) / 4;
 
   cards.forEach(
-    ([label, value], i) => {
+    (
+      [
+        label,
+        value
+      ],
+      i
+    ) => {
       const x =
-        MARGIN +
+        margin +
         i *
           (
-            summaryW +
-            summaryGap
+            cardW +
+            gap
           );
 
       d.setFillColor(
@@ -2590,7 +3156,7 @@ function pdfReport(cancer, papers, treatments) {
       d.roundedRect(
         x,
         y,
-        summaryW,
+        cardW,
         25,
         2.5,
         2.5,
@@ -2601,9 +3167,13 @@ function pdfReport(cancer, papers, treatments) {
         ...MUTED
       );
 
-      setPdfFont(
-        'normal',
-        7
+      d.setFont(
+        'helvetica',
+        'normal'
+      );
+
+      d.setFontSize(
+        7.5
       );
 
       d.text(
@@ -2616,13 +3186,19 @@ function pdfReport(cancer, papers, treatments) {
         ...NAVY
       );
 
-      setPdfFont(
-        'bold',
-        15
+      d.setFont(
+        'helvetica',
+        'bold'
+      );
+
+      d.setFontSize(
+        16
       );
 
       d.text(
-        String(value),
+        String(
+          value
+        ),
         x + 4,
         y + 18
       );
@@ -2631,70 +3207,61 @@ function pdfReport(cancer, papers, treatments) {
 
   y += 35;
 
-  /* =========================================================
-     RESEARCH OVERVIEW
-     ========================================================= */
-
   d.setTextColor(
     ...NAVY
   );
 
-  setPdfFont(
-    'bold',
-    14
+  d.setFont(
+    'helvetica',
+    'bold'
+  );
+
+  d.setFontSize(
+    15
   );
 
   d.text(
     'Research Overview',
-    MARGIN,
+    margin,
     y
   );
 
   y += 7;
 
-  const intro =
-    `This report summarizes ${reportPapers.length} research papers retrieved for ${title(cancer)} cancer. ` +
-    'Cancer Insight presents publication metadata, abstracts, treatment research coverage, and links to original scientific sources. ' +
-    'The report describes retrieved research literature and does not rank treatments or provide medical recommendations.';
-
-  const introLines =
-    wrapText(
-      intro,
-      CONTENT_W,
-      'normal',
-      8.4
-    );
-
   d.setTextColor(
     ...TEXT
   );
 
-  setPdfFont(
-    'normal',
-    8.4
+  d.setFont(
+    'helvetica',
+    'normal'
   );
+
+  d.setFontSize(
+    9
+  );
+
+  const intro =
+    `This report summarizes ${papers.length} research papers retrieved for ${title(cancer)} cancer. ` +
+    'Cancer Insight presents publication metadata, abstracts, treatment research coverage, and links to original scientific sources. ' +
+    'The report describes retrieved research literature and does not rank treatments or provide medical recommendations.';
+
+  const introLines =
+    d.splitTextToSize(
+      intro,
+      contentW
+    );
 
   d.text(
     introLines,
-    MARGIN,
-    y,
-    {
-      maxWidth:
-        CONTENT_W
-    }
+    margin,
+    y
   );
 
   y +=
-    blockHeight(
-      introLines,
-      'normal',
-      8.4
-    ) +
+    introLines.length *
+      4.5 +
     9;
-
-  /* =========================================================
-     TREATMENT COVERAGE
-     ========================================================= */
 
   if (
     treatments &&
@@ -2704,14 +3271,18 @@ function pdfReport(cancer, papers, treatments) {
       ...NAVY
     );
 
-    setPdfFont(
-      'bold',
-      14
+    d.setFont(
+      'helvetica',
+      'bold'
+    );
+
+    d.setFontSize(
+      15
     );
 
     d.text(
       'Treatment Research Coverage',
-      MARGIN,
+      margin,
       y
     );
 
@@ -2727,37 +3298,49 @@ function pdfReport(cancer, papers, treatments) {
       Math.max(
         1,
         ...treatmentList.map(
-          item =>
+          x =>
             Number(
-              item[1]
-            ) || 0
+              x[1]
+            ) ||
+            0
         )
       );
 
     treatmentList.forEach(
-      ([name, count]) => {
-        ensureSpace(8);
+      ([
+        name,
+        count
+      ]) => {
+        ensureSpace(
+          10
+        );
 
         d.setTextColor(
           ...TEXT
         );
 
-        setPdfFont(
-          'normal',
-          8
+        d.setFont(
+          'helvetica',
+          'normal'
+        );
+
+        d.setFontSize(
+          8.5
         );
 
         d.text(
-          title(name).slice(
+          title(
+            name
+          ).slice(
             0,
-            34
+            36
           ),
-          MARGIN,
+          margin,
           y + 3
         );
 
         const barX =
-          MARGIN + 60;
+          margin + 60;
 
         const barW =
           90;
@@ -2787,10 +3370,10 @@ function pdfReport(cancer, papers, treatments) {
           y,
           Math.max(
             3,
-            (
-              Number(count) /
-              max
-            ) *
+            Number(
+              count
+            ) /
+              max *
               barW
           ),
           4,
@@ -2799,603 +3382,549 @@ function pdfReport(cancer, papers, treatments) {
           'F'
         );
 
+        d.setFont(
+          'helvetica',
+          'bold'
+        );
+
         d.setTextColor(
           ...NAVY
         );
 
-        setPdfFont(
-          'bold',
-          8
-        );
-
         d.text(
-          String(count),
-          PAGE_W - MARGIN,
+          String(
+            count
+          ),
+          pageW -
+            margin,
           y + 3,
           {
-            align: 'right'
+            align:
+              'right'
           }
         );
 
         y += 8;
       }
     );
-  }
 
-  /* =========================================================
-     START RESEARCH PAPERS ON NEW PAGE
-     ========================================================= */
+    y += 4;
+  }
 
   newPage();
 
-  d.setTextColor(
-    ...NAVY
+  drawSectionTitle(
+    'Research Papers'
   );
 
-  setPdfFont(
-    'bold',
-    16
-  );
+  papers
+    .slice(
+      0,
+      20
+    )
+    .forEach(
+      (p, i) => {
+        const t =
+          paperTitle(
+            p
+          );
 
-  d.text(
-    'Research Papers',
-    MARGIN,
-    y
-  );
+        const j =
+          journal(
+            p
+          );
 
-  y += 5;
+        const dt =
+          date(
+            p
+          );
 
-  d.setDrawColor(
-    ...TEAL
-  );
+        const auth =
+          authors(
+            p
+          );
 
-  d.setLineWidth(
-    0.8
-  );
+        let absText =
+          abstract(
+            p
+          );
 
-  d.line(
-    MARGIN,
-    y,
-    MARGIN + 35,
-    y
-  );
-
-  y += 10;
-
-  /* =========================================================
-     RESEARCH PAPER CARDS
-     ========================================================= */
-
-  reportPapers.forEach(
-    (p, index) => {
-      const CARD_X =
-        MARGIN;
-
-      const CARD_W =
-        CONTENT_W;
-
-      const CARD_RIGHT =
-        CARD_X +
-        CARD_W;
-
-      const TEXT_X =
-        CARD_X + 17;
-
-      const TEXT_RIGHT =
-        CARD_RIGHT - 8;
-
-      const TEXT_W =
-        TEXT_RIGHT -
-        TEXT_X;
-
-      let titleLines =
-        wrapText(
-          best(
-            p,
-            'pubmed_title',
-            'title'
-          ) ||
-            'Untitled research paper',
-          TEXT_W,
-          'bold',
-          8.5
-        );
-
-      titleLines =
-        limitLines(
-          titleLines,
-          4
-        );
-
-      const titleHeight =
-        blockHeight(
-          titleLines,
-          'bold',
-          8.5
-        );
-
-      const metaText =
-        [
-          best(
-            p,
-            'pubmed_journal',
-            'journal'
-          ),
-
-          best(
-            p,
-            'pubmed_date',
-            'publicationDate'
-          ),
-
-          Array.isArray(
-            p.pubmed_authors
-          )
-            ? p.pubmed_authors.join(
-                ', '
+        if (
+          absText.length >
+          520
+        ) {
+          absText =
+            absText
+              .slice(
+                0,
+                517
               )
-            : p.pubmed_authors
-        ]
-          .filter(Boolean)
-          .map(pdfText)
-          .join(' | ');
+              .trimEnd() +
+            '...';
+        }
 
-      let metaLines =
-        wrapText(
-          metaText,
-          TEXT_W,
-          'normal',
-          6
-        );
+        const titleLines =
+          d.splitTextToSize(
+            t,
+            contentW -
+              20
+          );
 
-      metaLines =
-        limitLines(
-          metaLines,
-          3
-        );
-
-      const metaHeight =
-        blockHeight(
-          metaLines,
-          'normal',
-          6
-        );
-
-      const abstractText =
-        best(
-          p,
-          'pubmed_abstract',
-          'abstract'
-        );
-
-      let abstractLines =
-        wrapText(
-          abstractText,
-          TEXT_W,
-          'normal',
-          6.8
-        );
-
-      abstractLines =
-        limitLines(
-          abstractLines,
-          6
-        );
-
-      const abstractHeight =
-        blockHeight(
-          abstractLines,
-          'normal',
-          6.8
-        );
-
-      const treatmentText =
-        arr(
-          p.treatmentTypes
-        ).length
-          ? `Treatments mentioned: ${arr(
-              p.treatmentTypes
+        const metaText =
+          [
+            j,
+            dt,
+            auth
+          ]
+            .filter(
+              Boolean
             )
-              .map(title)
-              .join(', ')}`
-          : '';
+            .join(
+              '  |  '
+            );
 
-      let treatmentLines =
-        wrapText(
-          treatmentText,
-          TEXT_W,
-          'bold',
-          6.2
+        const metaLines =
+          metaText
+            ? d.splitTextToSize(
+                metaText,
+                contentW -
+                  20
+              )
+            : [];
+
+        const abstractLines =
+          absText
+            ? d.splitTextToSize(
+                absText,
+                contentW -
+                  20
+              )
+            : [];
+
+        const treatmentsMentioned =
+          arr(
+            p.treatmentTypes
+          ).length
+            ? arr(
+                p.treatmentTypes
+              )
+                .map(
+                  title
+                )
+                .join(
+                  ', '
+                )
+            : '';
+
+        const treatmentLines =
+          treatmentsMentioned
+            ? d.splitTextToSize(
+                `Treatments mentioned: ${treatmentsMentioned}`,
+                contentW -
+                  20
+              )
+            : [];
+
+        const hasLinks =
+          Boolean(
+            p.pubmed_url ||
+            p.pmc_url ||
+            p.publisher_url
+          );
+
+        const targetHeight =
+          17 +
+          titleLines.length *
+            5 +
+          metaLines.length *
+            3.8 +
+          (
+            p.pmc_id
+              ? 7
+              : 0
+          ) +
+          Math.min(
+            abstractLines.length,
+            7
+          ) *
+            4 +
+          Math.min(
+            treatmentLines.length,
+            2
+          ) *
+            3.8 +
+          (
+            hasLinks
+              ? 11
+              : 3
+          );
+
+        const cardHeight =
+          Math.min(
+            Math.max(
+              targetHeight,
+              40
+            ),
+            78
+          );
+
+        ensureSpace(
+          cardHeight +
+            7
         );
 
-      treatmentLines =
-        limitLines(
-          treatmentLines,
-          2
-        );
+        const startY =
+          y;
 
-      const treatmentHeight =
-        blockHeight(
-          treatmentLines,
-          'bold',
-          6.2
-        );
-
-      const hasPubMed =
-        validUrl(
-          p.pubmed_url
-        );
-
-      const hasPMC =
-        validUrl(
-          p.pmc_url
-        );
-
-      const hasPublisher =
-        validUrl(
-          p.publisher_url
-        );
-
-      const hasLinks =
-        hasPubMed ||
-        hasPMC ||
-        hasPublisher;
-
-      const TOP_PADDING =
-        7;
-
-      const BOTTOM_PADDING =
-        6;
-
-      const SPACE_AFTER_TITLE =
-        2;
-
-      const SPACE_AFTER_META =
-        metaLines.length
-          ? 3
-          : 0;
-
-      const PMC_HEIGHT =
-        p.pmc_id
-          ? 7
-          : 0;
-
-      const SPACE_AFTER_ABSTRACT =
-        abstractLines.length
-          ? 3
-          : 0;
-
-      const SPACE_AFTER_TREATMENT =
-        treatmentLines.length
-          ? 3
-          : 0;
-
-      const LINKS_HEIGHT =
-        hasLinks
-          ? 10
-          : 0;
-
-      let cardHeight =
-        TOP_PADDING +
-
-        titleHeight +
-        SPACE_AFTER_TITLE +
-
-        metaHeight +
-        SPACE_AFTER_META +
-
-        PMC_HEIGHT +
-
-        abstractHeight +
-        SPACE_AFTER_ABSTRACT +
-
-        treatmentHeight +
-        SPACE_AFTER_TREATMENT +
-
-        LINKS_HEIGHT +
-
-        BOTTOM_PADDING;
-
-      cardHeight =
-        Math.max(
-          cardHeight,
-          38
-        );
-
-      ensureSpace(
-        cardHeight + 6
-      );
-
-      const startY =
-        y;
-
-      d.setFillColor(
-        250,
-        252,
-        253
-      );
-
-      d.setDrawColor(
-        ...BORDER
-      );
-
-      d.setLineWidth(
-        0.3
-      );
-
-      d.roundedRect(
-        CARD_X,
-        startY,
-        CARD_W,
-        cardHeight,
-        2.5,
-        2.5,
-        'FD'
-      );
-
-      d.setFillColor(
-        ...TEAL
-      );
-
-      d.roundedRect(
-        CARD_X + 5,
-        startY + 5,
-        8,
-        8,
-        1.5,
-        1.5,
-        'F'
-      );
-
-      d.setTextColor(
-        ...WHITE
-      );
-
-      setPdfFont(
-        'bold',
-        index + 1 >= 10
-          ? 5.8
-          : 6.6
-      );
-
-      d.text(
-        String(
-          index + 1
-        ),
-        CARD_X + 9,
-        startY + 10.1,
-        {
-          align: 'center'
-        }
-      );
-
-      let py =
-        startY +
-        TOP_PADDING +
-        1.5;
-
-      d.setTextColor(
-        ...NAVY
-      );
-
-      setPdfFont(
-        'bold',
-        8.5
-      );
-
-      d.text(
-        titleLines,
-        TEXT_X,
-        py,
-        {
-          maxWidth:
-            TEXT_W
-        }
-      );
-
-      py +=
-        titleHeight +
-        SPACE_AFTER_TITLE;
-
-      if (
-        metaLines.length
-      ) {
-        d.setTextColor(
-          ...MUTED
-        );
-
-        setPdfFont(
-          'normal',
-          6
-        );
-
-        d.text(
-          metaLines,
-          TEXT_X,
-          py,
-          {
-            maxWidth:
-              TEXT_W
-          }
-        );
-
-        py +=
-          metaHeight +
-          SPACE_AFTER_META;
-      }
-
-      if (p.pmc_id) {
         d.setFillColor(
-          ...GREEN_BG
+          250,
+          252,
+          253
         );
 
-        d.setTextColor(
-          ...GREEN_TEXT
+        d.setDrawColor(
+          ...BORDER
         );
 
         d.roundedRect(
-          TEXT_X,
-          py - 1.6,
-          27,
-          5,
-          1.3,
-          1.3,
-          'F'
+          margin,
+          startY,
+          contentW,
+          cardHeight,
+          2.5,
+          2.5,
+          'FD'
         );
 
-        setPdfFont(
-          'bold',
-          5.6
-        );
-
-        d.text(
-          'FREE FULL TEXT',
-          TEXT_X + 2.5,
-          py + 1.5
-        );
-
-        py +=
-          PMC_HEIGHT;
-      }
-
-      if (
-        abstractLines.length
-      ) {
-        d.setTextColor(
-          ...TEXT
-        );
-
-        setPdfFont(
-          'normal',
-          6.8
-        );
-
-        d.text(
-          abstractLines,
-          TEXT_X,
-          py,
-          {
-            maxWidth:
-              TEXT_W
-          }
-        );
-
-        py +=
-          abstractHeight +
-          SPACE_AFTER_ABSTRACT;
-      }
-
-      if (
-        treatmentLines.length
-      ) {
-        d.setTextColor(
+        d.setFillColor(
           ...TEAL
         );
 
-        setPdfFont(
-          'bold',
-          6.2
+        d.roundedRect(
+          margin + 4,
+          startY + 5,
+          8,
+          8,
+          1.5,
+          1.5,
+          'F'
+        );
+
+        d.setTextColor(
+          ...WHITE
+        );
+
+        d.setFont(
+          'helvetica',
+          'bold'
+        );
+
+        d.setFontSize(
+          7
         );
 
         d.text(
-          treatmentLines,
-          TEXT_X,
-          py,
+          String(
+            i + 1
+          ),
+          margin + 8,
+          startY +
+            10.2,
           {
-            maxWidth:
-              TEXT_W
+            align:
+              'center'
           }
         );
 
+        let py =
+          startY + 9;
+
+        const textX =
+          margin + 16;
+
+        d.setTextColor(
+          ...NAVY
+        );
+
+        d.setFont(
+          'helvetica',
+          'bold'
+        );
+
+        d.setFontSize(
+          10
+        );
+
+        d.text(
+          titleLines,
+          textX,
+          py
+        );
+
         py +=
-          treatmentHeight +
-          SPACE_AFTER_TREATMENT;
-      }
+          titleLines.length *
+            5 +
+          2;
 
-      if (hasLinks) {
-        const buttonY =
+        if (
+          metaLines.length
+        ) {
+          d.setTextColor(
+            ...MUTED
+          );
+
+          d.setFont(
+            'helvetica',
+            'normal'
+          );
+
+          d.setFontSize(
+            7.3
+          );
+
+          const visibleMeta =
+            metaLines.slice(
+              0,
+              3
+            );
+
+          d.text(
+            visibleMeta,
+            textX,
+            py
+          );
+
+          py +=
+            visibleMeta.length *
+              3.8 +
+            3;
+        }
+
+        if (
+          p.pmc_id &&
+          py <
+            startY +
+              cardHeight -
+              22
+        ) {
+          d.setFillColor(
+            ...GREEN_BG
+          );
+
+          d.setTextColor(
+            ...GREEN_TEXT
+          );
+
+          d.roundedRect(
+            textX,
+            py - 3,
+            31,
+            5.5,
+            1.5,
+            1.5,
+            'F'
+          );
+
+          d.setFont(
+            'helvetica',
+            'bold'
+          );
+
+          d.setFontSize(
+            6.5
+          );
+
+          d.text(
+            'FREE FULL TEXT',
+            textX + 3,
+            py + 0.7
+          );
+
+          py += 7;
+        }
+
+        if (
+          abstractLines.length &&
+          py <
+            startY +
+              cardHeight -
+              18
+        ) {
+          d.setTextColor(
+            ...TEXT
+          );
+
+          d.setFont(
+            'helvetica',
+            'normal'
+          );
+
+          d.setFontSize(
+            8
+          );
+
+          const reserved =
+            hasLinks
+              ? 15
+              : 6;
+
+          const availableLines =
+            Math.max(
+              1,
+              Math.floor(
+                (
+                  startY +
+                  cardHeight -
+                  py -
+                  reserved
+                ) / 4
+              )
+            );
+
+          let visibleAbstract =
+            abstractLines.slice(
+              0,
+              availableLines
+            );
+
+          if (
+            visibleAbstract.length <
+              abstractLines.length &&
+            visibleAbstract.length
+          ) {
+            const last =
+              visibleAbstract.length -
+              1;
+
+            visibleAbstract[last] =
+              visibleAbstract[
+                last
+              ]
+                .replace(
+                  /\.*$/,
+                  ''
+                )
+                .trimEnd() +
+              '...';
+          }
+
+          d.text(
+            visibleAbstract,
+            textX,
+            py
+          );
+
+          py +=
+            visibleAbstract.length *
+              4 +
+            3;
+        }
+
+        if (
+          treatmentLines.length &&
+          py <
+            startY +
+              cardHeight -
+              (
+                hasLinks
+                  ? 13
+                  : 5
+              )
+        ) {
+          d.setTextColor(
+            ...TEAL
+          );
+
+          d.setFont(
+            'helvetica',
+            'bold'
+          );
+
+          d.setFontSize(
+            7
+          );
+
+          const visibleTreatment =
+            treatmentLines.slice(
+              0,
+              2
+            );
+
+          d.text(
+            visibleTreatment,
+            textX,
+            py
+          );
+
+          py +=
+            visibleTreatment.length *
+              3.8 +
+            2;
+        }
+
+        if (
+          hasLinks
+        ) {
+          const linkY =
+            startY +
+            cardHeight -
+            9;
+
+          let linkX =
+            textX;
+
+          if (
+            p.pubmed_url
+          ) {
+            drawLinkButton(
+              'PubMed',
+              p.pubmed_url,
+              linkX,
+              linkY,
+              25
+            );
+
+            linkX +=
+              28;
+          }
+
+          if (
+            p.pmc_url
+          ) {
+            drawLinkButton(
+              'Free Full Text',
+              p.pmc_url,
+              linkX,
+              linkY,
+              34
+            );
+
+            linkX +=
+              37;
+          }
+
+          if (
+            p.publisher_url
+          ) {
+            drawLinkButton(
+              'Publisher',
+              p.publisher_url,
+              linkX,
+              linkY,
+              27
+            );
+          }
+        }
+
+        y =
           startY +
-          cardHeight -
-          9;
-
-        let buttonX =
-          TEXT_X;
-
-        if (hasPubMed) {
-          drawLinkButton(
-            'PubMed',
-            p.pubmed_url,
-            buttonX,
-            buttonY,
-            22
-          );
-
-          buttonX +=
-            25;
-        }
-
-        if (hasPMC) {
-          drawLinkButton(
-            'Free Full Text',
-            p.pmc_url,
-            buttonX,
-            buttonY,
-            31
-          );
-
-          buttonX +=
-            34;
-        }
-
-        if (hasPublisher) {
-          drawLinkButton(
-            'Publisher',
-            p.publisher_url,
-            buttonX,
-            buttonY,
-            26
-          );
-        }
+          cardHeight +
+          6;
       }
-
-      y =
-        startY +
-        cardHeight +
-        6;
-    }
-  );
-
-  /* =========================================================
-     SOURCES & INTERPRETATION
-     ========================================================= */
-
-  const sourceText =
-    'Cancer Insight keeps original research sources visible whenever available, including PubMed, PubMed Central (PMC), DOI, and publisher links. ' +
-    'Paper counts and treatment coverage describe the retrieved literature only and should not be interpreted as evidence that one treatment is superior.';
-
-  const sourceLines =
-    wrapText(
-      sourceText,
-      CONTENT_W - 12,
-      'normal',
-      7
     );
-
-  const sourceTextHeight =
-    blockHeight(
-      sourceLines,
-      'normal',
-      7
-    );
-
-  const sourceHeight =
-    15 +
-    sourceTextHeight +
-    6;
 
   ensureSpace(
-    sourceHeight +
-    5
+    42
   );
 
   d.setFillColor(
@@ -3407,10 +3936,10 @@ function pdfReport(cancer, papers, treatments) {
   );
 
   d.roundedRect(
-    MARGIN,
+    margin,
     y,
-    CONTENT_W,
-    sourceHeight,
+    contentW,
+    32,
     2.5,
     2.5,
     'FD'
@@ -3420,14 +3949,18 @@ function pdfReport(cancer, papers, treatments) {
     ...NAVY
   );
 
-  setPdfFont(
-    'bold',
+  d.setFont(
+    'helvetica',
+    'bold'
+  );
+
+  d.setFontSize(
     10
   );
 
   d.text(
     'Sources & Interpretation',
-    MARGIN + 6,
+    margin + 6,
     y + 8
   );
 
@@ -3435,19 +3968,27 @@ function pdfReport(cancer, papers, treatments) {
     ...TEXT
   );
 
-  setPdfFont(
-    'normal',
-    7
+  d.setFont(
+    'helvetica',
+    'normal'
   );
 
+  d.setFontSize(
+    7.8
+  );
+
+  const sourceText =
+    'Cancer Insight keeps original research sources visible whenever available, including PubMed, PubMed Central (PMC), DOI, and publisher links. ' +
+    'Paper counts and treatment coverage describe the retrieved literature only and should not be interpreted as evidence that one treatment is superior.';
+
   d.text(
-    sourceLines,
-    MARGIN + 6,
-    y + 14,
-    {
-      maxWidth:
-        CONTENT_W - 12
-    }
+    d.splitTextToSize(
+      sourceText,
+      contentW -
+        12
+    ),
+    margin + 6,
+    y + 14
   );
 
   footer();
