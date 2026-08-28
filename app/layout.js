@@ -1,4 +1,5 @@
 import './globals.css';
+import Script from 'next/script';
 
 export const metadata = {
   metadataBase: new URL('https://www.cancer-insight.com'),
@@ -69,7 +70,23 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-Y2XM3DY8ZT"
+          strategy="afterInteractive"
+        />
+
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-Y2XM3DY8ZT');
+          `}
+        </Script>
+      </body>
     </html>
   );
 }
