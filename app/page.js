@@ -666,19 +666,19 @@ function Search({
           Cancer Insight
         </h1>
 
-        <p>
-          Search cancer
-          research, read
-          PubMed abstracts,
-          identify free
-          full-text papers,
-          explore treatment
-          evidence, and
-          compare research
-          coverage without
-          hiding the original
-          sources.
-        </p>
+       <p>
+  Explore cancer research
+  papers, PubMed abstracts,
+  treatment evidence,
+  research analytics, and
+  free full-text studies.
+  Cancer Insight helps you
+  discover and compare
+  cancer research while
+  keeping the original
+  scientific sources
+  visible.
+</p>
       </section>
 
       {error && (
