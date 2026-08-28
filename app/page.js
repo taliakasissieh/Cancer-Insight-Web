@@ -666,19 +666,19 @@ function Search({
           Cancer Insight
         </h1>
 
-       <p>
-  Explore cancer research
-  papers, PubMed abstracts,
-  treatment evidence,
-  research analytics, and
-  free full-text studies.
-  Cancer Insight helps you
-  discover and compare
-  cancer research while
-  keeping the original
-  scientific sources
-  visible.
-</p>
+        <p>
+          Explore cancer research
+          papers, PubMed abstracts,
+          treatment evidence,
+          research analytics, and
+          free full-text studies.
+          Cancer Insight helps you
+          discover and compare
+          cancer research while
+          keeping the original
+          scientific sources
+          visible.
+        </p>
       </section>
 
       {error && (
@@ -748,7 +748,7 @@ function Search({
           </h3>
 
           <Bars
-            items=(
+            items={
               data.treatments
             }
           />
@@ -2261,20 +2261,24 @@ function About() {
 
       <p>
         Cancer Insight is an
-        educational
-        cancer-research
-        exploration
-        platform. It combines
-        a cancer-research API
-        with PubMed/NCBI
+        educational cancer
+        research explorer
+        designed to make
+        scientific cancer
+        research easier to
+        discover and examine.
+        It combines cancer
+        research data with
+        PubMed and NCBI
         metadata so users can
-        inspect papers,
-        research themes,
+        explore research papers,
         treatment evidence,
-        and free-full-text
+        research trends, and
+        free full-text
         availability while
         keeping the original
-        sources visible.
+        scientific sources
+        visible.
       </p>
 
       <h2>
