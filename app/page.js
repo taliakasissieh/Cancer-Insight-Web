@@ -658,9 +658,8 @@ function Search({
     <>
       <section className="hero">
         <div className="eyebrow">
-          Evidence-first
-          cancer research
-          platform
+          Cancer research explorer
+          • evidence-first sources
         </div>
 
         <h1>
@@ -749,7 +748,7 @@ function Search({
           </h3>
 
           <Bars
-            items={
+            items=(
               data.treatments
             }
           />
