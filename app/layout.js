@@ -5,9 +5,9 @@ export const metadata = {
   metadataBase: new URL('https://www.cancer-insight.com'),
 
   title: {
-    default: 'Cancer Insight | Cancer Research & PubMed Explorer',
-    template: '%s | Cancer Insight',
-  },
+  default: 'Cancer Insight | Cancer Research Explorer',
+  template: '%s | Cancer Insight',
+},
 
   description:
     'Explore cancer research papers, PubMed abstracts, treatment evidence, research analytics, free full-text studies, and scientific cancer images with Cancer Insight.',
