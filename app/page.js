@@ -658,80 +658,203 @@ function Search({
     <>
       <section className="hero">
         <div className="eyebrow">
-          Cancer Research Explorer • PubMed Cancer Research • Evidence-First Sources
+          Evidence-First Cancer Research Explorer
         </div>
 
         <h1>
           Cancer Insight
         </h1>
 
-        <h2>
-          Explore Cancer Research Papers, Treatments, and PubMed Studies
+        <h2 className="heroSubtitle">
+          Explore Cancer Research Papers,
+          Treatments, and PubMed Studies
         </h2>
 
         <p>
-          Cancer Insight is a cancer research explorer that helps users discover
-          cancer research papers, PubMed cancer research, cancer treatment studies,
-          oncology research, treatment evidence, research analytics, free full-text
-          scientific studies, and trusted medical research sources.
+          Cancer Insight helps you explore cancer research
+          papers, PubMed studies, treatment evidence,
+          oncology research, research analytics, and
+          free full-text scientific studies while keeping
+          the original research sources visible.
         </p>
 
-        <p>
-          Search cancer research articles by cancer type, explore treatment research,
-          compare treatments, review publication trends, discover open-access cancer
-          studies, and access original PubMed, PubMed Central, DOI, and publisher
-          sources.
-        </p>
+        <div className="sourcePills">
+          <span>
+            PubMed
+          </span>
+
+          <span>
+            PubMed Central
+          </span>
+
+          <span>
+            DOI Sources
+          </span>
+
+          <span>
+            Publisher Sources
+          </span>
+        </div>
       </section>
 
-      {error && (
-        <div className="error">
-          {error}
+      <div className="homeFeatures">
+        <div className="featureCard">
+          <div className="featureIcon">
+            🔎
+          </div>
+
+          <h3>
+            Search Research
+          </h3>
+
+          <p>
+            Search cancer research by cancer type and
+            discover scientific papers, abstracts,
+            journals, publication dates, and research
+            sources.
+          </p>
         </div>
-      )}
 
-      {notice && (
-        <div className="success">
-          {notice}
+        <div className="featureCard">
+          <div className="featureIcon">
+            ◫
+          </div>
+
+          <h3>
+            Explore Evidence
+          </h3>
+
+          <p>
+            Explore cancer treatment research, publication
+            trends, research analytics, clinical trials,
+            journals, and treatment evidence.
+          </p>
         </div>
-      )}
 
-      <form
-        className="panel"
-        onSubmit={search}
-      >
-        <label>
-          Cancer type
+        <div className="featureCard">
+          <div className="featureIcon">
+            ⇄
+          </div>
 
-          <input
-            value={input}
-            onChange={e =>
-              setInput(
-                e.target.value
-              )
-            }
-            placeholder="For example: lung"
-          />
-        </label>
+          <h3>
+            Compare Treatments
+          </h3>
 
-        <br />
+          <p>
+            Compare the research literature available for
+            different cancer treatments without treating
+            paper counts as medical recommendations.
+          </p>
+        </div>
+      </div>
 
-        <button
-          className="primary"
-          disabled={busy}
+      <section className="panel searchPanel">
+        <div className="searchIntro">
+          <div>
+            <div className="eyebrow darkEyebrow">
+              START EXPLORING
+            </div>
+
+            <h2>
+              Search Cancer Research
+            </h2>
+
+            <p className="muted">
+              Enter a cancer type to explore research
+              papers, treatments, analytics, scientific
+              images, and PubMed evidence.
+            </p>
+          </div>
+        </div>
+
+        {error && (
+          <div className="error">
+            {error}
+          </div>
+        )}
+
+        {notice && (
+          <div className="success">
+            {notice}
+          </div>
+        )}
+
+        <form
+          onSubmit={search}
+          className="searchForm"
         >
-          {busy
-            ? 'Searching and enriching papers with PubMed metadata…'
-            : 'Search research'}
-        </button>
-      </form>
+          <label>
+            Cancer type
+
+            <input
+              value={input}
+              onChange={e =>
+                setInput(
+                  e.target.value
+                )
+              }
+              placeholder="For example: lung, breast, leukemia..."
+            />
+          </label>
+
+          <button
+            className="primary"
+            disabled={busy}
+          >
+            {busy
+              ? 'Searching and enriching papers with PubMed metadata…'
+              : 'Search Cancer Research'}
+          </button>
+        </form>
+
+        <div className="searchHint">
+          Try searching for:
+          <b> lung</b>,
+          <b> breast</b>,
+          <b> leukemia</b>,
+          <b> melanoma</b>, or
+          <b> pancreatic</b>.
+        </div>
+      </section>
+
+      <section className="trustPanel">
+        <div>
+          <strong>
+            Original scientific sources stay visible
+          </strong>
+
+          <p>
+            Cancer Insight connects research results with
+            identifiable scientific sources whenever
+            available, including PubMed, PubMed Central,
+            DOI records, and publisher pages.
+          </p>
+        </div>
+
+        <div className="trustBadge">
+          ✓ Evidence-first
+        </div>
+      </section>
 
       {data && (
         <>
-          <h2>
-            Research
-            Highlights
-          </h2>
+          <div className="resultsHeading">
+            <div>
+              <div className="eyebrow darkEyebrow">
+                SEARCH RESULTS
+              </div>
+
+              <h2>
+                {title(data.cancer)} Cancer
+                Research Highlights
+              </h2>
+            </div>
+
+            <p className="muted">
+              Research overview based on the literature
+              returned by Cancer Insight.
+            </p>
+          </div>
 
           <Metrics
             p={
@@ -745,9 +868,7 @@ function Search({
           />
 
           <h3>
-            Treatment
-            research
-            coverage
+            Treatment Research Coverage
           </h3>
 
           <Bars
@@ -755,6 +876,20 @@ function Search({
               data.treatments
             }
           />
+
+          <div className="panel resultHelp">
+            <b>
+              Continue exploring
+            </b>
+
+            <p>
+              Use the navigation to view individual
+              research papers, analyze publication trends,
+              explore treatment research, compare
+              treatments, or view scientific cancer
+              images.
+            </p>
+          </div>
         </>
       )}
     </>
