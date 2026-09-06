@@ -81,32 +81,77 @@ function Paper({
       'publicationDate'
     );
 
+  const authors =
+    Array.isArray(
+      p.pubmed_authors
+    )
+      ? p.pubmed_authors.join(', ')
+      : p.pubmed_authors;
+
+  const treatments =
+    arr(
+      p.treatmentTypes
+    )
+      .map(title)
+      .join(', ');
+
   return (
-    <div
+    <article
       className={
-        'paper ' +
-        (saved ? 'saved' : '')
+        'paperCard ' +
+        (saved ? 'savedPaper' : '')
       }
     >
-      <div className="muted">
-        {n
-          ? `Paper ${n}`
-          : 'Research paper'}
+      <div className="paperTop">
+        <div>
+          <div className="paperNumber">
+            {n
+              ? `Paper ${n}`
+              : 'Research paper'}
+          </div>
+
+          <h3 className="paperTitle">
+            {t}
+          </h3>
+        </div>
+
+        <button
+          className={
+            'saveButton ' +
+            (saved ? 'savedActive' : '')
+          }
+          onClick={() =>
+            toggle(key(p))
+          }
+          type="button"
+        >
+          {saved
+            ? '★ Saved'
+            : '☆ Save'}
+        </button>
       </div>
 
-      <h3>{t}</h3>
+      <div className="paperMeta">
+        {j && (
+          <span>
+            {j}
+          </span>
+        )}
 
-      <div className="muted">
-        {[
-          j,
-          d,
-          p.pubmed_authors
-        ]
-          .filter(Boolean)
-          .join(' · ')}
+        {d && (
+          <span>
+            {d}
+          </span>
+        )}
+
+        {authors && (
+          <span>
+            {authors}
+          </span>
+        )}
       </div>
 
-      <div>
+      <div className="paperBadges">
         {p.pmc_id && (
           <span className="badge free">
             Free full text in PMC
@@ -122,38 +167,39 @@ function Paper({
         {(p.pmc_url ||
           p.publisher_url) && (
           <span className="badge link">
-            Full-text source link
+            Full-text source
           </span>
         )}
       </div>
 
       {a && (
-        <p>
-          {clean(a)}
-        </p>
+        <div className="abstractBox">
+          <div className="abstractLabel">
+            Abstract
+          </div>
+
+          <p>
+            {clean(a)}
+          </p>
+        </div>
       )}
 
-      {arr(
-        p.treatmentTypes
-      ).length > 0 && (
-        <p>
+      {treatments && (
+        <div className="treatmentMention">
           <b>
-            Treatments mentioned
-            in evidence:
+            Treatments mentioned:
           </b>{' '}
-          {arr(
-            p.treatmentTypes
-          )
-            .map(title)
-            .join(', ')}
-        </p>
+          {treatments}
+        </div>
       )}
 
-      <div className="paperlinks">
+      <div className="paperActions">
         {p.pubmed_url && (
           <a
+            className="sourceButton sourcePrimary"
             href={p.pubmed_url}
             target="_blank"
+            rel="noreferrer"
           >
             PubMed
           </a>
@@ -161,35 +207,33 @@ function Paper({
 
         {p.pmc_url && (
           <a
+            className="sourceButton"
             href={p.pmc_url}
             target="_blank"
+            rel="noreferrer"
           >
-            Free full text
+            Free Full Text
           </a>
         )}
 
         {p.publisher_url && (
           <a
-            href={
-              p.publisher_url
-            }
+            className="sourceButton"
+            href={p.publisher_url}
             target="_blank"
+            rel="noreferrer"
           >
             Publisher
           </a>
         )}
 
-        <button
-          onClick={() =>
-            toggle(key(p))
-          }
-        >
-          {saved
-            ? '★ Saved'
-            : '☆ Save paper'}
-        </button>
+        {p.doi && (
+          <span className="doiText">
+            DOI: {p.doi}
+          </span>
+        )}
       </div>
-    </div>
+    </article>
   );
 }
 
