@@ -658,26 +658,29 @@ function Search({
     <>
       <section className="hero">
         <div className="eyebrow">
-          Cancer research explorer
-          • evidence-first sources
+          Cancer Research Explorer • PubMed Cancer Research • Evidence-First Sources
         </div>
 
         <h1>
           Cancer Insight
         </h1>
 
+        <h2>
+          Explore Cancer Research Papers, Treatments, and PubMed Studies
+        </h2>
+
         <p>
-          Explore cancer research
-          papers, PubMed abstracts,
-          treatment evidence,
-          research analytics, and
-          free full-text studies.
-          Cancer Insight helps you
-          discover and compare
-          cancer research while
-          keeping the original
-          scientific sources
-          visible.
+          Cancer Insight is a cancer research explorer that helps users discover
+          cancer research papers, PubMed cancer research, cancer treatment studies,
+          oncology research, treatment evidence, research analytics, free full-text
+          scientific studies, and trusted medical research sources.
+        </p>
+
+        <p>
+          Search cancer research articles by cancer type, explore treatment research,
+          compare treatments, review publication trends, discover open-access cancer
+          studies, and access original PubMed, PubMed Central, DOI, and publisher
+          sources.
         </p>
       </section>
 
