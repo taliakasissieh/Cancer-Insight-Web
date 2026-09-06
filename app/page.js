@@ -52,6 +52,8 @@ function Paper({
   saved,
   toggle
 }) {
+  const [expanded, setExpanded] = useState(false);
+
   const t =
     best(
       p,
@@ -60,12 +62,14 @@ function Paper({
     ) ||
     'Untitled research paper';
 
-  const a =
+  const rawAbstract =
     best(
       p,
       'pubmed_abstract',
       'abstract'
     );
+
+  const a = clean(rawAbstract);
 
   const j =
     best(
@@ -95,6 +99,14 @@ function Paper({
       .map(title)
       .join(', ');
 
+  const longAbstract =
+    a.length > 720;
+
+  const visibleAbstract =
+    longAbstract && !expanded
+      ? `${a.slice(0, 720).trim()}…`
+      : a;
+
   return (
     <article
       className={
@@ -103,7 +115,7 @@ function Paper({
       }
     >
       <div className="paperTop">
-        <div>
+        <div className="paperHeading">
           <div className="paperNumber">
             {n
               ? `Paper ${n}`
@@ -145,7 +157,7 @@ function Paper({
         )}
 
         {authors && (
-          <span>
+          <span className="paperAuthors">
             {authors}
           </span>
         )}
@@ -179,8 +191,22 @@ function Paper({
           </div>
 
           <p>
-            {clean(a)}
+            {visibleAbstract}
           </p>
+
+          {longAbstract && (
+            <button
+              type="button"
+              className="textButton"
+              onClick={() =>
+                setExpanded(x => !x)
+              }
+            >
+              {expanded
+                ? 'Show less'
+                : 'Show full abstract'}
+            </button>
+          )}
         </div>
       )}
 
@@ -300,7 +326,7 @@ function Bars({ items }) {
     );
 
   return (
-    <div className="panel">
+    <div className="panel chartPanel">
       {items.map(
         ([k, v]) => (
           <div
@@ -311,18 +337,20 @@ function Bars({ items }) {
               {title(k)}
             </div>
 
-            <div
-              className="bar"
-              style={{
-                width:
-                  `${Math.max(
-                    3,
-                    v /
-                      max *
-                      70
-                  )}%`
-              }}
-            />
+            <div className="barTrack">
+              <div
+                className="bar"
+                style={{
+                  width:
+                    `${Math.max(
+                      3,
+                      v /
+                        max *
+                        100
+                    )}%`
+                }}
+              />
+            </div>
 
             <b>{v}</b>
           </div>
@@ -333,55 +361,14 @@ function Bars({ items }) {
 }
 
 export default function App() {
-  const [
-    page,
-    setPage
-  ] =
-    useState(
-      'Search'
-    );
-
-  const [
-    input,
-    setInput
-  ] =
-    useState('');
-
-  const [
-    data,
-    setData
-  ] =
-    useState(null);
-
-  const [
-    error,
-    setError
-  ] =
-    useState('');
-
-  const [
-    notice,
-    setNotice
-  ] =
-    useState('');
-
-  const [
-    busy,
-    setBusy
-  ] =
-    useState(false);
-
-  const [
-    bookmarks,
-    setBookmarks
-  ] =
-    useState([]);
-
-  const [
-    images,
-    setImages
-  ] =
-    useState([]);
+  const [page, setPage] = useState('Search');
+  const [input, setInput] = useState('');
+  const [data, setData] = useState(null);
+  const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [bookmarks, setBookmarks] = useState([]);
+  const [images, setImages] = useState([]);
 
   useEffect(() => {
     try {
@@ -421,8 +408,7 @@ export default function App() {
     setData(null);
     setImages([]);
 
-    const q =
-      input.trim();
+    const q = input.trim();
 
     if (!q) {
       setError(
@@ -454,8 +440,7 @@ export default function App() {
           }
         );
 
-      const j =
-        await r.json();
+      const j = await r.json();
 
       if (!r.ok) {
         throw Error(
@@ -492,9 +477,7 @@ export default function App() {
           </div>
 
           <small>
-            Evidence-first
-            cancer research
-            explorer
+            Evidence-first cancer research explorer
           </small>
         </div>
 
@@ -516,14 +499,15 @@ export default function App() {
                 }}
                 key={p}
               >
-                ● &nbsp; {p}
+                <span className="navDot">●</span>
+                {p}
               </button>
             )
           )}
         </div>
 
         {data && (
-          <div className="sideinfo">
+          <div className="sideinfo dataSummary">
             <b>
               {title(
                 data.cancer
@@ -556,9 +540,7 @@ export default function App() {
         )}
 
         <div className="sideinfo">
-          Educational use
-          only. Not medical
-          advice.
+          Educational use only. Not medical advice.
         </div>
       </aside>
 
@@ -567,90 +549,50 @@ export default function App() {
           {page ===
             'Search' && (
             <Search
-              input={
-                input
-              }
-              setInput={
-                setInput
-              }
-              search={
-                search
-              }
-              data={
-                data
-              }
-              error={
-                error
-              }
-              notice={
-                notice
-              }
-              busy={
-                busy
-              }
+              input={input}
+              setInput={setInput}
+              search={search}
+              data={data}
+              error={error}
+              notice={notice}
+              busy={busy}
             />
           )}
 
           {page ===
             'Research Papers' && (
             <Research
-              data={
-                data
-              }
-              bookmarks={
-                bookmarks
-              }
-              toggle={
-                toggle
-              }
+              data={data}
+              bookmarks={bookmarks}
+              toggle={toggle}
             />
           )}
 
           {page ===
             'Research Analytics' && (
-            <Analytics
-              data={
-                data
-              }
-            />
+            <Analytics data={data} />
           )}
 
           {page ===
             'Treatment Research' && (
             <Treatment
-              data={
-                data
-              }
-              bookmarks={
-                bookmarks
-              }
-              toggle={
-                toggle
-              }
+              data={data}
+              bookmarks={bookmarks}
+              toggle={toggle}
             />
           )}
 
           {page ===
             'Compare Treatments' && (
-            <Compare
-              data={
-                data
-              }
-            />
+            <Compare data={data} />
           )}
 
           {page ===
             'Cancer Images' && (
             <Images
-              data={
-                data
-              }
-              images={
-                images
-              }
-              setImages={
-                setImages
-              }
+              data={data}
+              images={images}
+              setImages={setImages}
             />
           )}
 
@@ -661,16 +603,10 @@ export default function App() {
 
           <div className="disclaimer">
             <b>
-              Educational use
-              only.
+              Educational use only.
             </b>{' '}
-            Cancer Insight
-            does not provide
-            medical diagnosis,
-            individualized
-            treatment
-            recommendations,
-            or professional
+            Cancer Insight does not provide medical diagnosis,
+            individualized treatment recommendations, or professional
             medical advice.
           </div>
         </div>
@@ -681,10 +617,15 @@ export default function App() {
 
 function Need() {
   return (
-    <div className="panel">
-      Search for a cancer
-      type first to view
-      this section.
+    <div className="panel needPanel">
+      <div className="needIcon">⌕</div>
+      <div>
+        <b>Search a cancer type first</b>
+        <p>
+          Start a search to unlock research papers, treatment evidence,
+          analytics, comparisons, and scientific images.
+        </p>
+      </div>
     </div>
   );
 }
@@ -710,105 +651,66 @@ function Search({
         </h1>
 
         <h2 className="heroSubtitle">
-          Explore Cancer Research Papers,
-          Treatments, and PubMed Studies
+          Explore Cancer Research and Treatment Evidence
         </h2>
 
         <p>
-          Cancer Insight helps you explore cancer research
-          papers, PubMed studies, treatment evidence,
-          oncology research, research analytics, and
-          free full-text scientific studies while keeping
-          the original research sources visible.
+          Search cancer research papers, PubMed studies, treatment evidence,
+          oncology research, analytics, and free full-text scientific studies
+          while keeping original research sources visible.
         </p>
 
         <div className="sourcePills">
-          <span>
-            PubMed
-          </span>
-
-          <span>
-            PubMed Central
-          </span>
-
-          <span>
-            DOI Sources
-          </span>
-
-          <span>
-            Publisher Sources
-          </span>
+          <span>PubMed</span>
+          <span>PubMed Central</span>
+          <span>DOI Sources</span>
+          <span>Publisher Sources</span>
         </div>
       </section>
 
       <div className="homeFeatures">
         <div className="featureCard">
-          <div className="featureIcon">
-            🔎
-          </div>
-
-          <h3>
-            Search Research
-          </h3>
-
+          <div className="featureIcon">⌕</div>
+          <h3>Search Research</h3>
           <p>
-            Search cancer research by cancer type and
-            discover scientific papers, abstracts,
-            journals, publication dates, and research
-            sources.
+            Find papers, abstracts, journals, dates, and scientific sources by
+            cancer type.
           </p>
         </div>
 
         <div className="featureCard">
-          <div className="featureIcon">
-            ◫
-          </div>
-
-          <h3>
-            Explore Evidence
-          </h3>
-
+          <div className="featureIcon">▥</div>
+          <h3>Explore Evidence</h3>
           <p>
-            Explore cancer treatment research, publication
-            trends, research analytics, clinical trials,
-            journals, and treatment evidence.
+            Review treatment research, publication trends, trials, journals,
+            and analytics.
           </p>
         </div>
 
         <div className="featureCard">
-          <div className="featureIcon">
-            ⇄
-          </div>
-
-          <h3>
-            Compare Treatments
-          </h3>
-
+          <div className="featureIcon">⇄</div>
+          <h3>Compare Treatments</h3>
           <p>
-            Compare the research literature available for
-            different cancer treatments without treating
-            paper counts as medical recommendations.
+            Compare retrieved research evidence without treating paper counts
+            as medical recommendations.
           </p>
         </div>
       </div>
 
       <section className="panel searchPanel">
         <div className="searchIntro">
-          <div>
-            <div className="eyebrow darkEyebrow">
-              START EXPLORING
-            </div>
-
-            <h2>
-              Search Cancer Research
-            </h2>
-
-            <p className="muted">
-              Enter a cancer type to explore research
-              papers, treatments, analytics, scientific
-              images, and PubMed evidence.
-            </p>
+          <div className="eyebrow darkEyebrow">
+            Start Exploring
           </div>
+
+          <h2>
+            Search Cancer Research
+          </h2>
+
+          <p className="muted">
+            Enter a cancer type to explore research papers, treatments,
+            analytics, scientific images, and PubMed evidence.
+          </p>
         </div>
 
         {error && (
@@ -846,18 +748,14 @@ function Search({
             disabled={busy}
           >
             {busy
-              ? 'Searching and enriching papers with PubMed metadata…'
+              ? 'Searching PubMed…'
               : 'Search Cancer Research'}
           </button>
         </form>
 
         <div className="searchHint">
-          Try searching for:
-          <b> lung</b>,
-          <b> breast</b>,
-          <b> leukemia</b>,
-          <b> melanoma</b>, or
-          <b> pancreatic</b>.
+          Try: <b>lung</b>, <b>breast</b>, <b>leukemia</b>,
+          <b> melanoma</b>, or <b>pancreatic</b>.
         </div>
       </section>
 
@@ -868,10 +766,8 @@ function Search({
           </strong>
 
           <p>
-            Cancer Insight connects research results with
-            identifiable scientific sources whenever
-            available, including PubMed, PubMed Central,
-            DOI records, and publisher pages.
+            Cancer Insight connects results with PubMed, PubMed Central, DOI,
+            and publisher pages whenever source information is available.
           </p>
         </div>
 
@@ -885,25 +781,21 @@ function Search({
           <div className="resultsHeading">
             <div>
               <div className="eyebrow darkEyebrow">
-                SEARCH RESULTS
+                Search Results
               </div>
 
               <h2>
-                {title(data.cancer)} Cancer
-                Research Highlights
+                {title(data.cancer)} Cancer Research Highlights
               </h2>
             </div>
 
             <p className="muted">
-              Research overview based on the literature
-              returned by Cancer Insight.
+              Overview of the literature returned by Cancer Insight.
             </p>
           </div>
 
           <Metrics
-            p={
-              data.profile
-            }
+            p={data.profile}
             tcount={
               data
                 .treatments
@@ -916,9 +808,7 @@ function Search({
           </h3>
 
           <Bars
-            items={
-              data.treatments
-            }
+            items={data.treatments}
           />
 
           <div className="panel resultHelp">
@@ -927,11 +817,8 @@ function Search({
             </b>
 
             <p>
-              Use the navigation to view individual
-              research papers, analyze publication trends,
-              explore treatment research, compare
-              treatments, or view scientific cancer
-              images.
+              Open Research Papers, Analytics, Treatment Research, Compare
+              Treatments, or Cancer Images from the navigation.
             </p>
           </div>
         </>
@@ -945,47 +832,12 @@ function Research({
   bookmarks,
   toggle
 }) {
-  const [
-    q,
-    setQ
-  ] =
-    useState('');
-
-  const [
-    access,
-    setAccess
-  ] =
-    useState('All');
-
-  const [
-    tr,
-    setTr
-  ] =
-    useState(
-      'All treatments'
-    );
-
-  const [
-    year,
-    setYear
-  ] =
-    useState(
-      'All years'
-    );
-
-  const [
-    sort,
-    setSort
-  ] =
-    useState(
-      'Original relevance'
-    );
-
-  const [
-    saved,
-    setSaved
-  ] =
-    useState(false);
+  const [q, setQ] = useState('');
+  const [access, setAccess] = useState('All');
+  const [tr, setTr] = useState('All treatments');
+  const [year, setYear] = useState('All years');
+  const [sort, setSort] = useState('Original relevance');
+  const [saved, setSaved] = useState(false);
 
   const papers =
     useMemo(() => {
@@ -1159,9 +1011,10 @@ function Research({
   if (!data) {
     return (
       <>
-        <h1>
-          Research Papers
-        </h1>
+        <div className="pageHeader">
+          <div className="eyebrow darkEyebrow">Research Library</div>
+          <h1>Research Papers</h1>
+        </div>
 
         <Need />
       </>
@@ -1249,188 +1102,186 @@ function Research({
 
   return (
     <>
-      <h1>
-        Research Papers
-      </h1>
+      <div className="pageHeader">
+        <div className="eyebrow darkEyebrow">
+          Research Library
+        </div>
 
-      <p className="muted">
-        {title(
-          data.cancer
-        )}{' '}
-        · enriched with
-        PubMed metadata
-        when a PMID is
-        available
-      </p>
+        <h1>
+          Research Papers
+        </h1>
 
-      <div className="filters">
-        <label>
-          Search titles,
-          abstracts,
-          journals, or
-          MeSH terms
+        <p className="muted">
+          {title(
+            data.cancer
+          )}{' '}
+          · enriched with PubMed metadata when a PMID is available
+        </p>
+      </div>
 
-          <input
-            value={q}
-            onChange={e =>
-              setQ(
-                e.target.value
-              )
-            }
-          />
-        </label>
+      <div className="panel filterPanel">
+        <div className="filters filtersMain">
+          <label className="filterSearch">
+            Search titles, abstracts, journals, or MeSH terms
 
-        <label>
-          Access
-
-          <select
-            value={access}
-            onChange={e =>
-              setAccess(
-                e.target.value
-              )
-            }
-          >
-            {[
-              'All',
-              'Free full text in PMC',
-              'Has abstract',
-              'Has full-text link'
-            ].map(x => (
-              <option
-                key={x}
-              >
-                {x}
-              </option>
-            ))}
-          </select>
-        </label>
-
-        <label>
-          Treatment
-
-          <select
-            value={tr}
-            onChange={e =>
-              setTr(
-                e.target.value
-              )
-            }
-          >
-            {[
-              'All treatments',
-              ...data
-                .treatments
-                .map(
-                  x => x[0]
+            <input
+              value={q}
+              onChange={e =>
+                setQ(
+                  e.target.value
                 )
-            ].map(x => (
-              <option
-                key={x}
-              >
-                {x}
-              </option>
-            ))}
-          </select>
-        </label>
+              }
+              placeholder="Filter papers..."
+            />
+          </label>
+
+          <label>
+            Access
+
+            <select
+              value={access}
+              onChange={e =>
+                setAccess(
+                  e.target.value
+                )
+              }
+            >
+              {[
+                'All',
+                'Free full text in PMC',
+                'Has abstract',
+                'Has full-text link'
+              ].map(x => (
+                <option
+                  key={x}
+                >
+                  {x}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Treatment
+
+            <select
+              value={tr}
+              onChange={e =>
+                setTr(
+                  e.target.value
+                )
+              }
+            >
+              {[
+                'All treatments',
+                ...data
+                  .treatments
+                  .map(
+                    x => x[0]
+                  )
+              ].map(x => (
+                <option
+                  key={x}
+                >
+                  {x}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="filters filtersSecondary">
+          <label>
+            Year
+
+            <select
+              value={year}
+              onChange={e =>
+                setYear(
+                  e.target.value
+                )
+              }
+            >
+              {[
+                'All years',
+                ...years
+              ].map(x => (
+                <option
+                  key={x}
+                >
+                  {x}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label>
+            Sort by
+
+            <select
+              value={sort}
+              onChange={e =>
+                setSort(
+                  e.target.value
+                )
+              }
+            >
+              {[
+                'Original relevance',
+                'Newest first',
+                'Free full text first'
+              ].map(x => (
+                <option
+                  key={x}
+                >
+                  {x}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="savedFilter">
+            <input
+              type="checkbox"
+              checked={saved}
+              onChange={e =>
+                setSaved(
+                  e.target.checked
+                )
+              }
+            />
+            <span>Show saved papers only</span>
+          </label>
+        </div>
       </div>
 
-      <div className="filters three">
-        <label>
-          Year
-
-          <select
-            value={year}
-            onChange={e =>
-              setYear(
-                e.target.value
+      <div className="researchToolbar">
+        <div className="toolbar">
+          <button
+            className="toolbarButton"
+            onClick={() =>
+              pdfReport(
+                data.cancer,
+                papers,
+                data.treatments
               )
             }
           >
-            {[
-              'All years',
-              ...years
-            ].map(x => (
-              <option
-                key={x}
-              >
-                {x}
-              </option>
-            ))}
-          </select>
-        </label>
+            Download PDF Report
+          </button>
 
-        <label>
-          Sort by
-
-          <select
-            value={sort}
-            onChange={e =>
-              setSort(
-                e.target.value
-              )
-            }
+          <button
+            className="toolbarButton secondaryToolbarButton"
+            onClick={csv}
           >
-            {[
-              'Original relevance',
-              'Newest first',
-              'Free full text first'
-            ].map(x => (
-              <option
-                key={x}
-              >
-                {x}
-              </option>
-            ))}
-          </select>
-        </label>
+            Export Raw Data (CSV)
+          </button>
+        </div>
 
-        <label>
-          <br />
-
-          <input
-            type="checkbox"
-            checked={saved}
-            onChange={e =>
-              setSaved(
-                e.target.checked
-              )
-            }
-          />{' '}
-          Show saved
-          papers only
-        </label>
+        <div className="paperCount">
+          Showing <b>{papers.length}</b> papers
+        </div>
       </div>
-
-      <div className="toolbar">
-        <button
-          onClick={() =>
-            pdfReport(
-              data.cancer,
-              papers,
-              data.treatments
-            )
-          }
-        >
-          Download PDF
-          Research Report
-        </button>
-
-        <button
-          onClick={csv}
-        >
-          Export Raw Data
-          (CSV)
-        </button>
-      </div>
-
-      <p>
-        Showing{' '}
-        <b>
-          {papers.length}
-        </b>{' '}
-        papers
-      </p>
 
       {papers.map(
         (p, i) => (
@@ -1442,9 +1293,7 @@ function Research({
                 key(p)
               )
             }
-            toggle={
-              toggle
-            }
+            toggle={toggle}
             key={
               key(p) + i
             }
@@ -1461,10 +1310,10 @@ function Analytics({
   if (!data) {
     return (
       <>
-        <h1>
-          Research
-          Analytics
-        </h1>
+        <div className="pageHeader">
+          <div className="eyebrow darkEyebrow">Evidence Overview</div>
+          <h1>Research Analytics</h1>
+        </div>
 
         <Need />
       </>
@@ -1473,14 +1322,16 @@ function Analytics({
 
   return (
     <>
-      <h1>
-        Research Analytics
-      </h1>
+      <div className="pageHeader">
+        <div className="eyebrow darkEyebrow">Evidence Overview</div>
+        <h1>Research Analytics</h1>
+        <p className="muted">
+          Publication and treatment research patterns for {title(data.cancer)} cancer.
+        </p>
+      </div>
 
       <Metrics
-        p={
-          data.profile
-        }
+        p={data.profile}
         tcount={
           data
             .treatments
@@ -1489,18 +1340,15 @@ function Analytics({
       />
 
       <h3>
-        Treatment coverage
+        Treatment Coverage
       </h3>
 
       <Bars
-        items={
-          data.treatments
-        }
+        items={data.treatments}
       />
 
       <h3>
-        Publication
-        timeline
+        Publication Timeline
       </h3>
 
       <Bars
@@ -1514,7 +1362,7 @@ function Analytics({
       />
 
       <h3>
-        Top journals
+        Top Journals
       </h3>
 
       <Bars
@@ -1527,6 +1375,7 @@ function Analytics({
 
       <div className="toolbar">
         <button
+          className="toolbarButton"
           onClick={() =>
             pdfReport(
               data.cancer,
@@ -1535,11 +1384,11 @@ function Analytics({
             )
           }
         >
-          Download PDF
-          Research Report
+          Download PDF Report
         </button>
 
         <button
+          className="toolbarButton secondaryToolbarButton"
           onClick={() =>
             download(
               data.cancer.replaceAll(
@@ -1564,8 +1413,7 @@ function Analytics({
             )
           }
         >
-          Export Treatment
-          Counts (CSV)
+          Export Treatment Counts (CSV)
         </button>
       </div>
     </>
@@ -1577,23 +1425,9 @@ function Treatment({
   bookmarks,
   toggle
 }) {
-  const [
-    tr,
-    setTr
-  ] =
-    useState('');
-
-  const [
-    evidence,
-    setEvidence
-  ] =
-    useState([]);
-
-  const [
-    busy,
-    setBusy
-  ] =
-    useState(false);
+  const [tr, setTr] = useState('');
+  const [evidence, setEvidence] = useState([]);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (
@@ -1669,10 +1503,10 @@ function Treatment({
   if (!data) {
     return (
       <>
-        <h1>
-          Treatment
-          Research
-        </h1>
+        <div className="pageHeader">
+          <div className="eyebrow darkEyebrow">Treatment Evidence</div>
+          <h1>Treatment Research</h1>
+        </div>
 
         <Need />
       </>
@@ -1693,57 +1527,53 @@ function Treatment({
 
   return (
     <>
-      <h1>
-        Treatment Research
-      </h1>
+      <div className="pageHeader">
+        <div className="eyebrow darkEyebrow">Treatment Evidence</div>
+        <h1>Treatment Research</h1>
+        <p className="muted">
+          Explore retrieved literature for individual treatment types.
+        </p>
+      </div>
 
-      <label>
-        Choose a treatment
+      <div className="panel treatmentSelector">
+        <label>
+          Choose a treatment
 
-        <select
-          value={tr}
-          onChange={e =>
-            setTr(
-              e.target.value
-            )
-          }
-        >
-          {data.treatments.map(
-            x => (
-              <option
-                key={x[0]}
-                value={
-                  x[0]
-                }
-              >
-                {title(
-                  x[0]
-                )}
-              </option>
-            )
-          )}
-        </select>
-      </label>
+          <select
+            value={tr}
+            onChange={e =>
+              setTr(
+                e.target.value
+              )
+            }
+          >
+            {data.treatments.map(
+              x => (
+                <option
+                  key={x[0]}
+                  value={x[0]}
+                >
+                  {title(
+                    x[0]
+                  )}
+                </option>
+              )
+            )}
+          </select>
+        </label>
+      </div>
 
-      <div className="panel">
+      <div className="panel evidenceIntro">
+        <div className="eyebrow darkEyebrow">Selected Treatment</div>
+
         <h2>
           {title(tr)}
         </h2>
 
         <p>
-          Evidence-focused
-          research view for{' '}
-          {title(
-            data.cancer
-          )}{' '}
-          cancer. Statements
-          below are based on
-          retrieved
-          PubMed-indexed
-          papers; paper
-          counts do not
-          indicate medical
-          superiority.
+          Evidence-focused research view for {title(data.cancer)} cancer.
+          Paper counts describe retrieved literature and do not indicate
+          medical superiority.
         </p>
       </div>
 
@@ -1761,17 +1591,13 @@ function Treatment({
       />
 
       {busy && (
-        <p>
-          Retrieving
-          treatment-focused
-          PubMed evidence…
-        </p>
+        <div className="loadingNotice">
+          Retrieving treatment-focused PubMed evidence…
+        </div>
       )}
 
       <h2>
-        Papers in your
-        Cancer Insight
-        search
+        Papers in Your Cancer Insight Search
       </h2>
 
       {api.length ? (
@@ -1785,9 +1611,7 @@ function Treatment({
                   key(p)
                 )
               }
-              toggle={
-                toggle
-              }
+              toggle={toggle}
               key={
                 key(p) +
                 i
@@ -1797,17 +1621,12 @@ function Treatment({
         )
       ) : (
         <div className="panel">
-          No API-tagged
-          papers for this
-          treatment were
-          returned in the
-          current search.
+          No API-tagged papers for this treatment were returned in the current search.
         </div>
       )}
 
       <h2>
-        Additional PubMed
-        evidence
+        Additional PubMed Evidence
       </h2>
 
       {evidence
@@ -1822,9 +1641,7 @@ function Treatment({
                   key(p)
                 )
               }
-              toggle={
-                toggle
-              }
+              toggle={toggle}
               key={
                 key(p) +
                 i
@@ -1839,29 +1656,10 @@ function Treatment({
 function Compare({
   data
 }) {
-  const [
-    a,
-    setA
-  ] =
-    useState('');
-
-  const [
-    b,
-    setB
-  ] =
-    useState('');
-
-  const [
-    ea,
-    setEa
-  ] =
-    useState([]);
-
-  const [
-    eb,
-    setEb
-  ] =
-    useState([]);
+  const [a, setA] = useState('');
+  const [b, setB] = useState('');
+  const [ea, setEa] = useState([]);
+  const [eb, setEb] = useState([]);
 
   useEffect(() => {
     if (
@@ -1950,9 +1748,10 @@ function Compare({
   if (!data) {
     return (
       <>
-        <h1>
-          Compare Treatments
-        </h1>
+        <div className="pageHeader">
+          <div className="eyebrow darkEyebrow">Evidence Comparison</div>
+          <h1>Compare Treatments</h1>
+        </div>
 
         <Need />
       </>
@@ -1965,10 +1764,7 @@ function Compare({
   ) {
     return (
       <div className="panel">
-        At least two
-        treatment types are
-        needed for
-        comparison.
+        At least two treatment types are needed for comparison.
       </div>
     );
   }
@@ -2005,11 +1801,15 @@ function Compare({
 
   return (
     <>
-      <h1>
-        Compare Treatments
-      </h1>
+      <div className="pageHeader">
+        <div className="eyebrow darkEyebrow">Evidence Comparison</div>
+        <h1>Compare Treatments</h1>
+        <p className="muted">
+          Compare the retrieved research literature, not medical effectiveness.
+        </p>
+      </div>
 
-      <div className="compare">
+      <div className="compare compareSelectors panel">
         <label>
           First treatment
 
@@ -2025,9 +1825,7 @@ function Compare({
               x => (
                 <option
                   key={x[0]}
-                  value={
-                    x[0]
-                  }
+                  value={x[0]}
                 >
                   {title(
                     x[0]
@@ -2053,9 +1851,7 @@ function Compare({
               x => (
                 <option
                   key={x[0]}
-                  value={
-                    x[0]
-                  }
+                  value={x[0]}
                 >
                   {title(
                     x[0]
@@ -2069,142 +1865,109 @@ function Compare({
 
       {a === b ? (
         <div className="error">
-          Choose two
-          different
-          treatments.
+          Choose two different treatments.
         </div>
       ) : (
         <>
-          <div className="panel">
+          <div className="panel comparisonNotice">
             <b>
-              How to read
-              this comparison:
+              How to read this comparison
             </b>{' '}
-            the descriptions
-            explain each
-            treatment, while
-            the numbers
-            compare the
-            retrieved research
-            evidence. More
-            papers or newer
-            studies do not
-            mean one treatment
-            is medically
-            better.
+            The descriptions explain each treatment while the numbers compare
+            retrieved research evidence. More papers or newer studies do not
+            mean one treatment is medically better.
           </div>
 
           <h2>
-            Research
-            Comparison
+            Research Comparison
           </h2>
 
-          <table className="table">
-            <thead>
-              <tr>
-                <th>
-                  Measure
-                </th>
+          <div className="tableWrap">
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>
+                    Measure
+                  </th>
 
-                <th>
-                  {title(
-                    a
-                  )}
-                </th>
+                  <th>
+                    {title(a)}
+                  </th>
 
-                <th>
-                  {title(
-                    b
-                  )}
-                </th>
-              </tr>
-            </thead>
+                  <th>
+                    {title(b)}
+                  </th>
+                </tr>
+              </thead>
 
-            <tbody>
-              {[
-                [
-                  'Unique evidence papers',
-                  'paper_count'
-                ],
-                [
-                  'Free full text in PMC',
-                  'free_full_text_count'
-                ],
-                [
-                  'Latest year',
-                  'latest_year'
-                ],
-                [
-                  'Journals represented',
-                  'journal_count'
-                ],
-                [
-                  'Clinical trials',
-                  'clinical_trials'
-                ],
-                [
-                  'Reviews',
-                  'reviews'
-                ],
-                [
-                  'Meta-analyses',
-                  'meta_analyses'
-                ]
-              ].map(
-                ([l, k]) => (
-                  <tr key={k}>
-                    <td>
-                      {l}
-                    </td>
+              <tbody>
+                {[
+                  [
+                    'Unique evidence papers',
+                    'paper_count'
+                  ],
+                  [
+                    'Free full text in PMC',
+                    'free_full_text_count'
+                  ],
+                  [
+                    'Latest year',
+                    'latest_year'
+                  ],
+                  [
+                    'Journals represented',
+                    'journal_count'
+                  ],
+                  [
+                    'Clinical trials',
+                    'clinical_trials'
+                  ],
+                  [
+                    'Reviews',
+                    'reviews'
+                  ],
+                  [
+                    'Meta-analyses',
+                    'meta_analyses'
+                  ]
+                ].map(
+                  ([l, k]) => (
+                    <tr key={k}>
+                      <td>
+                        {l}
+                      </td>
 
-                    <td>
-                      {pa[k] ||
-                        '—'}
-                    </td>
+                      <td>
+                        {pa[k] || '—'}
+                      </td>
 
-                    <td>
-                      {pb[k] ||
-                        '—'}
-                    </td>
-                  </tr>
-                )
-              )}
-            </tbody>
-          </table>
+                      <td>
+                        {pb[k] || '—'}
+                      </td>
+                    </tr>
+                  )
+                )}
+              </tbody>
+            </table>
+          </div>
 
-          <div className="compare">
+          <div className="compare compareEvidence">
             <div>
               <h3>
-                {title(a)} —
-                strongest
-                supporting
-                PubMed evidence
+                {title(a)} — Supporting PubMed Evidence
               </h3>
 
               {ea
-                .slice(
-                  0,
-                  3
-                )
+                .slice(0, 3)
                 .map(
                   (p, i) => (
                     <Paper
                       p={p}
-                      n={
-                        i +
-                        1
-                      }
-                      saved={
-                        false
-                      }
-                      toggle={() =>
-                        {}
-                      }
+                      n={i + 1}
+                      saved={false}
+                      toggle={() => {}}
                       key={
-                        key(
-                          p
-                        ) +
-                        i
+                        key(p) + i
                       }
                     />
                   )
@@ -2213,36 +1976,20 @@ function Compare({
 
             <div>
               <h3>
-                {title(b)} —
-                strongest
-                supporting
-                PubMed evidence
+                {title(b)} — Supporting PubMed Evidence
               </h3>
 
               {eb
-                .slice(
-                  0,
-                  3
-                )
+                .slice(0, 3)
                 .map(
                   (p, i) => (
                     <Paper
                       p={p}
-                      n={
-                        i +
-                        1
-                      }
-                      saved={
-                        false
-                      }
-                      toggle={() =>
-                        {}
-                      }
+                      n={i + 1}
+                      saved={false}
+                      toggle={() => {}}
                       key={
-                        key(
-                          p
-                        ) +
-                        i
+                        key(p) + i
                       }
                     />
                   )
@@ -2260,11 +2007,7 @@ function Images({
   images,
   setImages
 }) {
-  const [
-    busy,
-    setBusy
-  ] =
-    useState(false);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (!data) {
@@ -2316,9 +2059,10 @@ function Images({
   if (!data) {
     return (
       <>
-        <h1>
-          Cancer Images
-        </h1>
+        <div className="pageHeader">
+          <div className="eyebrow darkEyebrow">Scientific Media</div>
+          <h1>Cancer Images</h1>
+        </div>
 
         <Need />
       </>
@@ -2327,41 +2071,21 @@ function Images({
 
   return (
     <>
-      <h1>
-        Cancer Images
-      </h1>
+      <div className="pageHeader">
+        <div className="eyebrow darkEyebrow">Scientific Media</div>
+        <h1>Cancer Images</h1>
 
-      <p className="muted">
-        Scientific and
-        medically relevant
-        images for{' '}
-        {title(
-          data.cancer
-        )}{' '}
-        cancer are retrieved
-        from Wikimedia
-        Commons. The gallery
-        prioritizes MRI/CT,
-        pathology, histology,
-        microscopy, tumor
-        specimens,
-        segmentation, and
-        medical diagrams;
-        documents and
-        unrelated photographs
-        are excluded.
-        Source/license
-        metadata is shown
-        when Commons supplies
-        it.
-      </p>
+        <p className="muted">
+          Medically relevant Wikimedia Commons images for {title(data.cancer)} cancer,
+          prioritizing MRI/CT, pathology, histology, microscopy, specimens,
+          segmentation, and medical diagrams.
+        </p>
+      </div>
 
       {busy && (
-        <p>
-          Finding medically
-          relevant scientific
-          images…
-        </p>
+        <div className="loadingNotice">
+          Finding medically relevant scientific images…
+        </div>
       )}
 
       <div className="images">
@@ -2371,61 +2095,62 @@ function Images({
               className="imagecard"
               key={i}
             >
-              <img
-                src={
-                  x.thumbnail
-                }
-                alt={
-                  x.title ||
-                  'Cancer research image'
-                }
-              />
+              <div className="imageFrame">
+                <img
+                  src={x.thumbnail}
+                  alt={
+                    x.title ||
+                    'Cancer research image'
+                  }
+                />
+              </div>
 
-              <h3>
-                {x.title}
-              </h3>
+              <div className="imageContent">
+                <h3>
+                  {x.title}
+                </h3>
 
-              {x.description && (
-                <p className="muted">
-                  {clean(
-                    x.description
-                  ).slice(
-                    0,
-                    180
-                  )}
-                </p>
-              )}
+                {x.description && (
+                  <p className="muted">
+                    {clean(
+                      x.description
+                    ).slice(
+                      0,
+                      180
+                    )}
+                  </p>
+                )}
 
-              {x.license && (
-                <p className="muted">
-                  License:{' '}
-                  {clean(
-                    x.license
-                  )}
-                </p>
-              )}
+                {x.license && (
+                  <p className="imageMeta">
+                    License:{' '}
+                    {clean(
+                      x.license
+                    )}
+                  </p>
+                )}
 
-              {x.artist && (
-                <p className="muted">
-                  Creator:{' '}
-                  {clean(
-                    x.artist
-                  ).slice(
-                    0,
-                    120
-                  )}
-                </p>
-              )}
+                {x.artist && (
+                  <p className="imageMeta">
+                    Creator:{' '}
+                    {clean(
+                      x.artist
+                    ).slice(
+                      0,
+                      120
+                    )}
+                  </p>
+                )}
 
-              <a
-                href={
-                  x.original
-                }
-                target="_blank"
-              >
-                Open original
-                source
-              </a>
+                <a
+                  className="sourceButton"
+                  href={x.original}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Open Original Source
+                </a>
+              </div>
             </div>
           )
         )}
@@ -2437,119 +2162,70 @@ function Images({
 function About() {
   return (
     <>
-      <h1>
-        About Cancer Insight
-      </h1>
+      <div className="pageHeader">
+        <div className="eyebrow darkEyebrow">About the Platform</div>
+        <h1>About Cancer Insight</h1>
+      </div>
 
-      <p>
-        Cancer Insight is an
-        educational cancer
-        research explorer
-        designed to make
-        scientific cancer
-        research easier to
-        discover and examine.
-        It combines cancer
-        research data with
-        PubMed and NCBI
-        metadata so users can
-        explore research papers,
-        treatment evidence,
-        research trends, and
-        free full-text
-        availability while
-        keeping the original
-        scientific sources
-        visible.
-      </p>
+      <div className="aboutGrid">
+        <section className="panel aboutCard">
+          <h2>What Cancer Insight Does</h2>
+          <p>
+            Cancer Insight is an educational cancer research explorer designed
+            to make scientific cancer research easier to discover and examine.
+            It combines cancer research data with PubMed and NCBI metadata so
+            users can explore research papers, treatment evidence, trends, and
+            free full-text availability while keeping original sources visible.
+          </p>
+        </section>
 
-      <h2>
-        How treatment
-        descriptions work
-      </h2>
+        <section className="panel aboutCard">
+          <h2>Research Sources</h2>
+          <p>
+            Source information may include PubMed, PubMed Central, DOI records,
+            publisher pages, and Wikimedia Commons for scientific images.
+          </p>
+        </section>
 
-      <p>
-        Cancer Insight gives
-        a plain-language
-        definition of the
-        treatment itself,
-        then displays
-        cancer-specific
-        statements extracted
-        from multiple
-        PubMed-indexed
-        abstracts. Each
-        displayed research
-        statement is linked
-        back to identifiable
-        PubMed sources through
-        PMID references and
-        source cards.
-      </p>
+        <section className="panel aboutCard">
+          <h2>How Treatment Descriptions Work</h2>
+          <p>
+            Cancer Insight gives a plain-language treatment definition and
+            displays cancer-specific statements extracted from multiple
+            PubMed-indexed abstracts. Research statements link back to
+            identifiable sources where available.
+          </p>
+        </section>
 
-      <h2>
-        Access labels
-      </h2>
+        <section className="panel aboutCard">
+          <h2>Access Labels</h2>
+          <ul>
+            <li>
+              <b>Free full text in PMC:</b> freely readable in PubMed Central;
+              this does not automatically mean unrestricted reuse.
+            </li>
+            <li>
+              <b>Full-text source link:</b> a publisher or research-source link
+              is available; access rules may vary.
+            </li>
+            <li>
+              <b>PubMed abstract:</b> an abstract is available even when a free
+              PMC copy is not identified.
+            </li>
+          </ul>
+        </section>
+      </div>
 
-      <ul>
-        <li>
-          <b>
-            Free full text in
-            PMC:
-          </b>{' '}
-          freely readable in
-          PubMed Central; this
-          does not
-          automatically mean
-          unrestricted reuse.
-        </li>
-
-        <li>
-          <b>
-            Full-text source
-            link:
-          </b>{' '}
-          a publisher or
-          research-source link
-          is available; access
-          rules may vary.
-        </li>
-
-        <li>
-          <b>
-            PubMed abstract:
-          </b>{' '}
-          an abstract is
-          available even if
-          Cancer Insight did
-          not identify a free
-          PMC copy.
-        </li>
-      </ul>
-
-      <h2>
-        Limitations
-      </h2>
-
-      <p>
-        Paper counts and
-        research summaries
-        describe retrieved
-        literature, not
-        treatment
-        effectiveness,
-        safety, or suitability
-        for an individual
-        patient. Automated
-        extraction can miss
-        context, so users
-        should read the cited
-        papers and consult
-        qualified healthcare
-        professionals for
-        personal medical
-        decisions.
-      </p>
+      <section className="panel limitationPanel">
+        <h2>Limitations</h2>
+        <p>
+          Paper counts and research summaries describe retrieved literature,
+          not treatment effectiveness, safety, or suitability for an individual
+          patient. Automated extraction can miss context, so users should read
+          cited papers and consult qualified healthcare professionals for
+          personal medical decisions.
+        </p>
+      </section>
     </>
   );
 }
@@ -2558,8 +2234,7 @@ function simpleProfile(
   papers
 ) {
   const years = [];
-  const journals =
-    new Set();
+  const journals = new Set();
 
   let free = 0;
   let trials = 0;
@@ -2681,8 +2356,7 @@ function download(
       )
     );
 
-  a.download =
-    name;
+  a.download = name;
 
   a.click();
 
@@ -2739,12 +2413,9 @@ function pdfReport(
     pageW -
     margin * 2;
 
-  const footerY =
-    282;
+  const footerY = 282;
 
-  let pageNumber =
-    1;
-
+  let pageNumber = 1;
   let y = 0;
 
   const decodeEntities =
@@ -2996,8 +2667,7 @@ function pdfReport(
 
     d.addPage();
 
-    pageNumber +=
-      1;
+    pageNumber += 1;
 
     smallHeader();
 
@@ -3758,8 +3428,7 @@ function pdfReport(
             7
         );
 
-        const startY =
-          y;
+        const startY = y;
 
         d.setFillColor(
           250,
@@ -4055,8 +3724,7 @@ function pdfReport(
             cardHeight -
             9;
 
-          let linkX =
-            textX;
+          let linkX = textX;
 
           if (
             p.pubmed_url
@@ -4069,8 +3737,7 @@ function pdfReport(
               25
             );
 
-            linkX +=
-              28;
+            linkX += 28;
           }
 
           if (
@@ -4084,8 +3751,7 @@ function pdfReport(
               34
             );
 
-            linkX +=
-              37;
+            linkX += 37;
           }
 
           if (
