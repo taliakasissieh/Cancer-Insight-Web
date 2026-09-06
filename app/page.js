@@ -1,4 +1,4 @@
-'use client';
+''use client';
 
 import { useEffect, useMemo, useState } from 'react';
 import { jsPDF } from 'jspdf';
@@ -145,15 +145,11 @@ function Paper({
 
       <div className="paperMeta">
         {j && (
-          <span>
-            {j}
-          </span>
+          <span>{j}</span>
         )}
 
         {d && (
-          <span>
-            {d}
-          </span>
+          <span>{d}</span>
         )}
 
         {authors && (
@@ -190,9 +186,7 @@ function Paper({
             Abstract
           </div>
 
-          <p>
-            {visibleAbstract}
-          </p>
+          <p>{visibleAbstract}</p>
 
           {longAbstract && (
             <button
@@ -268,30 +262,12 @@ function Metrics({
   tcount
 }) {
   const vals = [
-    [
-      'Research papers',
-      p.paper_count
-    ],
-    [
-      'Free full text',
-      p.free_full_text_count
-    ],
-    [
-      'Latest year',
-      p.latest_year || '—'
-    ],
-    [
-      'Journals',
-      p.journals?.length || 0
-    ],
-    [
-      'Clinical trials',
-      p.clinical_trials || 0
-    ],
-    [
-      'Treatment types',
-      tcount ?? '—'
-    ]
+    ['Research papers', p.paper_count],
+    ['Free full text', p.free_full_text_count],
+    ['Latest year', p.latest_year || '—'],
+    ['Journals', p.journals?.length || 0],
+    ['Clinical trials', p.clinical_trials || 0],
+    ['Treatment types', tcount ?? '—']
   ];
 
   return (
@@ -344,9 +320,7 @@ function Bars({ items }) {
                   width:
                     `${Math.max(
                       3,
-                      v /
-                        max *
-                        100
+                      v / max * 100
                     )}%`
                 }}
               />
@@ -387,8 +361,7 @@ export default function App() {
       const n =
         b.includes(k)
           ? b.filter(
-              x =>
-                x !== k
+              x => x !== k
             )
           : [...b, k];
 
@@ -424,8 +397,7 @@ export default function App() {
         await fetch(
           '/api/search',
           {
-            method:
-              'POST',
+            method: 'POST',
 
             headers: {
               'content-type':
@@ -443,9 +415,7 @@ export default function App() {
       const j = await r.json();
 
       if (!r.ok) {
-        throw Error(
-          j.error
-        );
+        throw Error(j.error);
       }
 
       setData(j);
@@ -454,9 +424,7 @@ export default function App() {
         `Found ${j.papers.length} papers for ${title(q)}.`
       );
     } catch (e) {
-      setError(
-        e.message
-      );
+      setError(e.message);
     } finally {
       setBusy(false);
     }
@@ -492,14 +460,14 @@ export default function App() {
                 }
                 onClick={() => {
                   setPage(p);
-                  scrollTo(
-                    0,
-                    0
-                  );
+                  scrollTo(0, 0);
                 }}
                 key={p}
               >
-                <span className="navDot">●</span>
+                <span className="navDot">
+                  ●
+                </span>
+
                 {p}
               </button>
             )
@@ -534,13 +502,26 @@ export default function App() {
               data.profile
                 .free_full_text_count
             }{' '}
-            free full-text
-            in PMC
+            free full-text in PMC
           </div>
         )}
 
         <div className="sideinfo">
           Educational use only. Not medical advice.
+
+          <div className="legalLinks">
+            <a href="/privacy-policy">
+              Privacy Policy
+            </a>
+
+            <a href="/contact">
+              Contact
+            </a>
+
+            <a href="/terms">
+              Terms & Disclaimer
+            </a>
+          </div>
         </div>
       </aside>
 
@@ -570,7 +551,9 @@ export default function App() {
 
           {page ===
             'Research Analytics' && (
-            <Analytics data={data} />
+            <Analytics
+              data={data}
+            />
           )}
 
           {page ===
@@ -584,7 +567,9 @@ export default function App() {
 
           {page ===
             'Compare Treatments' && (
-            <Compare data={data} />
+            <Compare
+              data={data}
+            />
           )}
 
           {page ===
@@ -618,9 +603,15 @@ export default function App() {
 function Need() {
   return (
     <div className="panel needPanel">
-      <div className="needIcon">⌕</div>
+      <div className="needIcon">
+        ⌕
+      </div>
+
       <div>
-        <b>Search a cancer type first</b>
+        <b>
+          Search a cancer type first
+        </b>
+
         <p>
           Start a search to unlock research papers, treatment evidence,
           analytics, comparisons, and scientific images.
@@ -670,8 +661,14 @@ function Search({
 
       <div className="homeFeatures">
         <div className="featureCard">
-          <div className="featureIcon">⌕</div>
-          <h3>Search Research</h3>
+          <div className="featureIcon">
+            ⌕
+          </div>
+
+          <h3>
+            Search Research
+          </h3>
+
           <p>
             Find papers, abstracts, journals, dates, and scientific sources by
             cancer type.
@@ -679,8 +676,14 @@ function Search({
         </div>
 
         <div className="featureCard">
-          <div className="featureIcon">▥</div>
-          <h3>Explore Evidence</h3>
+          <div className="featureIcon">
+            ▥
+          </div>
+
+          <h3>
+            Explore Evidence
+          </h3>
+
           <p>
             Review treatment research, publication trends, trials, journals,
             and analytics.
@@ -688,8 +691,14 @@ function Search({
         </div>
 
         <div className="featureCard">
-          <div className="featureIcon">⇄</div>
-          <h3>Compare Treatments</h3>
+          <div className="featureIcon">
+            ⇄
+          </div>
+
+          <h3>
+            Compare Treatments
+          </h3>
+
           <p>
             Compare retrieved research evidence without treating paper counts
             as medical recommendations.
@@ -845,8 +854,7 @@ function Research({
         return [];
       }
 
-      let x =
-        [...data.papers];
+      let x = [...data.papers];
 
       if (q) {
         x =
@@ -883,8 +891,7 @@ function Research({
       ) {
         x =
           x.filter(
-            p =>
-              p.pmc_id
+            p => p.pmc_id
           );
       }
 
@@ -942,9 +949,7 @@ function Research({
                 'pubmed_date',
                 'publicationDate'
               )
-            ).includes(
-              year
-            )
+            ).includes(year)
           );
       }
 
@@ -1012,8 +1017,13 @@ function Research({
     return (
       <>
         <div className="pageHeader">
-          <div className="eyebrow darkEyebrow">Research Library</div>
-          <h1>Research Papers</h1>
+          <div className="eyebrow darkEyebrow">
+            Research Library
+          </div>
+
+          <h1>
+            Research Papers
+          </h1>
         </div>
 
         <Need />
@@ -1152,9 +1162,7 @@ function Research({
                 'Has abstract',
                 'Has full-text link'
               ].map(x => (
-                <option
-                  key={x}
-                >
+                <option key={x}>
                   {x}
                 </option>
               ))}
@@ -1180,9 +1188,7 @@ function Research({
                     x => x[0]
                   )
               ].map(x => (
-                <option
-                  key={x}
-                >
+                <option key={x}>
                   {x}
                 </option>
               ))}
@@ -1206,9 +1212,7 @@ function Research({
                 'All years',
                 ...years
               ].map(x => (
-                <option
-                  key={x}
-                >
+                <option key={x}>
                   {x}
                 </option>
               ))}
@@ -1231,9 +1235,7 @@ function Research({
                 'Newest first',
                 'Free full text first'
               ].map(x => (
-                <option
-                  key={x}
-                >
+                <option key={x}>
                   {x}
                 </option>
               ))}
@@ -1250,7 +1252,10 @@ function Research({
                 )
               }
             />
-            <span>Show saved papers only</span>
+
+            <span>
+              Show saved papers only
+            </span>
           </label>
         </div>
       </div>
@@ -1311,8 +1316,13 @@ function Analytics({
     return (
       <>
         <div className="pageHeader">
-          <div className="eyebrow darkEyebrow">Evidence Overview</div>
-          <h1>Research Analytics</h1>
+          <div className="eyebrow darkEyebrow">
+            Evidence Overview
+          </div>
+
+          <h1>
+            Research Analytics
+          </h1>
         </div>
 
         <Need />
@@ -1323,8 +1333,14 @@ function Analytics({
   return (
     <>
       <div className="pageHeader">
-        <div className="eyebrow darkEyebrow">Evidence Overview</div>
-        <h1>Research Analytics</h1>
+        <div className="eyebrow darkEyebrow">
+          Evidence Overview
+        </div>
+
+        <h1>
+          Research Analytics
+        </h1>
+
         <p className="muted">
           Publication and treatment research patterns for {title(data.cancer)} cancer.
         </p>
@@ -1401,13 +1417,9 @@ function Analytics({
                 data.treatments
                   .map(
                     x =>
-                      x.join(
-                        ','
-                      )
+                      x.join(',')
                   )
-                  .join(
-                    '\n'
-                  ),
+                  .join('\n'),
 
               'text/csv'
             )
@@ -1459,8 +1471,7 @@ function Treatment({
     fetch(
       '/api/treatment',
       {
-        method:
-          'POST',
+        method: 'POST',
 
         headers: {
           'content-type':
@@ -1479,8 +1490,7 @@ function Treatment({
       }
     )
       .then(
-        r =>
-          r.json()
+        r => r.json()
       )
       .then(
         j =>
@@ -1491,9 +1501,7 @@ function Treatment({
       )
       .finally(
         () =>
-          setBusy(
-            false
-          )
+          setBusy(false)
       );
   }, [
     data,
@@ -1504,8 +1512,13 @@ function Treatment({
     return (
       <>
         <div className="pageHeader">
-          <div className="eyebrow darkEyebrow">Treatment Evidence</div>
-          <h1>Treatment Research</h1>
+          <div className="eyebrow darkEyebrow">
+            Treatment Evidence
+          </div>
+
+          <h1>
+            Treatment Research
+          </h1>
         </div>
 
         <Need />
@@ -1528,8 +1541,14 @@ function Treatment({
   return (
     <>
       <div className="pageHeader">
-        <div className="eyebrow darkEyebrow">Treatment Evidence</div>
-        <h1>Treatment Research</h1>
+        <div className="eyebrow darkEyebrow">
+          Treatment Evidence
+        </div>
+
+        <h1>
+          Treatment Research
+        </h1>
+
         <p className="muted">
           Explore retrieved literature for individual treatment types.
         </p>
@@ -1564,7 +1583,9 @@ function Treatment({
       </div>
 
       <div className="panel evidenceIntro">
-        <div className="eyebrow darkEyebrow">Selected Treatment</div>
+        <div className="eyebrow darkEyebrow">
+          Selected Treatment
+        </div>
 
         <h2>
           {title(tr)}
@@ -1613,8 +1634,7 @@ function Treatment({
               }
               toggle={toggle}
               key={
-                key(p) +
-                i
+                key(p) + i
               }
             />
           )
@@ -1643,8 +1663,7 @@ function Treatment({
               }
               toggle={toggle}
               key={
-                key(p) +
-                i
+                key(p) + i
               }
             />
           )
@@ -1703,8 +1722,7 @@ function Compare({
           fetch(
             '/api/treatment',
             {
-              method:
-                'POST',
+              method: 'POST',
 
               headers: {
                 'content-type':
@@ -1722,8 +1740,7 @@ function Compare({
                 })
             }
           ).then(
-            r =>
-              r.json()
+            r => r.json()
           )
       )
     ).then(
@@ -1749,8 +1766,13 @@ function Compare({
     return (
       <>
         <div className="pageHeader">
-          <div className="eyebrow darkEyebrow">Evidence Comparison</div>
-          <h1>Compare Treatments</h1>
+          <div className="eyebrow darkEyebrow">
+            Evidence Comparison
+          </div>
+
+          <h1>
+            Compare Treatments
+          </h1>
         </div>
 
         <Need />
@@ -1802,8 +1824,14 @@ function Compare({
   return (
     <>
       <div className="pageHeader">
-        <div className="eyebrow darkEyebrow">Evidence Comparison</div>
-        <h1>Compare Treatments</h1>
+        <div className="eyebrow darkEyebrow">
+          Evidence Comparison
+        </div>
+
+        <h1>
+          Compare Treatments
+        </h1>
+
         <p className="muted">
           Compare the retrieved research literature, not medical effectiveness.
         </p>
@@ -1933,17 +1961,9 @@ function Compare({
                 ].map(
                   ([l, k]) => (
                     <tr key={k}>
-                      <td>
-                        {l}
-                      </td>
-
-                      <td>
-                        {pa[k] || '—'}
-                      </td>
-
-                      <td>
-                        {pb[k] || '—'}
-                      </td>
+                      <td>{l}</td>
+                      <td>{pa[k] || '—'}</td>
+                      <td>{pb[k] || '—'}</td>
                     </tr>
                   )
                 )}
@@ -2019,8 +2039,7 @@ function Images({
     fetch(
       '/api/images',
       {
-        method:
-          'POST',
+        method: 'POST',
 
         headers: {
           'content-type':
@@ -2035,8 +2054,7 @@ function Images({
       }
     )
       .then(
-        r =>
-          r.json()
+        r => r.json()
       )
       .then(
         j =>
@@ -2047,9 +2065,7 @@ function Images({
       )
       .finally(
         () =>
-          setBusy(
-            false
-          )
+          setBusy(false)
       );
   }, [
     data,
@@ -2060,8 +2076,13 @@ function Images({
     return (
       <>
         <div className="pageHeader">
-          <div className="eyebrow darkEyebrow">Scientific Media</div>
-          <h1>Cancer Images</h1>
+          <div className="eyebrow darkEyebrow">
+            Scientific Media
+          </div>
+
+          <h1>
+            Cancer Images
+          </h1>
         </div>
 
         <Need />
@@ -2072,8 +2093,13 @@ function Images({
   return (
     <>
       <div className="pageHeader">
-        <div className="eyebrow darkEyebrow">Scientific Media</div>
-        <h1>Cancer Images</h1>
+        <div className="eyebrow darkEyebrow">
+          Scientific Media
+        </div>
+
+        <h1>
+          Cancer Images
+        </h1>
 
         <p className="muted">
           Medically relevant Wikimedia Commons images for {title(data.cancer)} cancer,
@@ -2163,13 +2189,21 @@ function About() {
   return (
     <>
       <div className="pageHeader">
-        <div className="eyebrow darkEyebrow">About the Platform</div>
-        <h1>About Cancer Insight</h1>
+        <div className="eyebrow darkEyebrow">
+          About the Platform
+        </div>
+
+        <h1>
+          About Cancer Insight
+        </h1>
       </div>
 
       <div className="aboutGrid">
         <section className="panel aboutCard">
-          <h2>What Cancer Insight Does</h2>
+          <h2>
+            What Cancer Insight Does
+          </h2>
+
           <p>
             Cancer Insight is an educational cancer research explorer designed
             to make scientific cancer research easier to discover and examine.
@@ -2180,7 +2214,10 @@ function About() {
         </section>
 
         <section className="panel aboutCard">
-          <h2>Research Sources</h2>
+          <h2>
+            Research Sources
+          </h2>
+
           <p>
             Source information may include PubMed, PubMed Central, DOI records,
             publisher pages, and Wikimedia Commons for scientific images.
@@ -2188,7 +2225,10 @@ function About() {
         </section>
 
         <section className="panel aboutCard">
-          <h2>How Treatment Descriptions Work</h2>
+          <h2>
+            How Treatment Descriptions Work
+          </h2>
+
           <p>
             Cancer Insight gives a plain-language treatment definition and
             displays cancer-specific statements extracted from multiple
@@ -2198,26 +2238,43 @@ function About() {
         </section>
 
         <section className="panel aboutCard">
-          <h2>Access Labels</h2>
+          <h2>
+            Access Labels
+          </h2>
+
           <ul>
             <li>
-              <b>Free full text in PMC:</b> freely readable in PubMed Central;
-              this does not automatically mean unrestricted reuse.
+              <b>
+                Free full text in PMC:
+              </b>{' '}
+              freely readable in PubMed Central; this does not automatically
+              mean unrestricted reuse.
             </li>
+
             <li>
-              <b>Full-text source link:</b> a publisher or research-source link
-              is available; access rules may vary.
+              <b>
+                Full-text source link:
+              </b>{' '}
+              a publisher or research-source link is available; access rules
+              may vary.
             </li>
+
             <li>
-              <b>PubMed abstract:</b> an abstract is available even when a free
-              PMC copy is not identified.
+              <b>
+                PubMed abstract:
+              </b>{' '}
+              an abstract is available even when a free PMC copy is not
+              identified.
             </li>
           </ul>
         </section>
       </div>
 
       <section className="panel limitationPanel">
-        <h2>Limitations</h2>
+        <h2>
+          Limitations
+        </h2>
+
         <p>
           Paper counts and research summaries describe retrieved literature,
           not treatment effectiveness, safety, or suitability for an individual
@@ -2260,9 +2317,7 @@ function simpleProfile(
       )[0];
 
     if (y) {
-      years.push(
-        +y
-      );
+      years.push(+y);
     }
 
     const j =
@@ -2380,38 +2435,20 @@ function pdfReport(
         'a4'
     });
 
-  const NAVY =
-    [20, 61, 82];
-
-  const TEAL =
-    [31, 174, 174];
-
-  const LIGHT =
-    [239, 246, 248];
-
-  const TEXT =
-    [25, 54, 70];
-
-  const MUTED =
-    [92, 120, 136];
-
-  const BORDER =
-    [210, 225, 231];
-
-  const WHITE =
-    [255, 255, 255];
-
-  const GREEN_BG =
-    [225, 245, 239];
-
-  const GREEN_TEXT =
-    [25, 115, 88];
+  const NAVY = [20, 61, 82];
+  const TEAL = [31, 174, 174];
+  const LIGHT = [239, 246, 248];
+  const TEXT = [25, 54, 70];
+  const MUTED = [92, 120, 136];
+  const BORDER = [210, 225, 231];
+  const WHITE = [255, 255, 255];
+  const GREEN_BG = [225, 245, 239];
+  const GREEN_TEXT = [25, 115, 88];
 
   const pageW = 210;
   const margin = 16;
   const contentW =
-    pageW -
-    margin * 2;
+    pageW - margin * 2;
 
   const footerY = 282;
 
@@ -2544,8 +2581,7 @@ function pdfReport(
     d.line(
       margin,
       footerY,
-      pageW -
-        margin,
+      pageW - margin,
       footerY
     );
 
@@ -2570,12 +2606,10 @@ function pdfReport(
 
     d.text(
       `Page ${pageNumber}`,
-      pageW -
-        margin,
+      pageW - margin,
       footerY + 5,
       {
-        align:
-          'right'
+        align: 'right'
       }
     );
   }
@@ -2622,12 +2656,10 @@ function pdfReport(
 
     d.text(
       '+',
-      margin +
-        3.5,
+      margin + 3.5,
       9.1,
       {
-        align:
-          'center'
+        align: 'center'
       }
     );
 
@@ -2652,12 +2684,10 @@ function pdfReport(
 
     d.text(
       `${title(cancer)} Cancer Research Report`,
-      pageW -
-        margin,
+      pageW - margin,
       9.5,
       {
-        align:
-          'right'
+        align: 'right'
       }
     );
   }
@@ -2678,8 +2708,7 @@ function pdfReport(
     required
   ) {
     if (
-      y +
-        required >
+      y + required >
       footerY - 5
     ) {
       newPage();
@@ -2772,13 +2801,11 @@ function pdfReport(
 
     d.textWithLink(
       label,
-      x +
-        width / 2,
+      x + width / 2,
       top + 4.3,
       {
         url,
-        align:
-          'center'
+        align: 'center'
       }
     );
 
@@ -2829,8 +2856,7 @@ function pdfReport(
     margin + 6.5,
     21.3,
     {
-      align:
-        'center'
+      align: 'center'
     }
   );
 
@@ -2920,8 +2946,7 @@ function pdfReport(
 
   const freeCount =
     papers.filter(
-      p =>
-        p.pmc_id
+      p => p.pmc_id
     ).length;
 
   const years =
@@ -2939,20 +2964,14 @@ function pdfReport(
           );
 
         return m
-          ? Number(
-              m[0]
-            )
+          ? Number(m[0])
           : null;
       })
-      .filter(
-        Boolean
-      );
+      .filter(Boolean);
 
   const latestYear =
     years.length
-      ? Math.max(
-          ...years
-        )
+      ? Math.max(...years)
       : '-';
 
   const cards = [
@@ -2970,9 +2989,7 @@ function pdfReport(
     ],
     [
       'Treatment Types',
-      treatments
-        ?.length ||
-        0
+      treatments?.length || 0
     ]
   ];
 
@@ -3051,9 +3068,7 @@ function pdfReport(
       );
 
       d.text(
-        String(
-          value
-        ),
+        String(value),
         x + 4,
         y + 18
       );
@@ -3166,9 +3181,7 @@ function pdfReport(
         name,
         count
       ]) => {
-        ensureSpace(
-          10
-        );
+        ensureSpace(10);
 
         d.setTextColor(
           ...TEXT
@@ -3197,8 +3210,7 @@ function pdfReport(
         const barX =
           margin + 60;
 
-        const barW =
-          90;
+        const barW = 90;
 
         d.setFillColor(
           224,
@@ -3225,9 +3237,7 @@ function pdfReport(
           y,
           Math.max(
             3,
-            Number(
-              count
-            ) /
+            Number(count) /
               max *
               barW
           ),
@@ -3247,15 +3257,11 @@ function pdfReport(
         );
 
         d.text(
-          String(
-            count
-          ),
-          pageW -
-            margin,
+          String(count),
+          pageW - margin,
           y + 3,
           {
-            align:
-              'right'
+            align: 'right'
           }
         );
 
@@ -3273,36 +3279,23 @@ function pdfReport(
   );
 
   papers
-    .slice(
-      0,
-      20
-    )
+    .slice(0, 20)
     .forEach(
       (p, i) => {
         const t =
-          paperTitle(
-            p
-          );
+          paperTitle(p);
 
         const j =
-          journal(
-            p
-          );
+          journal(p);
 
         const dt =
-          date(
-            p
-          );
+          date(p);
 
         const auth =
-          authors(
-            p
-          );
+          authors(p);
 
         let absText =
-          abstract(
-            p
-          );
+          abstract(p);
 
         if (
           absText.length >
@@ -3321,8 +3314,7 @@ function pdfReport(
         const titleLines =
           d.splitTextToSize(
             t,
-            contentW -
-              20
+            contentW - 20
           );
 
         const metaText =
@@ -3331,9 +3323,7 @@ function pdfReport(
             dt,
             auth
           ]
-            .filter(
-              Boolean
-            )
+            .filter(Boolean)
             .join(
               '  |  '
             );
@@ -3342,8 +3332,7 @@ function pdfReport(
           metaText
             ? d.splitTextToSize(
                 metaText,
-                contentW -
-                  20
+                contentW - 20
               )
             : [];
 
@@ -3351,8 +3340,7 @@ function pdfReport(
           absText
             ? d.splitTextToSize(
                 absText,
-                contentW -
-                  20
+                contentW - 20
               )
             : [];
 
@@ -3363,20 +3351,15 @@ function pdfReport(
             ? arr(
                 p.treatmentTypes
               )
-                .map(
-                  title
-                )
-                .join(
-                  ', '
-                )
+                .map(title)
+                .join(', ')
             : '';
 
         const treatmentLines =
           treatmentsMentioned
             ? d.splitTextToSize(
                 `Treatments mentioned: ${treatmentsMentioned}`,
-                contentW -
-                  20
+                contentW - 20
               )
             : [];
 
@@ -3389,10 +3372,8 @@ function pdfReport(
 
         const targetHeight =
           17 +
-          titleLines.length *
-            5 +
-          metaLines.length *
-            3.8 +
+          titleLines.length * 5 +
+          metaLines.length * 3.8 +
           (
             p.pmc_id
               ? 7
@@ -3401,13 +3382,11 @@ function pdfReport(
           Math.min(
             abstractLines.length,
             7
-          ) *
-            4 +
+          ) * 4 +
           Math.min(
             treatmentLines.length,
             2
-          ) *
-            3.8 +
+          ) * 3.8 +
           (
             hasLinks
               ? 11
@@ -3424,8 +3403,7 @@ function pdfReport(
           );
 
         ensureSpace(
-          cardHeight +
-            7
+          cardHeight + 7
         );
 
         const startY = y;
@@ -3473,20 +3451,14 @@ function pdfReport(
           'bold'
         );
 
-        d.setFontSize(
-          7
-        );
+        d.setFontSize(7);
 
         d.text(
-          String(
-            i + 1
-          ),
+          String(i + 1),
           margin + 8,
-          startY +
-            10.2,
+          startY + 10.2,
           {
-            align:
-              'center'
+            align: 'center'
           }
         );
 
@@ -3505,9 +3477,7 @@ function pdfReport(
           'bold'
         );
 
-        d.setFontSize(
-          10
-        );
+        d.setFontSize(10);
 
         d.text(
           titleLines,
@@ -3613,9 +3583,7 @@ function pdfReport(
             'normal'
           );
 
-          d.setFontSize(
-            8
-          );
+          d.setFontSize(8);
 
           const reserved =
             hasLinks
@@ -3651,9 +3619,7 @@ function pdfReport(
               1;
 
             visibleAbstract[last] =
-              visibleAbstract[
-                last
-              ]
+              visibleAbstract[last]
                 .replace(
                   /\.*$/,
                   ''
@@ -3694,9 +3660,7 @@ function pdfReport(
             'bold'
           );
 
-          d.setFontSize(
-            7
-          );
+          d.setFontSize(7);
 
           const visibleTreatment =
             treatmentLines.slice(
@@ -3716,15 +3680,14 @@ function pdfReport(
             2;
         }
 
-        if (
-          hasLinks
-        ) {
+        if (hasLinks) {
           const linkY =
             startY +
             cardHeight -
             9;
 
-          let linkX = textX;
+          let linkX =
+            textX;
 
           if (
             p.pubmed_url
@@ -3774,9 +3737,7 @@ function pdfReport(
       }
     );
 
-  ensureSpace(
-    42
-  );
+  ensureSpace(42);
 
   d.setFillColor(
     ...LIGHT
@@ -3805,9 +3766,7 @@ function pdfReport(
     'bold'
   );
 
-  d.setFontSize(
-    10
-  );
+  d.setFontSize(10);
 
   d.text(
     'Sources & Interpretation',
@@ -3835,8 +3794,7 @@ function pdfReport(
   d.text(
     d.splitTextToSize(
       sourceText,
-      contentW -
-        12
+      contentW - 12
     ),
     margin + 6,
     y + 14
