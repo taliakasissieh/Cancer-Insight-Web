@@ -11,7 +11,7 @@ export const metadata = {
   },
 
   description:
-    'Cancer Insight is a cancer research explorer for discovering cancer research papers, PubMed abstracts, treatment research, research analytics, free full-text studies, and scientific cancer images.',
+    'Cancer Insight is a cancer research explorer for discovering cancer research papers, PubMed abstracts, cancer treatment studies, oncology research, treatment evidence, research analytics, free full-text studies, and scientific cancer images.',
 
   keywords: [
     'Cancer Insight',
@@ -24,8 +24,22 @@ export const metadata = {
     'cancer treatments',
     'cancer studies',
     'oncology research',
-    'PubMed',
     'medical research',
+    'PubMed',
+    'cancer research database',
+    'cancer research articles',
+    'cancer research studies',
+    'cancer treatment studies',
+    'oncology studies',
+    'cancer evidence',
+    'cancer treatment evidence',
+    'cancer research analytics',
+    'cancer research explorer',
+    'cancer scientific papers',
+    'cancer medical research',
+    'free cancer research papers',
+    'open access cancer research',
+    'cancer research resources',
   ],
 
   authors: [
@@ -60,14 +74,14 @@ export const metadata = {
     siteName: 'Cancer Insight',
     title: 'Cancer Insight | Cancer Research Explorer',
     description:
-      'Explore cancer research papers, PubMed abstracts, cancer treatment research, research analytics, free full-text studies, and scientific cancer images with Cancer Insight.',
+      'Explore cancer research papers, PubMed abstracts, cancer treatment studies, oncology research, treatment evidence, research analytics, and scientific cancer resources with Cancer Insight.',
   },
 
   twitter: {
     card: 'summary_large_image',
     title: 'Cancer Insight | Cancer Research Explorer',
     description:
-      'Explore cancer research papers, PubMed abstracts, treatment research, research analytics, and scientific cancer research sources with Cancer Insight.',
+      'Explore cancer research papers, PubMed abstracts, cancer treatment studies, oncology research, treatment evidence, and scientific cancer research resources with Cancer Insight.',
   },
 };
 
