@@ -188,3 +188,205 @@
     font-size: 11px;
   }
 }
+.paperCard {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 22px;
+  margin: 15px 0;
+  box-shadow: 0 8px 24px rgba(23,54,77,.06);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.paperCard:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 30px rgba(23,54,77,.09);
+}
+
+.savedPaper {
+  border-color: #e5c85f;
+  background: #fffdf2;
+}
+
+.paperTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.paperNumber {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 800;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+
+.paperTitle {
+  margin: 0;
+  color: var(--navy);
+  font-size: 21px;
+  line-height: 1.35;
+}
+
+.saveButton {
+  flex-shrink: 0;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--navy);
+  border-radius: 999px;
+  padding: 8px 13px;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.saveButton:hover {
+  border-color: var(--teal);
+  color: var(--teal);
+}
+
+.savedActive {
+  background: #fff7d6;
+  border-color: #e5c85f;
+  color: #806300;
+}
+
+.paperMeta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 12px 0 10px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.paperMeta span {
+  position: relative;
+}
+
+.paperBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 10px 0 14px;
+}
+
+.abstractBox {
+  margin-top: 14px;
+  padding: 16px 18px;
+  background: #f7fbfc;
+  border: 1px solid #e2edf1;
+  border-radius: 14px;
+}
+
+.abstractLabel {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  font-weight: 800;
+  color: var(--teal);
+  margin-bottom: 8px;
+}
+
+.abstractBox p {
+  margin: 0;
+  color: #324f60;
+  line-height: 1.65;
+  font-size: 14px;
+}
+
+.treatmentMention {
+  margin-top: 13px;
+  padding: 11px 13px;
+  border-left: 3px solid var(--teal);
+  background: #eef8f8;
+  border-radius: 8px;
+  color: #31515f;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.paperActions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.sourceButton {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 10px;
+  text-decoration: none;
+  border: 1px solid #cfe2e6;
+  background: #f6fbfc;
+  color: #126b70;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.sourceButton:hover {
+  background: #eaf7f8;
+}
+
+.sourcePrimary {
+  background: linear-gradient(90deg,#168F96,#1BA8A0);
+  color: white;
+  border: 0;
+}
+
+.sourcePrimary:hover {
+  background: linear-gradient(90deg,#137f85,#188f89);
+}
+
+.doiText {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+  word-break: break-all;
+}
+
+@media(max-width:900px) {
+  .paperCard {
+    padding: 18px;
+  }
+
+  .paperTop {
+    display: block;
+  }
+
+  .saveButton {
+    margin-top: 12px;
+  }
+
+  .paperTitle {
+    font-size: 18px;
+  }
+
+  .paperMeta {
+    display: block;
+  }
+
+  .paperMeta span {
+    display: block;
+    margin-bottom: 5px;
+  }
+
+  .paperActions {
+    align-items: stretch;
+  }
+
+  .sourceButton {
+    text-align: center;
+    flex: 1 1 auto;
+  }
+
+  .doiText {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 4px;
+  }
+}
