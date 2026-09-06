@@ -1,26 +1,29 @@
 import './globals.css';
+
 import Script from 'next/script';
 
 export const metadata = {
   metadataBase: new URL('https://www.cancer-insight.com'),
 
   title: {
-  default: 'Cancer Insight | Cancer Research Explorer',
-  template: '%s | Cancer Insight',
-},
+    default: 'Cancer Insight | Cancer Research Explorer',
+    template: '%s | Cancer Insight',
+  },
 
   description:
-    'Explore cancer research papers, PubMed abstracts, treatment evidence, research analytics, free full-text studies, and scientific cancer images with Cancer Insight.',
+    'Cancer Insight is a cancer research explorer for discovering cancer research papers, PubMed abstracts, treatment research, research analytics, free full-text studies, and scientific cancer images.',
 
   keywords: [
-    'cancer research',
     'Cancer Insight',
-    'PubMed cancer research',
+    'cancer insight',
+    'Cancer Research Explorer',
+    'cancer research',
     'cancer research papers',
+    'PubMed cancer research',
+    'cancer treatment research',
     'cancer treatments',
     'cancer studies',
     'oncology research',
-    'cancer treatment research',
     'PubMed',
     'medical research',
   ],
@@ -41,6 +44,7 @@ export const metadata = {
   robots: {
     index: true,
     follow: true,
+
     googleBot: {
       index: true,
       follow: true,
@@ -54,16 +58,16 @@ export const metadata = {
     type: 'website',
     url: 'https://www.cancer-insight.com',
     siteName: 'Cancer Insight',
-    title: 'Cancer Insight | Cancer Research & PubMed Explorer',
+    title: 'Cancer Insight | Cancer Research Explorer',
     description:
-      'Explore cancer research papers, PubMed abstracts, treatment evidence, research analytics, free full-text studies, and scientific cancer images.',
+      'Explore cancer research papers, PubMed abstracts, cancer treatment research, research analytics, free full-text studies, and scientific cancer images with Cancer Insight.',
   },
 
   twitter: {
     card: 'summary_large_image',
-    title: 'Cancer Insight | Cancer Research & PubMed Explorer',
+    title: 'Cancer Insight | Cancer Research Explorer',
     description:
-      'Explore cancer research papers, PubMed abstracts, treatment evidence, research analytics, and scientific cancer research sources.',
+      'Explore cancer research papers, PubMed abstracts, treatment research, research analytics, and scientific cancer research sources with Cancer Insight.',
   },
 };
 
@@ -83,6 +87,7 @@ export default function RootLayout({ children }) {
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
+
             gtag('config', 'G-Y2XM3DY8ZT');
           `}
         </Script>
