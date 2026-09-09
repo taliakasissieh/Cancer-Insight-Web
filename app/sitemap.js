@@ -1,10 +1,20 @@
 export default function sitemap() {
   return [
     {
-      url: 'https://www.cancer-insight.com',
+      url: 'https://www.cancer-insight.com/',
       lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 1,
+    },
+    {
+      url: 'https://www.cancer-insight.com/privacy-policy',
+      lastModified: new Date(),
+    },
+    {
+      url: 'https://www.cancer-insight.com/contact',
+      lastModified: new Date(),
+    },
+    {
+      url: 'https://www.cancer-insight.com/terms',
+      lastModified: new Date(),
     },
   ];
 }
