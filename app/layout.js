@@ -5,6 +5,8 @@ import Script from 'next/script';
 export const metadata = {
   metadataBase: new URL('https://www.cancer-insight.com'),
 
+  applicationName: 'Cancer Insight',
+
   title: {
     default: 'Cancer Insight | Cancer Research Explorer',
     template: '%s | Cancer Insight',
@@ -53,6 +55,14 @@ export const metadata = {
   creator: 'Cancer Insight',
   publisher: 'Cancer Insight',
 
+  category: 'education',
+
+  icons: {
+    icon: '/icon.png',
+    shortcut: '/icon.png',
+    apple: '/icon.png',
+  },
+
   alternates: {
     canonical: '/',
   },
@@ -87,6 +97,10 @@ export const metadata = {
     description:
       'Explore cancer research papers, PubMed abstracts, cancer treatment studies, oncology research, treatment evidence, research analytics, and scientific cancer resources with Cancer Insight.',
   },
+
+  other: {
+    'theme-color': '#17364D',
+  },
 };
 
 export default function RootLayout({ children }) {
@@ -103,6 +117,17 @@ export default function RootLayout({ children }) {
     ],
 
     url: 'https://www.cancer-insight.com/',
+
+    description:
+      'Cancer Insight is an independent educational cancer research explorer for discovering and examining scientific cancer research, PubMed literature, treatment evidence, research analytics, and scientific cancer resources.',
+
+    inLanguage: 'en',
+
+    isAccessibleForFree: true,
+
+    publisher: {
+      '@id': 'https://www.cancer-insight.com/#organization',
+    },
   };
 
   const organizationStructuredData = {
@@ -116,12 +141,22 @@ export default function RootLayout({ children }) {
 
     url: 'https://www.cancer-insight.com/',
 
-    logo: 'https://www.cancer-insight.com/icon.png',
+    logo: {
+      '@type': 'ImageObject',
+      url: 'https://www.cancer-insight.com/icon.png',
+    },
 
     description:
-      'Cancer Insight is an independent educational cancer research explorer that helps users discover scientific cancer research papers, PubMed abstracts, treatment studies, research analytics, free full-text research, and scientific cancer resources.',
+      'Cancer Insight is an independent educational cancer research explorer that helps users discover scientific cancer research papers, PubMed abstracts, treatment studies, research analytics, free full-text research, study information, and scientific cancer resources.',
 
     email: 'cancerinsight.contact@gmail.com',
+
+    contactPoint: {
+      '@type': 'ContactPoint',
+      email: 'cancerinsight.contact@gmail.com',
+      contactType: 'website support',
+      availableLanguage: ['English'],
+    },
   };
 
   return (
@@ -158,6 +193,8 @@ export default function RootLayout({ children }) {
             function gtag() {
               dataLayer.push(arguments);
             }
+
+            window.gtag = gtag;
 
             gtag('js', new Date());
 
