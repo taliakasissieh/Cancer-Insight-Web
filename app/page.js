@@ -35,15 +35,36 @@ const arr = x =>
   Array.isArray(x) ? x : x ? [x] : [];
 
 function best(p, k1, k2) {
-  return p[k1] || p[k2] || '';
+  return p?.[k1] || p?.[k2] || '';
 }
 
 function key(p) {
   return (
-    p.pubmedId ||
-    p.doi ||
-    best(p, 'pubmed_title', 'title')
+    p?.pubmedId ||
+    p?.pmid ||
+    p?.doi ||
+    best(p, 'pubmed_title', 'title') ||
+    JSON.stringify(p)
   );
+}
+
+function uniquePapers(papers = []) {
+  const seen = new Set();
+
+  return papers.filter(p => {
+    const k = String(key(p) || '').trim().toLowerCase();
+
+    if (!k) {
+      return true;
+    }
+
+    if (seen.has(k)) {
+      return false;
+    }
+
+    seen.add(k);
+    return true;
+  });
 }
 
 function Paper({
@@ -87,14 +108,14 @@ function Paper({
 
   const authors =
     Array.isArray(
-      p.pubmed_authors
+      p?.pubmed_authors
     )
       ? p.pubmed_authors.join(', ')
-      : p.pubmed_authors;
+      : p?.pubmed_authors;
 
   const treatments =
     arr(
-      p.treatmentTypes
+      p?.treatmentTypes
     )
       .map(title)
       .join(', ');
@@ -144,8 +165,13 @@ function Paper({
       </div>
 
       <div className="paperMeta">
-        {j && <span>{j}</span>}
-        {d && <span>{d}</span>}
+        {j && (
+          <span>{j}</span>
+        )}
+
+        {d && (
+          <span>{d}</span>
+        )}
 
         {authors && (
           <span className="paperAuthors">
@@ -155,7 +181,7 @@ function Paper({
       </div>
 
       <div className="paperBadges">
-        {p.pmc_id && (
+        {p?.pmc_id && (
           <span className="badge free">
             Free full text in PMC
           </span>
@@ -167,8 +193,8 @@ function Paper({
           </span>
         )}
 
-        {(p.pmc_url ||
-          p.publisher_url) && (
+        {(p?.pmc_url ||
+          p?.publisher_url) && (
           <span className="badge link">
             Full-text source
           </span>
@@ -209,7 +235,7 @@ function Paper({
       )}
 
       <div className="paperActions">
-        {p.pubmed_url && (
+        {p?.pubmed_url && (
           <a
             className="sourceButton sourcePrimary"
             href={p.pubmed_url}
@@ -220,7 +246,7 @@ function Paper({
           </a>
         )}
 
-        {p.pmc_url && (
+        {p?.pmc_url && (
           <a
             className="sourceButton"
             href={p.pmc_url}
@@ -231,7 +257,7 @@ function Paper({
           </a>
         )}
 
-        {p.publisher_url && (
+        {p?.publisher_url && (
           <a
             className="sourceButton"
             href={p.publisher_url}
@@ -242,7 +268,7 @@ function Paper({
           </a>
         )}
 
-        {p.doi && (
+        {p?.doi && (
           <span className="doiText">
             DOI: {p.doi}
           </span>
@@ -257,11 +283,11 @@ function Metrics({
   tcount
 }) {
   const vals = [
-    ['Research papers', p.paper_count],
-    ['Free full text', p.free_full_text_count],
-    ['Latest year', p.latest_year || '—'],
-    ['Journals', p.journals?.length || 0],
-    ['Clinical trials', p.clinical_trials || 0],
+    ['Research papers', p?.paper_count ?? 0],
+    ['Free full text', p?.free_full_text_count ?? 0],
+    ['Latest year', p?.latest_year || '—'],
+    ['Journals', p?.journals?.length || 0],
+    ['Clinical trials', p?.clinical_trials || 0],
     ['Treatment types', tcount ?? '—']
   ];
 
@@ -287,20 +313,27 @@ function Metrics({
   );
 }
 
-function Bars({ items }) {
+function Bars({ items = [] }) {
+  const safeItems =
+    Array.isArray(items)
+      ? items
+      : [];
+
   const max =
     Math.max(
       1,
-      ...items.map(x => x[1])
+      ...safeItems.map(
+        x => Number(x?.[1]) || 0
+      )
     );
 
   return (
     <div className="panel chartPanel">
-      {items.map(
+      {safeItems.map(
         ([k, v]) => (
           <div
             className="barrow"
-            key={k}
+            key={String(k)}
           >
             <div className="barlabel">
               {title(k)}
@@ -313,7 +346,7 @@ function Bars({ items }) {
                   width:
                     `${Math.max(
                       3,
-                      v / max * 100
+                      (Number(v) || 0) / max * 100
                     )}%`
                 }}
               />
@@ -346,14 +379,18 @@ export default function App() {
           ) || '[]'
         )
       );
-    } catch {}
+    } catch {
+      setBookmarks([]);
+    }
   }, []);
 
   const toggle = k =>
     setBookmarks(b => {
       const n =
         b.includes(k)
-          ? b.filter(x => x !== k)
+          ? b.filter(
+              x => x !== k
+            )
           : [...b, k];
 
       localStorage.setItem(
@@ -406,16 +443,22 @@ export default function App() {
       const j = await r.json();
 
       if (!r.ok) {
-        throw Error(j.error);
+        throw Error(
+          j?.error ||
+          'Search failed.'
+        );
       }
 
       setData(j);
 
       setNotice(
-        `Found ${j.papers.length} papers for ${title(q)}.`
+        `Found ${j?.papers?.length || 0} papers for ${title(q)}.`
       );
     } catch (e) {
-      setError(e.message);
+      setError(
+        e?.message ||
+        'Something went wrong.'
+      );
     } finally {
       setBusy(false);
     }
@@ -451,7 +494,16 @@ export default function App() {
                 }
                 onClick={() => {
                   setPage(p);
-                  scrollTo(0, 0);
+
+                  if (
+                    typeof window !==
+                    'undefined'
+                  ) {
+                    window.scrollTo(
+                      0,
+                      0
+                    );
+                  }
                 }}
                 key={p}
               >
@@ -468,19 +520,31 @@ export default function App() {
         {data && (
           <div className="sideinfo dataSummary">
             <b>
-              {title(data.cancer)} cancer
+              {title(
+                data.cancer
+              )}{' '}
+              cancer
             </b>
 
             <br />
 
-            {data.profile.paper_count}{' '}
+            {
+              data.profile
+                ?.paper_count
+            }{' '}
             papers ·{' '}
-            {data.treatments.length}{' '}
+            {
+              data.treatments
+                ?.length || 0
+            }{' '}
             treatment types
 
             <br />
 
-            {data.profile.free_full_text_count}{' '}
+            {
+              data.profile
+                ?.free_full_text_count || 0
+            }{' '}
             free full-text in PMC
           </div>
         )}
@@ -506,7 +570,8 @@ export default function App() {
 
       <main className="main">
         <div className="content">
-          {page === 'Search' && (
+          {page ===
+            'Search' && (
             <Search
               input={input}
               setInput={setInput}
@@ -559,7 +624,8 @@ export default function App() {
             />
           )}
 
-          {page === 'About' && (
+          {page ===
+            'About' && (
             <About />
           )}
 
@@ -785,7 +851,7 @@ function Search({
             tcount={
               data
                 .treatments
-                .length
+                ?.length || 0
             }
           />
 
@@ -794,7 +860,10 @@ function Search({
           </h3>
 
           <Bars
-            items={data.treatments}
+            items={
+              data.treatments ||
+              []
+            }
           />
 
           <div className="panel resultHelp">
@@ -825,22 +894,47 @@ function Research({
   const [sort, setSort] = useState('Original relevance');
   const [saved, setSaved] = useState(false);
 
+  useEffect(() => {
+    setQ('');
+    setAccess('All');
+    setTr('All treatments');
+    setYear('All years');
+    setSort('Original relevance');
+    setSaved(false);
+  }, [data?.cancer]);
+
   const papers =
     useMemo(() => {
       if (!data) {
         return [];
       }
 
-      let x = [...data.papers];
+      let x =
+        uniquePapers(
+          data.papers ||
+          []
+        );
 
       if (q) {
         x =
           x.filter(p =>
             [
-              best(p, 'pubmed_title', 'title'),
-              best(p, 'pubmed_abstract', 'abstract'),
-              best(p, 'pubmed_journal', 'journal'),
-              p.mesh_terms
+              best(
+                p,
+                'pubmed_title',
+                'title'
+              ),
+              best(
+                p,
+                'pubmed_abstract',
+                'abstract'
+              ),
+              best(
+                p,
+                'pubmed_journal',
+                'journal'
+              ),
+              p?.mesh_terms
             ]
               .join(' ')
               .toLowerCase()
@@ -856,7 +950,7 @@ function Research({
       ) {
         x =
           x.filter(
-            p => p.pmc_id
+            p => p?.pmc_id
           );
       }
 
@@ -881,8 +975,8 @@ function Research({
         x =
           x.filter(
             p =>
-              p.pmc_url ||
-              p.publisher_url
+              p?.pmc_url ||
+              p?.publisher_url
           );
       }
 
@@ -893,7 +987,7 @@ function Research({
         x =
           x.filter(p =>
             arr(
-              p.treatmentTypes
+              p?.treatmentTypes
             )
               .map(norm)
               .includes(
@@ -957,8 +1051,12 @@ function Research({
       ) {
         x.sort(
           (a, b) =>
-            Number(!!b.pmc_id) -
-            Number(!!a.pmc_id)
+            Number(
+              !!b?.pmc_id
+            ) -
+            Number(
+              !!a?.pmc_id
+            )
         );
       }
 
@@ -992,10 +1090,16 @@ function Research({
     );
   }
 
+  const basePapers =
+    uniquePapers(
+      data.papers ||
+      []
+    );
+
   const years =
     [
       ...new Set(
-        data.papers
+        basePapers
           .map(
             p =>
               (
@@ -1060,7 +1164,7 @@ function Research({
               .map(
                 c =>
                   esc(
-                    p[c]
+                    p?.[c]
                   )
               )
               .join(',')
@@ -1143,11 +1247,12 @@ function Research({
             >
               {[
                 'All treatments',
-                ...data
-                  .treatments
-                  .map(
-                    x => x[0]
-                  )
+                ...(
+                  data.treatments ||
+                  []
+                ).map(
+                  x => x[0]
+                )
               ].map(x => (
                 <option key={x}>
                   {x}
@@ -1245,7 +1350,7 @@ function Research({
         </div>
 
         <div className="paperCount">
-          Showing <b>{papers.length}</b> papers
+          Showing <b>{papers.length}</b> unique papers
         </div>
       </div>
 
@@ -1260,7 +1365,9 @@ function Research({
               )
             }
             toggle={toggle}
-            key={key(p) + i}
+            key={
+              key(p) + i
+            }
           />
         )
       )}
@@ -1268,7 +1375,9 @@ function Research({
   );
 }
 
-function Analytics({ data }) {
+function Analytics({
+  data
+}) {
   if (!data) {
     return (
       <>
@@ -1308,7 +1417,7 @@ function Analytics({ data }) {
         tcount={
           data
             .treatments
-            .length
+            ?.length || 0
         }
       />
 
@@ -1317,7 +1426,10 @@ function Analytics({ data }) {
       </h3>
 
       <Bars
-        items={data.treatments}
+        items={
+          data.treatments ||
+          []
+        }
       />
 
       <h3>
@@ -1327,7 +1439,8 @@ function Analytics({ data }) {
       <Bars
         items={
           Object.entries(
-            data.profile.year_counts ||
+            data.profile
+              ?.year_counts ||
               {}
           ).sort()
         }
@@ -1339,7 +1452,8 @@ function Analytics({ data }) {
 
       <Bars
         items={
-          data.profile.top_journals ||
+          data.profile
+            ?.top_journals ||
           []
         }
       />
@@ -1350,7 +1464,10 @@ function Analytics({ data }) {
           onClick={() =>
             pdfReport(
               data.cancer,
-              data.papers,
+              uniquePapers(
+                data.papers ||
+                []
+              ),
               data.treatments
             )
           }
@@ -1369,8 +1486,14 @@ function Analytics({ data }) {
                 '_treatment_counts.csv',
 
               'treatment,paper_count\n' +
-                data.treatments
-                  .map(x => x.join(','))
+                (
+                  data.treatments ||
+                  []
+                )
+                  .map(
+                    x =>
+                      x.join(',')
+                  )
                   .join('\n'),
 
               'text/csv'
@@ -1394,29 +1517,24 @@ function Treatment({
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (
-      data
-        ?.treatments
-        ?.length &&
-      !tr
-    ) {
-      setTr(
-        data
-          .treatments[0][0]
-      );
-    }
-  }, [
-    data,
-    tr
-  ]);
+    const firstTreatment =
+      data?.treatments?.[0]?.[0] ||
+      '';
+
+    setTr(firstTreatment);
+    setEvidence([]);
+  }, [data?.cancer]);
 
   useEffect(() => {
     if (
       !data ||
       !tr
     ) {
+      setEvidence([]);
       return;
     }
+
+    let cancelled = false;
 
     setBusy(true);
 
@@ -1445,18 +1563,41 @@ function Treatment({
         r => r.json()
       )
       .then(
-        j =>
-          setEvidence(
-            j.papers ||
-              []
-          )
+        j => {
+          if (
+            !cancelled
+          ) {
+            setEvidence(
+              uniquePapers(
+                j?.papers ||
+                []
+              )
+            );
+          }
+        }
       )
+      .catch(() => {
+        if (
+          !cancelled
+        ) {
+          setEvidence([]);
+        }
+      })
       .finally(
-        () =>
-          setBusy(false)
+        () => {
+          if (
+            !cancelled
+          ) {
+            setBusy(false);
+          }
+        }
       );
+
+    return () => {
+      cancelled = true;
+    };
   }, [
-    data,
+    data?.cancer,
     tr
   ]);
 
@@ -1479,16 +1620,27 @@ function Treatment({
   }
 
   const api =
-    data.papers.filter(
-      p =>
-        arr(
-          p.treatmentTypes
-        )
-          .map(norm)
-          .includes(
-            norm(tr)
+    uniquePapers(
+      (
+        data.papers ||
+        []
+      ).filter(
+        p =>
+          arr(
+            p?.treatmentTypes
           )
+            .map(norm)
+            .includes(
+              norm(tr)
+            )
+      )
     );
+
+  const combined =
+    uniquePapers([
+      ...api,
+      ...evidence
+    ]);
 
   return (
     <>
@@ -1518,13 +1670,18 @@ function Treatment({
               )
             }
           >
-            {data.treatments.map(
+            {(
+              data.treatments ||
+              []
+            ).map(
               x => (
                 <option
                   key={x[0]}
                   value={x[0]}
                 >
-                  {title(x[0])}
+                  {title(
+                    x[0]
+                  )}
                 </option>
               )
             )}
@@ -1554,12 +1711,19 @@ function Treatment({
 
       <Metrics
         p={
-          simpleProfile([
-            ...api,
-            ...evidence
-          ])
+          simpleProfile(
+            combined
+          )
         }
       />
+
+      <div className="panel comparisonNotice">
+        <b>
+          Unique-paper counting
+        </b>{' '}
+        Cancer Insight removes duplicate papers before calculating these
+        research totals.
+      </div>
 
       {busy && (
         <div className="loadingNotice">
@@ -1583,7 +1747,9 @@ function Treatment({
                 )
               }
               toggle={toggle}
-              key={key(p) + i}
+              key={
+                key(p) + i
+              }
             />
           )
         )
@@ -1598,6 +1764,18 @@ function Treatment({
       </h2>
 
       {evidence
+        .filter(
+          p =>
+            !api.some(
+              x =>
+                String(
+                  key(x)
+                ).toLowerCase() ===
+                String(
+                  key(p)
+                ).toLowerCase()
+            )
+        )
         .slice(0, 8)
         .map(
           (p, i) => (
@@ -1610,7 +1788,9 @@ function Treatment({
                 )
               }
               toggle={toggle}
-              key={key(p) + i}
+              key={
+                key(p) + i
+              }
             />
           )
         )}
@@ -1618,37 +1798,29 @@ function Treatment({
   );
 }
 
-function Compare({ data }) {
+function Compare({
+  data
+}) {
   const [a, setA] = useState('');
   const [b, setB] = useState('');
   const [ea, setEa] = useState([]);
   const [eb, setEb] = useState([]);
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (
-      data
-        ?.treatments
-        ?.length
-    ) {
-      setA(
-        x =>
-          x ||
-          data
-            .treatments[0]
-            ?.[0] ||
-          ''
-      );
+    const first =
+      data?.treatments?.[0]?.[0] ||
+      '';
 
-      setB(
-        x =>
-          x ||
-          data
-            .treatments[1]
-            ?.[0] ||
-          ''
-      );
-    }
-  }, [data]);
+    const second =
+      data?.treatments?.[1]?.[0] ||
+      '';
+
+    setA(first);
+    setB(second);
+    setEa([]);
+    setEb([]);
+  }, [data?.cancer]);
 
   useEffect(() => {
     if (
@@ -1657,8 +1829,14 @@ function Compare({ data }) {
       !b ||
       a === b
     ) {
+      setEa([]);
+      setEb([]);
       return;
     }
+
+    let cancelled = false;
+
+    setBusy(true);
 
     Promise.all(
       [a, b].map(
@@ -1687,21 +1865,53 @@ function Compare({ data }) {
             r => r.json()
           )
       )
-    ).then(
-      ([x, y]) => {
-        setEa(
-          x.papers ||
-            []
-        );
+    )
+      .then(
+        ([x, y]) => {
+          if (
+            cancelled
+          ) {
+            return;
+          }
 
-        setEb(
-          y.papers ||
-            []
-        );
-      }
-    );
+          setEa(
+            uniquePapers(
+              x?.papers ||
+              []
+            )
+          );
+
+          setEb(
+            uniquePapers(
+              y?.papers ||
+              []
+            )
+          );
+        }
+      )
+      .catch(() => {
+        if (
+          !cancelled
+        ) {
+          setEa([]);
+          setEb([]);
+        }
+      })
+      .finally(
+        () => {
+          if (
+            !cancelled
+          ) {
+            setBusy(false);
+          }
+        }
+      );
+
+    return () => {
+      cancelled = true;
+    };
   }, [
-    data,
+    data?.cancer,
     a,
     b
   ]);
@@ -1725,8 +1935,10 @@ function Compare({ data }) {
   }
 
   if (
-    data.treatments
-      .length < 2
+    (
+      data.treatments ||
+      []
+    ).length < 2
   ) {
     return (
       <div className="panel">
@@ -1735,35 +1947,61 @@ function Compare({ data }) {
     );
   }
 
-  const pa =
-    simpleProfile([
-      ...data.papers.filter(
+  const apiA =
+    uniquePapers(
+      (
+        data.papers ||
+        []
+      ).filter(
         p =>
           arr(
-            p.treatmentTypes
+            p?.treatmentTypes
           )
             .map(norm)
             .includes(
               norm(a)
             )
-      ),
-      ...ea
-    ]);
+      )
+    );
 
-  const pb =
-    simpleProfile([
-      ...data.papers.filter(
+  const apiB =
+    uniquePapers(
+      (
+        data.papers ||
+        []
+      ).filter(
         p =>
           arr(
-            p.treatmentTypes
+            p?.treatmentTypes
           )
             .map(norm)
             .includes(
               norm(b)
             )
-      ),
+      )
+    );
+
+  const combinedA =
+    uniquePapers([
+      ...apiA,
+      ...ea
+    ]);
+
+  const combinedB =
+    uniquePapers([
+      ...apiB,
       ...eb
     ]);
+
+  const pa =
+    simpleProfile(
+      combinedA
+    );
+
+  const pb =
+    simpleProfile(
+      combinedB
+    );
 
   return (
     <>
@@ -1793,13 +2031,18 @@ function Compare({ data }) {
               )
             }
           >
-            {data.treatments.map(
+            {(
+              data.treatments ||
+              []
+            ).map(
               x => (
                 <option
                   key={x[0]}
                   value={x[0]}
                 >
-                  {title(x[0])}
+                  {title(
+                    x[0]
+                  )}
                 </option>
               )
             )}
@@ -1817,13 +2060,18 @@ function Compare({ data }) {
               )
             }
           >
-            {data.treatments.map(
+            {(
+              data.treatments ||
+              []
+            ).map(
               x => (
                 <option
                   key={x[0]}
                   value={x[0]}
                 >
-                  {title(x[0])}
+                  {title(
+                    x[0]
+                  )}
                 </option>
               )
             )}
@@ -1841,10 +2089,16 @@ function Compare({ data }) {
             <b>
               How to read this comparison
             </b>{' '}
-            The descriptions explain each treatment while the numbers compare
-            retrieved research evidence. More papers or newer studies do not
-            mean one treatment is medically better.
+            The numbers compare unique retrieved research papers.
+            More papers, newer studies, or greater research coverage do not
+            mean one treatment is medically better, safer, or more appropriate.
           </div>
+
+          {busy && (
+            <div className="loadingNotice">
+              Retrieving treatment comparison evidence…
+            </div>
+          )}
 
           <h2>
             Research Comparison
@@ -1902,8 +2156,14 @@ function Compare({ data }) {
                   ([l, k]) => (
                     <tr key={k}>
                       <td>{l}</td>
-                      <td>{pa[k] || '—'}</td>
-                      <td>{pb[k] || '—'}</td>
+
+                      <td>
+                        {pa[k] ?? '—'}
+                      </td>
+
+                      <td>
+                        {pb[k] ?? '—'}
+                      </td>
                     </tr>
                   )
                 )}
@@ -1926,7 +2186,9 @@ function Compare({ data }) {
                       n={i + 1}
                       saved={false}
                       toggle={() => {}}
-                      key={key(p) + i}
+                      key={
+                        key(p) + i
+                      }
                     />
                   )
                 )}
@@ -1946,7 +2208,9 @@ function Compare({ data }) {
                       n={i + 1}
                       saved={false}
                       toggle={() => {}}
-                      key={key(p) + i}
+                      key={
+                        key(p) + i
+                      }
                     />
                   )
                 )}
@@ -1967,8 +2231,11 @@ function Images({
 
   useEffect(() => {
     if (!data) {
+      setImages([]);
       return;
     }
+
+    let cancelled = false;
 
     setBusy(true);
 
@@ -1993,18 +2260,39 @@ function Images({
         r => r.json()
       )
       .then(
-        j =>
-          setImages(
-            j.images ||
-              []
-          )
+        j => {
+          if (
+            !cancelled
+          ) {
+            setImages(
+              j?.images ||
+                []
+            );
+          }
+        }
       )
+      .catch(() => {
+        if (
+          !cancelled
+        ) {
+          setImages([]);
+        }
+      })
       .finally(
-        () =>
-          setBusy(false)
+        () => {
+          if (
+            !cancelled
+          ) {
+            setBusy(false);
+          }
+        }
       );
+
+    return () => {
+      cancelled = true;
+    };
   }, [
-    data,
+    data?.cancer,
     setImages
   ]);
 
@@ -2055,7 +2343,11 @@ function Images({
           (x, i) => (
             <div
               className="imagecard"
-              key={i}
+              key={
+                x?.original ||
+                x?.thumbnail ||
+                i
+              }
             >
               <div className="imageFrame">
                 <img
@@ -2104,14 +2396,16 @@ function Images({
                   </p>
                 )}
 
-                <a
-                  className="sourceButton"
-                  href={x.original}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Open Original Source
-                </a>
+                {x.original && (
+                  <a
+                    className="sourceButton"
+                    href={x.original}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Open Original Source
+                  </a>
+                )}
               </div>
             </div>
           )
@@ -2238,6 +2532,12 @@ function About() {
 function simpleProfile(
   papers
 ) {
+  const unique =
+    uniquePapers(
+      papers ||
+      []
+    );
+
   const years = [];
   const journals = new Set();
 
@@ -2246,8 +2546,8 @@ function simpleProfile(
   let reviews = 0;
   let meta = 0;
 
-  papers.forEach(p => {
-    if (p.pmc_id) {
+  unique.forEach(p => {
+    if (p?.pmc_id) {
       free++;
     }
 
@@ -2281,7 +2581,7 @@ function simpleProfile(
 
     const t =
       arr(
-        p.publication_types
+        p?.publication_types
       )
         .join(' ')
         .toLowerCase();
@@ -2313,7 +2613,7 @@ function simpleProfile(
 
   return {
     paper_count:
-      papers.length,
+      unique.length,
 
     free_full_text_count:
       free,
@@ -2351,7 +2651,7 @@ function download(
       'a'
     );
 
-  a.href =
+  const url =
     URL.createObjectURL(
       new Blob(
         [text],
@@ -2359,12 +2659,17 @@ function download(
       )
     );
 
+  a.href = url;
   a.download = name;
+
+  document.body.appendChild(a);
 
   a.click();
 
+  a.remove();
+
   URL.revokeObjectURL(
-    a.href
+    url
   );
 }
 
@@ -2373,6 +2678,12 @@ function pdfReport(
   papers,
   treatments
 ) {
+  const uniqueReportPapers =
+    uniquePapers(
+      papers ||
+      []
+    );
+
   const d =
     new jsPDF({
       orientation:
@@ -2395,7 +2706,6 @@ function pdfReport(
 
   const pageW = 210;
   const margin = 16;
-
   const contentW =
     pageW - margin * 2;
 
@@ -2510,12 +2820,12 @@ function pdfReport(
     p =>
       pdfText(
         Array.isArray(
-          p.pubmed_authors
+          p?.pubmed_authors
         )
           ? p.pubmed_authors.join(
               ', '
             )
-          : p.pubmed_authors
+          : p?.pubmed_authors
       );
 
   function footer() {
@@ -2894,12 +3204,12 @@ function pdfReport(
   y += 13;
 
   const freeCount =
-    papers.filter(
-      p => p.pmc_id
+    uniqueReportPapers.filter(
+      p => p?.pmc_id
     ).length;
 
   const years =
-    papers
+    uniqueReportPapers
       .map(p => {
         const m =
           String(
@@ -2926,7 +3236,7 @@ function pdfReport(
   const cards = [
     [
       'Research Papers',
-      papers.length
+      uniqueReportPapers.length
     ],
     [
       'Free Full Text',
@@ -3061,7 +3371,7 @@ function pdfReport(
   );
 
   const intro =
-    `This report summarizes ${papers.length} research papers retrieved for ${title(cancer)} cancer. ` +
+    `This report summarizes ${uniqueReportPapers.length} unique research papers retrieved for ${title(cancer)} cancer. ` +
     'Cancer Insight presents publication metadata, abstracts, treatment research coverage, and links to original scientific sources. ' +
     'The report describes retrieved research literature and does not rank treatments or provide medical recommendations.';
 
@@ -3227,7 +3537,7 @@ function pdfReport(
     'Research Papers'
   );
 
-  papers
+  uniqueReportPapers
     .slice(0, 20)
     .forEach(
       (p, i) => {
@@ -3295,7 +3605,7 @@ function pdfReport(
 
         const treatmentsMentioned =
           arr(
-            p.treatmentTypes
+            p?.treatmentTypes
           ).length
             ? arr(
                 p.treatmentTypes
@@ -3314,9 +3624,9 @@ function pdfReport(
 
         const hasLinks =
           Boolean(
-            p.pubmed_url ||
-            p.pmc_url ||
-            p.publisher_url
+            p?.pubmed_url ||
+            p?.pmc_url ||
+            p?.publisher_url
           );
 
         const targetHeight =
@@ -3324,7 +3634,7 @@ function pdfReport(
           titleLines.length * 5 +
           metaLines.length * 3.8 +
           (
-            p.pmc_id
+            p?.pmc_id
               ? 7
               : 0
           ) +
@@ -3474,7 +3784,7 @@ function pdfReport(
         }
 
         if (
-          p.pmc_id &&
+          p?.pmc_id &&
           py <
             startY +
               cardHeight -
@@ -3639,7 +3949,7 @@ function pdfReport(
             textX;
 
           if (
-            p.pubmed_url
+            p?.pubmed_url
           ) {
             drawLinkButton(
               'PubMed',
@@ -3653,7 +3963,7 @@ function pdfReport(
           }
 
           if (
-            p.pmc_url
+            p?.pmc_url
           ) {
             drawLinkButton(
               'Free Full Text',
@@ -3667,7 +3977,7 @@ function pdfReport(
           }
 
           if (
-            p.publisher_url
+            p?.publisher_url
           ) {
             drawLinkButton(
               'Publisher',
@@ -3738,7 +4048,7 @@ function pdfReport(
 
   const sourceText =
     'Cancer Insight keeps original research sources visible whenever available, including PubMed, PubMed Central (PMC), DOI, and publisher links. ' +
-    'Paper counts and treatment coverage describe the retrieved literature only and should not be interpreted as evidence that one treatment is superior.';
+    'Duplicate papers are removed from research counts where possible. Paper counts and treatment coverage describe the retrieved literature only and should not be interpreted as evidence that one treatment is superior.';
 
   d.text(
     d.splitTextToSize(
