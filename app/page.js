@@ -52,7 +52,9 @@ function uniquePapers(papers = []) {
   const seen = new Set();
 
   return papers.filter(p => {
-    const k = String(key(p) || '').trim().toLowerCase();
+    const k = String(key(p) || '')
+      .trim()
+      .toLowerCase();
 
     if (!k) {
       return true;
@@ -63,8 +65,39 @@ function uniquePapers(papers = []) {
     }
 
     seen.add(k);
+
     return true;
   });
+}
+
+function SiteFooter() {
+  return (
+    <footer className="legalFooter">
+      <a href="/">
+        Cancer Insight
+      </a>
+
+      <a href="/methodology">
+        Methodology
+      </a>
+
+      <a href="/faq">
+        FAQ
+      </a>
+
+      <a href="/privacy-policy">
+        Privacy Policy
+      </a>
+
+      <a href="/contact">
+        Contact
+      </a>
+
+      <a href="/terms">
+        Terms & Disclaimer
+      </a>
+    </footer>
+  );
 }
 
 function Paper({
@@ -346,7 +379,9 @@ function Bars({ items = [] }) {
                   width:
                     `${Math.max(
                       3,
-                      (Number(v) || 0) / max * 100
+                      (Number(v) || 0) /
+                        max *
+                        100
                     )}%`
                 }}
               />
@@ -553,6 +588,14 @@ export default function App() {
           Educational use only. Not medical advice.
 
           <div className="legalLinks">
+            <a href="/methodology">
+              Methodology
+            </a>
+
+            <a href="/faq">
+              FAQ
+            </a>
+
             <a href="/privacy-policy">
               Privacy Policy
             </a>
@@ -637,6 +680,8 @@ export default function App() {
             individualized treatment recommendations, or professional
             medical advice.
           </div>
+
+          <SiteFooter />
         </div>
       </main>
     </div>
@@ -2510,6 +2555,42 @@ function About() {
             </li>
           </ul>
         </section>
+
+        <section className="panel aboutCard">
+          <h2>
+            Research Methodology
+          </h2>
+
+          <p>
+            Cancer Insight explains how research records are found,
+            organized, enriched, deduplicated, and presented.
+          </p>
+
+          <a
+            className="sourceButton"
+            href="/methodology"
+          >
+            Read Research Methodology
+          </a>
+        </section>
+
+        <section className="panel aboutCard">
+          <h2>
+            Frequently Asked Questions
+          </h2>
+
+          <p>
+            Learn more about PubMed, free full text, treatment research,
+            comparisons, saved papers, reports, and scientific images.
+          </p>
+
+          <a
+            className="sourceButton"
+            href="/faq"
+          >
+            View FAQ
+          </a>
+        </section>
       </div>
 
       <section className="panel limitationPanel">
@@ -2706,6 +2787,7 @@ function pdfReport(
 
   const pageW = 210;
   const margin = 16;
+
   const contentW =
     pageW - margin * 2;
 
