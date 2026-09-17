@@ -70,32 +70,76 @@ function uniquePapers(papers = []) {
   });
 }
 
+function trackEvent(name, params = {}) {
+  if (
+    typeof window !== 'undefined' &&
+    typeof window.gtag === 'function'
+  ) {
+    window.gtag(
+      'event',
+      name,
+      params
+    );
+  }
+}
+
 function SiteFooter() {
+  const trackedLink = (
+    href,
+    label,
+    eventName
+  ) => (
+    <a
+      href={href}
+      onClick={() =>
+        trackEvent(eventName, {
+          link_text: label,
+          link_url: href,
+          location: 'site_footer'
+        })
+      }
+    >
+      {label}
+    </a>
+  );
+
   return (
     <footer className="legalFooter">
-      <a href="/">
-        Cancer Insight
-      </a>
+      {trackedLink(
+        '/',
+        'Cancer Insight',
+        'footer_home_click'
+      )}
 
-      <a href="/methodology">
-        Methodology
-      </a>
+      {trackedLink(
+        '/methodology',
+        'Methodology',
+        'methodology_click'
+      )}
 
-      <a href="/faq">
-        FAQ
-      </a>
+      {trackedLink(
+        '/faq',
+        'FAQ',
+        'faq_click'
+      )}
 
-      <a href="/privacy-policy">
-        Privacy Policy
-      </a>
+      {trackedLink(
+        '/privacy-policy',
+        'Privacy Policy',
+        'privacy_policy_click'
+      )}
 
-      <a href="/contact">
-        Contact
-      </a>
+      {trackedLink(
+        '/contact',
+        'Contact',
+        'contact_click'
+      )}
 
-      <a href="/terms">
-        Terms & Disclaimer
-      </a>
+      {trackedLink(
+        '/terms',
+        'Terms & Disclaimer',
+        'terms_click'
+      )}
     </footer>
   );
 }
@@ -161,6 +205,29 @@ function Paper({
       ? `${a.slice(0, 720).trim()}…`
       : a;
 
+  const paperId =
+    String(
+      p?.pubmedId ||
+      p?.pmid ||
+      p?.doi ||
+      ''
+    );
+
+  const trackSource =
+    source => {
+      trackEvent(
+        'research_source_click',
+        {
+          source_type: source,
+          paper_title: t.slice(
+            0,
+            100
+          ),
+          paper_id: paperId
+        }
+      );
+    };
+
   return (
     <article
       className={
@@ -187,7 +254,11 @@ function Paper({
             (saved ? 'savedActive' : '')
           }
           onClick={() =>
-            toggle(key(p))
+            toggle(
+              key(p),
+              p,
+              saved
+            )
           }
           type="button"
         >
@@ -246,9 +317,27 @@ function Paper({
             <button
               type="button"
               className="textButton"
-              onClick={() =>
-                setExpanded(x => !x)
-              }
+              onClick={() => {
+                const next =
+                  !expanded;
+
+                setExpanded(next);
+
+                trackEvent(
+                  next
+                    ? 'abstract_expand'
+                    : 'abstract_collapse',
+                  {
+                    paper_title:
+                      t.slice(
+                        0,
+                        100
+                      ),
+                    paper_id:
+                      paperId
+                  }
+                );
+              }}
             >
               {expanded
                 ? 'Show less'
@@ -274,6 +363,9 @@ function Paper({
             href={p.pubmed_url}
             target="_blank"
             rel="noreferrer"
+            onClick={() =>
+              trackSource('pubmed')
+            }
           >
             PubMed
           </a>
@@ -285,6 +377,11 @@ function Paper({
             href={p.pmc_url}
             target="_blank"
             rel="noreferrer"
+            onClick={() =>
+              trackSource(
+                'pubmed_central'
+              )
+            }
           >
             Free Full Text
           </a>
@@ -296,6 +393,11 @@ function Paper({
             href={p.publisher_url}
             target="_blank"
             rel="noreferrer"
+            onClick={() =>
+              trackSource(
+                'publisher'
+              )
+            }
           >
             Publisher
           </a>
@@ -316,12 +418,30 @@ function Metrics({
   tcount
 }) {
   const vals = [
-    ['Research papers', p?.paper_count ?? 0],
-    ['Free full text', p?.free_full_text_count ?? 0],
-    ['Latest year', p?.latest_year || '—'],
-    ['Journals', p?.journals?.length || 0],
-    ['Clinical trials', p?.clinical_trials || 0],
-    ['Treatment types', tcount ?? '—']
+    [
+      'Research papers',
+      p?.paper_count ?? 0
+    ],
+    [
+      'Free full text',
+      p?.free_full_text_count ?? 0
+    ],
+    [
+      'Latest year',
+      p?.latest_year || '—'
+    ],
+    [
+      'Journals',
+      p?.journals?.length || 0
+    ],
+    [
+      'Clinical trials',
+      p?.clinical_trials || 0
+    ],
+    [
+      'Treatment types',
+      tcount ?? '—'
+    ]
   ];
 
   return (
@@ -346,7 +466,9 @@ function Metrics({
   );
 }
 
-function Bars({ items = [] }) {
+function Bars({
+  items = []
+}) {
   const safeItems =
     Array.isArray(items)
       ? items
@@ -356,7 +478,9 @@ function Bars({ items = [] }) {
     Math.max(
       1,
       ...safeItems.map(
-        x => Number(x?.[1]) || 0
+        x =>
+          Number(x?.[1]) ||
+          0
       )
     );
 
@@ -379,7 +503,10 @@ function Bars({ items = [] }) {
                   width:
                     `${Math.max(
                       3,
-                      (Number(v) || 0) /
+                      (
+                        Number(v) ||
+                        0
+                      ) /
                         max *
                         100
                     )}%`
@@ -396,14 +523,31 @@ function Bars({ items = [] }) {
 }
 
 export default function App() {
-  const [page, setPage] = useState('Search');
-  const [input, setInput] = useState('');
-  const [data, setData] = useState(null);
-  const [error, setError] = useState('');
-  const [notice, setNotice] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [bookmarks, setBookmarks] = useState([]);
-  const [images, setImages] = useState([]);
+  const [page, setPage] =
+    useState('Search');
+
+  const [input, setInput] =
+    useState('');
+
+  const [data, setData] =
+    useState(null);
+
+  const [error, setError] =
+    useState('');
+
+  const [notice, setNotice] =
+    useState('');
+
+  const [busy, setBusy] =
+    useState(false);
+
+  const [
+    bookmarks,
+    setBookmarks
+  ] = useState([]);
+
+  const [images, setImages] =
+    useState([]);
 
   useEffect(() => {
     try {
@@ -419,7 +563,11 @@ export default function App() {
     }
   }, []);
 
-  const toggle = k =>
+  const toggle = (
+    k,
+    p,
+    wasSaved
+  ) =>
     setBookmarks(b => {
       const n =
         b.includes(k)
@@ -433,8 +581,57 @@ export default function App() {
         JSON.stringify(n)
       );
 
+      trackEvent(
+        wasSaved
+          ? 'paper_unsaved'
+          : 'paper_saved',
+        {
+          paper_title:
+            String(
+              best(
+                p,
+                'pubmed_title',
+                'title'
+              ) ||
+              ''
+            ).slice(
+              0,
+              100
+            ),
+
+          paper_id:
+            String(
+              p?.pubmedId ||
+              p?.pmid ||
+              p?.doi ||
+              ''
+            )
+        }
+      );
+
       return n;
     });
+
+  function changePage(p) {
+    setPage(p);
+
+    trackEvent(
+      'navigation_click',
+      {
+        section_name: p
+      }
+    );
+
+    if (
+      typeof window !==
+      'undefined'
+    ) {
+      window.scrollTo(
+        0,
+        0
+      );
+    }
+  }
 
   async function search(e) {
     e.preventDefault();
@@ -454,6 +651,14 @@ export default function App() {
     }
 
     setBusy(true);
+
+    trackEvent(
+      'cancer_search',
+      {
+        cancer_type:
+          q.toLowerCase()
+      }
+    );
 
     try {
       const r =
@@ -475,7 +680,8 @@ export default function App() {
           }
         );
 
-      const j = await r.json();
+      const j =
+        await r.json();
 
       if (!r.ok) {
         throw Error(
@@ -489,10 +695,44 @@ export default function App() {
       setNotice(
         `Found ${j?.papers?.length || 0} papers for ${title(q)}.`
       );
+
+      trackEvent(
+        'cancer_search_success',
+        {
+          cancer_type:
+            q.toLowerCase(),
+
+          result_count:
+            j?.papers?.length ||
+            0,
+
+          treatment_count:
+            j?.treatments
+              ?.length ||
+            0
+        }
+      );
     } catch (e) {
       setError(
         e?.message ||
         'Something went wrong.'
+      );
+
+      trackEvent(
+        'cancer_search_error',
+        {
+          cancer_type:
+            q.toLowerCase(),
+
+          error_message:
+            String(
+              e?.message ||
+              'unknown'
+            ).slice(
+              0,
+              100
+            )
+        }
       );
     } finally {
       setBusy(false);
@@ -527,19 +767,9 @@ export default function App() {
                     ? 'active'
                     : ''
                 }
-                onClick={() => {
-                  setPage(p);
-
-                  if (
-                    typeof window !==
-                    'undefined'
-                  ) {
-                    window.scrollTo(
-                      0,
-                      0
-                    );
-                  }
-                }}
+                onClick={() =>
+                  changePage(p)
+                }
                 key={p}
               >
                 <span className="navDot">
@@ -578,7 +808,8 @@ export default function App() {
 
             {
               data.profile
-                ?.free_full_text_count || 0
+                ?.free_full_text_count ||
+              0
             }{' '}
             free full-text in PMC
           </div>
@@ -588,23 +819,78 @@ export default function App() {
           Educational use only. Not medical advice.
 
           <div className="legalLinks">
-            <a href="/methodology">
+            <a
+              href="/methodology"
+              onClick={() =>
+                trackEvent(
+                  'methodology_click',
+                  {
+                    location:
+                      'sidebar'
+                  }
+                )
+              }
+            >
               Methodology
             </a>
 
-            <a href="/faq">
+            <a
+              href="/faq"
+              onClick={() =>
+                trackEvent(
+                  'faq_click',
+                  {
+                    location:
+                      'sidebar'
+                  }
+                )
+              }
+            >
               FAQ
             </a>
 
-            <a href="/privacy-policy">
+            <a
+              href="/privacy-policy"
+              onClick={() =>
+                trackEvent(
+                  'privacy_policy_click',
+                  {
+                    location:
+                      'sidebar'
+                  }
+                )
+              }
+            >
               Privacy Policy
             </a>
 
-            <a href="/contact">
+            <a
+              href="/contact"
+              onClick={() =>
+                trackEvent(
+                  'contact_click',
+                  {
+                    location:
+                      'sidebar'
+                  }
+                )
+              }
+            >
               Contact
             </a>
 
-            <a href="/terms">
+            <a
+              href="/terms"
+              onClick={() =>
+                trackEvent(
+                  'terms_click',
+                  {
+                    location:
+                      'sidebar'
+                  }
+                )
+              }
+            >
               Terms & Disclaimer
             </a>
           </div>
@@ -630,7 +916,9 @@ export default function App() {
             'Research Papers' && (
             <Research
               data={data}
-              bookmarks={bookmarks}
+              bookmarks={
+                bookmarks
+              }
               toggle={toggle}
             />
           )}
@@ -646,7 +934,9 @@ export default function App() {
             'Treatment Research' && (
             <Treatment
               data={data}
-              bookmarks={bookmarks}
+              bookmarks={
+                bookmarks
+              }
               toggle={toggle}
             />
           )}
@@ -663,7 +953,9 @@ export default function App() {
             <Images
               data={data}
               images={images}
-              setImages={setImages}
+              setImages={
+                setImages
+              }
             />
           )}
 
@@ -740,10 +1032,21 @@ function Search({
         </p>
 
         <div className="sourcePills">
-          <span>PubMed</span>
-          <span>PubMed Central</span>
-          <span>DOI Sources</span>
-          <span>Publisher Sources</span>
+          <span>
+            PubMed
+          </span>
+
+          <span>
+            PubMed Central
+          </span>
+
+          <span>
+            DOI Sources
+          </span>
+
+          <span>
+            Publisher Sources
+          </span>
         </div>
       </section>
 
@@ -882,7 +1185,10 @@ function Search({
               </div>
 
               <h2>
-                {title(data.cancer)} Cancer Research Highlights
+                {title(
+                  data.cancer
+                )}{' '}
+                Cancer Research Highlights
               </h2>
             </div>
 
@@ -932,19 +1238,48 @@ function Research({
   bookmarks,
   toggle
 }) {
-  const [q, setQ] = useState('');
-  const [access, setAccess] = useState('All');
-  const [tr, setTr] = useState('All treatments');
-  const [year, setYear] = useState('All years');
-  const [sort, setSort] = useState('Original relevance');
-  const [saved, setSaved] = useState(false);
+  const [q, setQ] =
+    useState('');
+
+  const [
+    access,
+    setAccess
+  ] = useState('All');
+
+  const [tr, setTr] =
+    useState(
+      'All treatments'
+    );
+
+  const [year, setYear] =
+    useState(
+      'All years'
+    );
+
+  const [sort, setSort] =
+    useState(
+      'Original relevance'
+    );
+
+  const [saved, setSaved] =
+    useState(false);
 
   useEffect(() => {
     setQ('');
     setAccess('All');
-    setTr('All treatments');
-    setYear('All years');
-    setSort('Original relevance');
+
+    setTr(
+      'All treatments'
+    );
+
+    setYear(
+      'All years'
+    );
+
+    setSort(
+      'Original relevance'
+    );
+
     setSaved(false);
   }, [data?.cancer]);
 
@@ -969,16 +1304,19 @@ function Research({
                 'pubmed_title',
                 'title'
               ),
+
               best(
                 p,
                 'pubmed_abstract',
                 'abstract'
               ),
+
               best(
                 p,
                 'pubmed_journal',
                 'journal'
               ),
+
               p?.mesh_terms
             ]
               .join(' ')
@@ -995,7 +1333,8 @@ function Research({
       ) {
         x =
           x.filter(
-            p => p?.pmc_id
+            p =>
+              p?.pmc_id
           );
       }
 
@@ -1053,7 +1392,9 @@ function Research({
                 'pubmed_date',
                 'publicationDate'
               )
-            ).includes(year)
+            ).includes(
+              year
+            )
           );
       }
 
@@ -1192,6 +1533,20 @@ function Research({
       ) +
       '"';
 
+    trackEvent(
+      'csv_download',
+      {
+        cancer_type:
+          data.cancer,
+
+        paper_count:
+          papers.length,
+
+        export_type:
+          'research_papers'
+      }
+    );
+
     download(
       'cancer_insight_' +
         data.cancer.replaceAll(
@@ -1217,6 +1572,28 @@ function Research({
       ].join('\n'),
 
       'text/csv'
+    );
+  }
+
+  function makePdf() {
+    trackEvent(
+      'pdf_download',
+      {
+        cancer_type:
+          data.cancer,
+
+        paper_count:
+          papers.length,
+
+        report_location:
+          'research_papers'
+      }
+    );
+
+    pdfReport(
+      data.cancer,
+      papers,
+      data.treatments
     );
   }
 
@@ -1292,6 +1669,7 @@ function Research({
             >
               {[
                 'All treatments',
+
                 ...(
                   data.treatments ||
                   []
@@ -1357,11 +1735,19 @@ function Research({
             <input
               type="checkbox"
               checked={saved}
-              onChange={e =>
+              onChange={e => {
                 setSaved(
                   e.target.checked
-                )
-              }
+                );
+
+                trackEvent(
+                  'saved_filter_toggle',
+                  {
+                    enabled:
+                      e.target.checked
+                  }
+                );
+              }}
             />
 
             <span>
@@ -1375,13 +1761,7 @@ function Research({
         <div className="toolbar">
           <button
             className="toolbarButton"
-            onClick={() =>
-              pdfReport(
-                data.cancer,
-                papers,
-                data.treatments
-              )
-            }
+            onClick={makePdf}
           >
             Download PDF Report
           </button>
@@ -1395,7 +1775,11 @@ function Research({
         </div>
 
         <div className="paperCount">
-          Showing <b>{papers.length}</b> unique papers
+          Showing{' '}
+          <b>
+            {papers.length}
+          </b>{' '}
+          unique papers
         </div>
       </div>
 
@@ -1438,6 +1822,68 @@ function Analytics({
 
         <Need />
       </>
+    );
+  }
+
+  function makePdf() {
+    const papers =
+      uniquePapers(
+        data.papers ||
+        []
+      );
+
+    trackEvent(
+      'pdf_download',
+      {
+        cancer_type:
+          data.cancer,
+
+        paper_count:
+          papers.length,
+
+        report_location:
+          'research_analytics'
+      }
+    );
+
+    pdfReport(
+      data.cancer,
+      papers,
+      data.treatments
+    );
+  }
+
+  function exportTreatments() {
+    trackEvent(
+      'csv_download',
+      {
+        cancer_type:
+          data.cancer,
+
+        export_type:
+          'treatment_counts'
+      }
+    );
+
+    download(
+      data.cancer.replaceAll(
+        ' ',
+        '_'
+      ) +
+        '_treatment_counts.csv',
+
+      'treatment,paper_count\n' +
+        (
+          data.treatments ||
+          []
+        )
+          .map(
+            x =>
+              x.join(',')
+          )
+          .join('\n'),
+
+      'text/csv'
     );
   }
 
@@ -1506,43 +1952,15 @@ function Analytics({
       <div className="toolbar">
         <button
           className="toolbarButton"
-          onClick={() =>
-            pdfReport(
-              data.cancer,
-              uniquePapers(
-                data.papers ||
-                []
-              ),
-              data.treatments
-            )
-          }
+          onClick={makePdf}
         >
           Download PDF Report
         </button>
 
         <button
           className="toolbarButton secondaryToolbarButton"
-          onClick={() =>
-            download(
-              data.cancer.replaceAll(
-                ' ',
-                '_'
-              ) +
-                '_treatment_counts.csv',
-
-              'treatment,paper_count\n' +
-                (
-                  data.treatments ||
-                  []
-                )
-                  .map(
-                    x =>
-                      x.join(',')
-                  )
-                  .join('\n'),
-
-              'text/csv'
-            )
+          onClick={
+            exportTreatments
           }
         >
           Export Treatment Counts (CSV)
@@ -1557,16 +1975,27 @@ function Treatment({
   bookmarks,
   toggle
 }) {
-  const [tr, setTr] = useState('');
-  const [evidence, setEvidence] = useState([]);
-  const [busy, setBusy] = useState(false);
+  const [tr, setTr] =
+    useState('');
+
+  const [
+    evidence,
+    setEvidence
+  ] = useState([]);
+
+  const [busy, setBusy] =
+    useState(false);
 
   useEffect(() => {
     const firstTreatment =
-      data?.treatments?.[0]?.[0] ||
+      data?.treatments
+        ?.[0]?.[0] ||
       '';
 
-    setTr(firstTreatment);
+    setTr(
+      firstTreatment
+    );
+
     setEvidence([]);
   }, [data?.cancer]);
 
@@ -1579,7 +2008,8 @@ function Treatment({
       return;
     }
 
-    let cancelled = false;
+    let cancelled =
+      false;
 
     setBusy(true);
 
@@ -1597,8 +2027,10 @@ function Treatment({
           JSON.stringify({
             cancer:
               data.cancer,
+
             treatment:
               tr,
+
             limit:
               14
           })
@@ -1709,11 +2141,23 @@ function Treatment({
 
           <select
             value={tr}
-            onChange={e =>
-              setTr(
-                e.target.value
-              )
-            }
+            onChange={e => {
+              const next =
+                e.target.value;
+
+              setTr(next);
+
+              trackEvent(
+                'treatment_selected',
+                {
+                  cancer_type:
+                    data.cancer,
+
+                  treatment:
+                    next
+                }
+              );
+            }}
           >
             {(
               data.treatments ||
@@ -1821,7 +2265,10 @@ function Treatment({
                 ).toLowerCase()
             )
         )
-        .slice(0, 8)
+        .slice(
+          0,
+          8
+        )
         .map(
           (p, i) => (
             <Paper
@@ -1846,23 +2293,35 @@ function Treatment({
 function Compare({
   data
 }) {
-  const [a, setA] = useState('');
-  const [b, setB] = useState('');
-  const [ea, setEa] = useState([]);
-  const [eb, setEb] = useState([]);
-  const [busy, setBusy] = useState(false);
+  const [a, setA] =
+    useState('');
+
+  const [b, setB] =
+    useState('');
+
+  const [ea, setEa] =
+    useState([]);
+
+  const [eb, setEb] =
+    useState([]);
+
+  const [busy, setBusy] =
+    useState(false);
 
   useEffect(() => {
     const first =
-      data?.treatments?.[0]?.[0] ||
+      data?.treatments
+        ?.[0]?.[0] ||
       '';
 
     const second =
-      data?.treatments?.[1]?.[0] ||
+      data?.treatments
+        ?.[1]?.[0] ||
       '';
 
     setA(first);
     setB(second);
+
     setEa([]);
     setEb([]);
   }, [data?.cancer]);
@@ -1879,9 +2338,24 @@ function Compare({
       return;
     }
 
-    let cancelled = false;
+    let cancelled =
+      false;
 
     setBusy(true);
+
+    trackEvent(
+      'treatment_comparison',
+      {
+        cancer_type:
+          data.cancer,
+
+        treatment_a:
+          a,
+
+        treatment_b:
+          b
+      }
+    );
 
     Promise.all(
       [a, b].map(
@@ -1900,8 +2374,10 @@ function Compare({
                 JSON.stringify({
                   cancer:
                     data.cancer,
+
                   treatment:
                     t,
+
                   limit:
                     12
                 })
@@ -2173,26 +2649,32 @@ function Compare({
                     'Unique evidence papers',
                     'paper_count'
                   ],
+
                   [
                     'Free full text in PMC',
                     'free_full_text_count'
                   ],
+
                   [
                     'Latest year',
                     'latest_year'
                   ],
+
                   [
                     'Journals represented',
                     'journal_count'
                   ],
+
                   [
                     'Clinical trials',
                     'clinical_trials'
                   ],
+
                   [
                     'Reviews',
                     'reviews'
                   ],
+
                   [
                     'Meta-analyses',
                     'meta_analyses'
@@ -2200,7 +2682,9 @@ function Compare({
                 ].map(
                   ([l, k]) => (
                     <tr key={k}>
-                      <td>{l}</td>
+                      <td>
+                        {l}
+                      </td>
 
                       <td>
                         {pa[k] ?? '—'}
@@ -2223,7 +2707,10 @@ function Compare({
               </h3>
 
               {ea
-                .slice(0, 3)
+                .slice(
+                  0,
+                  3
+                )
                 .map(
                   (p, i) => (
                     <Paper
@@ -2245,7 +2732,10 @@ function Compare({
               </h3>
 
               {eb
-                .slice(0, 3)
+                .slice(
+                  0,
+                  3
+                )
                 .map(
                   (p, i) => (
                     <Paper
@@ -2272,7 +2762,8 @@ function Images({
   images,
   setImages
 }) {
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] =
+    useState(false);
 
   useEffect(() => {
     if (!data) {
@@ -2280,9 +2771,18 @@ function Images({
       return;
     }
 
-    let cancelled = false;
+    let cancelled =
+      false;
 
     setBusy(true);
+
+    trackEvent(
+      'cancer_images_view',
+      {
+        cancer_type:
+          data.cancer
+      }
+    );
 
     fetch(
       '/api/images',
@@ -2311,7 +2811,7 @@ function Images({
           ) {
             setImages(
               j?.images ||
-                []
+              []
             );
           }
         }
@@ -2444,9 +2944,29 @@ function Images({
                 {x.original && (
                   <a
                     className="sourceButton"
-                    href={x.original}
+                    href={
+                      x.original
+                    }
                     target="_blank"
                     rel="noreferrer"
+                    onClick={() =>
+                      trackEvent(
+                        'scientific_image_source_click',
+                        {
+                          cancer_type:
+                            data.cancer,
+
+                          image_title:
+                            String(
+                              x.title ||
+                              ''
+                            ).slice(
+                              0,
+                              100
+                            )
+                        }
+                      )
+                    }
                   >
                     Open Original Source
                   </a>
@@ -2569,6 +3089,15 @@ function About() {
           <a
             className="sourceButton"
             href="/methodology"
+            onClick={() =>
+              trackEvent(
+                'methodology_click',
+                {
+                  location:
+                    'about_page'
+                }
+              )
+            }
           >
             Read Research Methodology
           </a>
@@ -2587,6 +3116,15 @@ function About() {
           <a
             className="sourceButton"
             href="/faq"
+            onClick={() =>
+              trackEvent(
+                'faq_click',
+                {
+                  location:
+                    'about_page'
+                }
+              )
+            }
           >
             View FAQ
           </a>
@@ -2620,7 +3158,9 @@ function simpleProfile(
     );
 
   const years = [];
-  const journals = new Set();
+
+  const journals =
+    new Set();
 
   let free = 0;
   let trials = 0;
@@ -2743,7 +3283,9 @@ function download(
   a.href = url;
   a.download = name;
 
-  document.body.appendChild(a);
+  document.body.appendChild(
+    a
+  );
 
   a.click();
 
@@ -2775,21 +3317,66 @@ function pdfReport(
         'a4'
     });
 
-  const NAVY = [20, 61, 82];
-  const TEAL = [31, 174, 174];
-  const LIGHT = [239, 246, 248];
-  const TEXT = [25, 54, 70];
-  const MUTED = [92, 120, 136];
-  const BORDER = [210, 225, 231];
-  const WHITE = [255, 255, 255];
-  const GREEN_BG = [225, 245, 239];
-  const GREEN_TEXT = [25, 115, 88];
+  const NAVY = [
+    20,
+    61,
+    82
+  ];
+
+  const TEAL = [
+    31,
+    174,
+    174
+  ];
+
+  const LIGHT = [
+    239,
+    246,
+    248
+  ];
+
+  const TEXT = [
+    25,
+    54,
+    70
+  ];
+
+  const MUTED = [
+    92,
+    120,
+    136
+  ];
+
+  const BORDER = [
+    210,
+    225,
+    231
+  ];
+
+  const WHITE = [
+    255,
+    255,
+    255
+  ];
+
+  const GREEN_BG = [
+    225,
+    245,
+    239
+  ];
+
+  const GREEN_TEXT = [
+    25,
+    115,
+    88
+  ];
 
   const pageW = 210;
   const margin = 16;
 
   const contentW =
-    pageW - margin * 2;
+    pageW -
+    margin * 2;
 
   const footerY = 282;
 
@@ -2950,7 +3537,8 @@ function pdfReport(
       pageW - margin,
       footerY + 5,
       {
-        align: 'right'
+        align:
+          'right'
       }
     );
   }
@@ -3000,7 +3588,8 @@ function pdfReport(
       margin + 3.5,
       9.1,
       {
-        align: 'center'
+        align:
+          'center'
       }
     );
 
@@ -3028,7 +3617,8 @@ function pdfReport(
       pageW - margin,
       9.5,
       {
-        align: 'right'
+        align:
+          'right'
       }
     );
   }
@@ -3146,7 +3736,8 @@ function pdfReport(
       top + 4.3,
       {
         url,
-        align: 'center'
+        align:
+          'center'
       }
     );
 
@@ -3197,7 +3788,8 @@ function pdfReport(
     margin + 6.5,
     21.3,
     {
-      align: 'center'
+      align:
+        'center'
     }
   );
 
@@ -3287,7 +3879,8 @@ function pdfReport(
 
   const freeCount =
     uniqueReportPapers.filter(
-      p => p?.pmc_id
+      p =>
+        p?.pmc_id
     ).length;
 
   const years =
@@ -3305,14 +3898,18 @@ function pdfReport(
           );
 
         return m
-          ? Number(m[0])
+          ? Number(
+              m[0]
+            )
           : null;
       })
       .filter(Boolean);
 
   const latestYear =
     years.length
-      ? Math.max(...years)
+      ? Math.max(
+          ...years
+        )
       : '-';
 
   const cards = [
@@ -3320,17 +3917,21 @@ function pdfReport(
       'Research Papers',
       uniqueReportPapers.length
     ],
+
     [
       'Free Full Text',
       freeCount
     ],
+
     [
       'Latest Year',
       latestYear
     ],
+
     [
       'Treatment Types',
-      treatments?.length || 0
+      treatments?.length ||
+      0
     ]
   ];
 
@@ -3522,7 +4123,9 @@ function pdfReport(
         name,
         count
       ]) => {
-        ensureSpace(10);
+        ensureSpace(
+          10
+        );
 
         d.setTextColor(
           ...TEXT
@@ -3551,7 +4154,8 @@ function pdfReport(
         const barX =
           margin + 60;
 
-        const barW = 90;
+        const barW =
+          90;
 
         d.setFillColor(
           224,
@@ -3578,7 +4182,9 @@ function pdfReport(
           y,
           Math.max(
             3,
-            Number(count) /
+            Number(
+              count
+            ) /
               max *
               barW
           ),
@@ -3598,11 +4204,15 @@ function pdfReport(
         );
 
         d.text(
-          String(count),
-          pageW - margin,
+          String(
+            count
+          ),
+          pageW -
+            margin,
           y + 3,
           {
-            align: 'right'
+            align:
+              'right'
           }
         );
 
@@ -3620,11 +4230,16 @@ function pdfReport(
   );
 
   uniqueReportPapers
-    .slice(0, 20)
+    .slice(
+      0,
+      20
+    )
     .forEach(
       (p, i) => {
         const t =
-          paperTitle(p);
+          paperTitle(
+            p
+          );
 
         const j =
           journal(p);
@@ -3655,7 +4270,8 @@ function pdfReport(
         const titleLines =
           d.splitTextToSize(
             t,
-            contentW - 20
+            contentW -
+              20
           );
 
         const metaText =
@@ -3664,7 +4280,9 @@ function pdfReport(
             dt,
             auth
           ]
-            .filter(Boolean)
+            .filter(
+              Boolean
+            )
             .join(
               '  |  '
             );
@@ -3673,7 +4291,8 @@ function pdfReport(
           metaText
             ? d.splitTextToSize(
                 metaText,
-                contentW - 20
+                contentW -
+                  20
               )
             : [];
 
@@ -3681,7 +4300,8 @@ function pdfReport(
           absText
             ? d.splitTextToSize(
                 absText,
-                contentW - 20
+                contentW -
+                  20
               )
             : [];
 
@@ -3692,15 +4312,20 @@ function pdfReport(
             ? arr(
                 p.treatmentTypes
               )
-                .map(title)
-                .join(', ')
+                .map(
+                  title
+                )
+                .join(
+                  ', '
+                )
             : '';
 
         const treatmentLines =
           treatmentsMentioned
             ? d.splitTextToSize(
                 `Treatments mentioned: ${treatmentsMentioned}`,
-                contentW - 20
+                contentW -
+                  20
               )
             : [];
 
@@ -3713,8 +4338,10 @@ function pdfReport(
 
         const targetHeight =
           17 +
-          titleLines.length * 5 +
-          metaLines.length * 3.8 +
+          titleLines.length *
+            5 +
+          metaLines.length *
+            3.8 +
           (
             p?.pmc_id
               ? 7
@@ -3723,11 +4350,13 @@ function pdfReport(
           Math.min(
             abstractLines.length,
             7
-          ) * 4 +
+          ) *
+            4 +
           Math.min(
             treatmentLines.length,
             2
-          ) * 3.8 +
+          ) *
+            3.8 +
           (
             hasLinks
               ? 11
@@ -3744,10 +4373,12 @@ function pdfReport(
           );
 
         ensureSpace(
-          cardHeight + 7
+          cardHeight +
+            7
         );
 
-        const startY = y;
+        const startY =
+          y;
 
         d.setFillColor(
           250,
@@ -3792,14 +4423,20 @@ function pdfReport(
           'bold'
         );
 
-        d.setFontSize(7);
+        d.setFontSize(
+          7
+        );
 
         d.text(
-          String(i + 1),
+          String(
+            i + 1
+          ),
           margin + 8,
-          startY + 10.2,
+          startY +
+            10.2,
           {
-            align: 'center'
+            align:
+              'center'
           }
         );
 
@@ -3818,7 +4455,9 @@ function pdfReport(
           'bold'
         );
 
-        d.setFontSize(10);
+        d.setFontSize(
+          10
+        );
 
         d.text(
           titleLines,
@@ -3924,7 +4563,9 @@ function pdfReport(
             'normal'
           );
 
-          d.setFontSize(8);
+          d.setFontSize(
+            8
+          );
 
           const reserved =
             hasLinks
@@ -3940,7 +4581,8 @@ function pdfReport(
                   cardHeight -
                   py -
                   reserved
-                ) / 4
+                ) /
+                  4
               )
             );
 
@@ -3960,7 +4602,9 @@ function pdfReport(
               1;
 
             visibleAbstract[last] =
-              visibleAbstract[last]
+              visibleAbstract[
+                last
+              ]
                 .replace(
                   /\.*$/,
                   ''
@@ -4001,7 +4645,9 @@ function pdfReport(
             'bold'
           );
 
-          d.setFontSize(7);
+          d.setFontSize(
+            7
+          );
 
           const visibleTreatment =
             treatmentLines.slice(
@@ -4021,7 +4667,9 @@ function pdfReport(
             2;
         }
 
-        if (hasLinks) {
+        if (
+          hasLinks
+        ) {
           const linkY =
             startY +
             cardHeight -
@@ -4041,7 +4689,8 @@ function pdfReport(
               25
             );
 
-            linkX += 28;
+            linkX +=
+              28;
           }
 
           if (
@@ -4055,7 +4704,8 @@ function pdfReport(
               34
             );
 
-            linkX += 37;
+            linkX +=
+              37;
           }
 
           if (
@@ -4078,7 +4728,9 @@ function pdfReport(
       }
     );
 
-  ensureSpace(42);
+  ensureSpace(
+    42
+  );
 
   d.setFillColor(
     ...LIGHT
@@ -4107,7 +4759,9 @@ function pdfReport(
     'bold'
   );
 
-  d.setFontSize(10);
+  d.setFontSize(
+    10
+  );
 
   d.text(
     'Sources & Interpretation',
@@ -4135,7 +4789,8 @@ function pdfReport(
   d.text(
     d.splitTextToSize(
       sourceText,
-      contentW - 12
+      contentW -
+        12
     ),
     margin + 6,
     y + 14
