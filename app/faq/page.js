@@ -1,388 +1,623 @@
 export const metadata = {
   title: 'FAQ | Cancer Insight',
-
   description:
-    'Frequently asked questions about Cancer Insight, cancer research searches, PubMed evidence, treatment research, scientific sources, and medical limitations.',
+    'Frequently asked questions about Cancer Insight, research sources, study types, filters, treatment research, comparisons, downloads, saved papers, and scientific images.',
 };
 
 export default function FAQ() {
   return (
     <main className="legalPage">
       <div className="legalContainer">
-        <a
-          className="backLink"
-          href="/"
-        >
+        <a className="backLink" href="/">
           ← Back to Cancer Insight
         </a>
 
         <div className="legalHeader">
-          <div className="legalMark">
-            ✚
-          </div>
+          <div className="legalMark">✚</div>
 
           <div>
             <div className="legalEyebrow">
               CANCER INSIGHT
             </div>
 
-            <h1>
-              Frequently Asked Questions
-            </h1>
+            <h1>Frequently Asked Questions</h1>
 
             <p>
-              Answers about Cancer Insight, research sources, and how to use
-              the platform
+              Answers about Cancer Insight, research sources, and how to use the platform
             </p>
           </div>
         </div>
 
-        <section className="legalCard">
-          <h2>
-            What is Cancer Insight?
-          </h2>
+        <section className="legalCard importantLegalCard">
+          <h2>What is Cancer Insight?</h2>
 
           <p>
-            Cancer Insight is an independent educational cancer research
-            explorer available at cancer-insight.com.
+            Cancer Insight is an independent educational cancer
+            research explorer.
           </p>
 
           <p>
-            It helps users discover and examine scientific cancer research,
-            PubMed studies, treatment research, research analytics, free
-            full-text availability, and scientific cancer images.
+            It helps users discover, filter, organize, and examine
+            scientific cancer research while keeping links to
+            original research sources visible.
           </p>
         </section>
 
         <section className="legalCard">
-          <h2>
-            Is Cancer Insight a medical advice website?
-          </h2>
+          <h2>Is Cancer Insight a medical advice website?</h2>
 
           <p>
             No.
           </p>
 
           <p>
-            Cancer Insight is designed for education and research exploration.
-            It does not diagnose medical conditions, recommend treatments, or
-            provide personal medical advice.
+            Cancer Insight is designed for educational and
+            research-exploration purposes only.
+          </p>
+
+          <p>
+            It does not provide diagnosis, individualized treatment
+            recommendations, professional medical advice, or
+            healthcare services.
           </p>
         </section>
 
         <section className="legalCard">
-          <h2>
-            Where does Cancer Insight get research information?
-          </h2>
+          <h2>Where does the research information come from?</h2>
 
           <p>
-            Research information may include data and metadata associated with
-            PubMed, PubMed Central, DOI records, and publisher sources.
+            Cancer Insight may use research information from sources
+            including PubMed, PubMed Central, NCBI resources, DOI
+            records, scientific publisher pages, and related
+            research metadata.
           </p>
 
           <p>
-            Cancer Insight keeps links to original scientific sources visible
-            whenever they are available.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>
-            What is PubMed?
-          </h2>
-
-          <p>
-            PubMed is a major database of biomedical and life-sciences
-            literature maintained by the U.S. National Library of Medicine.
-          </p>
-
-          <p>
-            When available, Cancer Insight provides links back to PubMed so
-            users can examine the original publication record.
+            Scientific images may also come from sources such as
+            Wikimedia Commons.
           </p>
         </section>
 
         <section className="legalCard">
-          <h2>
-            What is PubMed Central?
-          </h2>
+          <h2>What is PubMed?</h2>
 
           <p>
-            PubMed Central, often abbreviated PMC, is a digital archive of
-            full-text biomedical and life-sciences literature.
+            PubMed is a database and search resource for biomedical
+            and life-sciences literature maintained by the U.S.
+            National Library of Medicine.
           </p>
 
           <p>
-            When Cancer Insight identifies a freely readable paper in PMC, it
-            may display a “Free full text in PMC” label.
+            Cancer Insight may use PubMed information to display
+            research titles, abstracts, journals, authors,
+            publication dates, publication types, and source links.
           </p>
         </section>
 
         <section className="legalCard">
-          <h2>
-            Does free full text mean I can reuse the paper?
-          </h2>
+          <h2>What is PubMed Central?</h2>
+
+          <p>
+            PubMed Central, often called PMC, is a digital archive of
+            full-text biomedical and life-sciences journal
+            literature.
+          </p>
+
+          <p>
+            When Cancer Insight identifies a freely readable PMC
+            version of a paper, the paper may be labeled
+            “Free full text in PMC.”
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Does “Free full text” mean I can reuse the paper?</h2>
 
           <p>
             Not necessarily.
           </p>
 
           <p>
-            Free access means a publication can be read without a subscription
-            through the identified source. Copyright and reuse permissions
-            depend on the publication's individual license.
+            Free full-text availability means the paper can be read
+            without a normal paywall at the identified source.
+          </p>
+
+          <p>
+            Copyright and reuse permissions depend on the paper's
+            original license and publisher terms.
           </p>
         </section>
 
         <section className="legalCard">
-          <h2>
-            Why does Cancer Insight show abstracts?
-          </h2>
+          <h2>Why do some papers have abstracts and others do not?</h2>
 
           <p>
-            Abstracts provide concise summaries of scientific studies and help
-            users understand what a paper investigates.
+            Abstract availability depends on the metadata provided by
+            the research source.
           </p>
 
           <p>
-            An abstract does not contain every detail of a study. Users should
-            examine the complete publication when full scientific
-            interpretation is required.
+            Some papers may have a PubMed abstract while others may
+            only provide title, journal, date, author, or source-link
+            information.
           </p>
         </section>
 
         <section className="legalCard">
-          <h2>
-            What does “Treatments mentioned” mean?
-          </h2>
+          <h2>What are study-type labels?</h2>
 
           <p>
-            It indicates that Cancer Insight associated one or more treatment
-            categories with the research record.
+            Cancer Insight may display publication-type labels from
+            research metadata.
           </p>
 
           <p>
-            A treatment being mentioned in a research paper does not mean that
-            Cancer Insight recommends that treatment.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>
-            How does Treatment Research work?
-          </h2>
-
-          <p>
-            Treatment Research organizes papers associated with a selected
-            treatment and may retrieve additional treatment-focused PubMed
-            evidence for the searched cancer type.
+            Examples include:
           </p>
 
+          <ul>
+            <li>Clinical Trial,</li>
+            <li>Randomized Controlled Trial,</li>
+            <li>Review,</li>
+            <li>Systematic Review, and</li>
+            <li>Meta-analysis.</li>
+          </ul>
+
           <p>
-            Duplicate papers are removed from combined research counts where
-            possible.
+            These labels depend on the information available from the
+            original research source.
           </p>
         </section>
 
         <section className="legalCard">
-          <h2>
-            What does Compare Treatments compare?
-          </h2>
-
-          <p>
-            Compare Treatments compares characteristics of the retrieved
-            research literature.
-          </p>
-
-          <p>
-            These can include unique evidence papers, free full-text papers,
-            publication dates, journals, clinical trials, reviews, and
-            meta-analyses.
-          </p>
-
-          <p>
-            These measurements describe research coverage and do not determine
-            which treatment is medically better.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>
-            Why can one treatment have more papers than another?
-          </h2>
-
-          <p>
-            Different treatments may have different amounts of published
-            research in the records retrieved by Cancer Insight.
-          </p>
-
-          <p>
-            More papers do not automatically mean that a treatment is safer,
-            more effective, or more suitable for a patient.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>
-            Does Cancer Insight remove duplicate papers?
-          </h2>
-
-          <p>
-            Cancer Insight removes duplicate papers from certain research
-            counts where possible.
-          </p>
-
-          <p>
-            It may use identifiers such as PubMed IDs, DOI values, or paper
-            titles to recognize duplicate records.
-          </p>
-
-          <p>
-            Automated deduplication cannot guarantee that every duplicate will
-            always be detected.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>
-            What are Research Analytics?
-          </h2>
-
-          <p>
-            Research Analytics summarizes patterns in the retrieved research
-            records.
-          </p>
-
-          <p>
-            This may include publication years, treatment coverage, journals,
-            clinical trials, and other available research metadata.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>
-            Where do Cancer Images come from?
-          </h2>
-
-          <p>
-            Cancer Insight may retrieve scientifically relevant images from
-            Wikimedia Commons.
-          </p>
-
-          <p>
-            Original source links are provided so users can review image
-            information, attribution, and licensing details.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>
-            Can I download research reports?
-          </h2>
-
-          <p>
-            Yes.
-          </p>
-
-          <p>
-            Cancer Insight can generate a PDF research report containing
-            research information from the current search.
-          </p>
-
-          <p>
-            Research data may also be exported as CSV files where that feature
-            is available.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>
-            Can I save papers?
-          </h2>
-
-          <p>
-            Yes.
-          </p>
-
-          <p>
-            Research papers can be saved within the browser using the Save
-            feature.
-          </p>
-
-          <p>
-            Saved-paper information may depend on the browser and device being
-            used.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>
-            Is Cancer Insight a complete database of all cancer research?
-          </h2>
+          <h2>Does a study-type label tell me which paper is best?</h2>
 
           <p>
             No.
           </p>
 
           <p>
-            Cancer Insight presents research returned by its search and
-            research-source processes. It should not be treated as a complete
-            record of every cancer publication ever published.
+            A publication type describes the type of research record.
+            It does not by itself determine study quality, reliability,
+            certainty of evidence, clinical usefulness, or relevance
+            to an individual patient.
           </p>
         </section>
 
         <section className="legalCard">
-          <h2>
-            Can research information change?
-          </h2>
+          <h2>How does the Study Type filter work?</h2>
+
+          <p>
+            The Study Type filter checks available publication-type
+            metadata and displays papers matching the selected
+            category.
+          </p>
+
+          <p>
+            A paper without the required publication-type metadata may
+            not appear when a study-type filter is active.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>How do the From Year and To Year filters work?</h2>
+
+          <p>
+            Cancer Insight extracts a publication year from available
+            publication-date metadata.
+          </p>
+
+          <p>
+            The From Year filter keeps papers published in or after
+            the selected year.
+          </p>
+
+          <p>
+            The To Year filter keeps papers published in or before
+            the selected year.
+          </p>
+
+          <p>
+            Papers without a recognizable publication year may not
+            appear while year filters are active.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Can I search within the papers that were found?</h2>
 
           <p>
             Yes.
           </p>
 
           <p>
-            Scientific research continuously develops. New papers may be
-            published, publication metadata may change, and additional
-            evidence may become available over time.
+            The Research Papers page includes a filter that can search
+            across available titles, abstracts, journal information,
+            study-type metadata, and related research terms.
           </p>
         </section>
 
         <section className="legalCard">
-          <h2>
-            How do I report a broken link or research-source issue?
-          </h2>
+          <h2>What does “Why this paper is relevant” mean?</h2>
 
           <p>
-            You can contact Cancer Insight at:
+            Cancer Insight may show a short explanation based on
+            information already available in the research record.
           </p>
 
-          <a
-            className="contactPlaceholder"
-            href="mailto:cancerinsight.contact@gmail.com"
-          >
-            cancerinsight.contact@gmail.com
-          </a>
+          <p>
+            This may use the paper title, abstract, treatment tags,
+            publication type, and the current cancer search.
+          </p>
 
-          <p className="legalSmall">
-            When reporting a research-source issue, include the relevant paper
-            title or image title when possible.
+          <p>
+            It is a navigation aid, not an independent scientific
+            conclusion, quality rating, or medical recommendation.
           </p>
         </section>
 
-        <section className="legalCard contactNotice">
-          <h2>
-            What should I do if I have a personal medical question?
-          </h2>
+        <section className="legalCard">
+          <h2>What does “Treatments mentioned” mean?</h2>
 
           <p>
-            Cancer Insight cannot answer personal medical questions or provide
-            individualized treatment recommendations.
+            It means Cancer Insight identified one or more treatment
+            categories associated with the paper or research record.
           </p>
 
           <p>
-            Personal medical questions should be discussed with a qualified
-            healthcare professional.
+            A treatment mention does not mean that a treatment is
+            recommended, proven effective, safe, or suitable for a
+            specific person.
           </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>What is Treatment Research?</h2>
+
+          <p>
+            Treatment Research lets users focus on research associated
+            with one treatment category for the cancer currently being
+            explored.
+          </p>
+
+          <p>
+            Cancer Insight may combine treatment-tagged papers from the
+            original cancer search with additional PubMed evidence.
+          </p>
+
+          <p>
+            Duplicate papers are removed from research counts where
+            possible.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>What does Compare Treatments do?</h2>
+
+          <p>
+            Compare Treatments examines research coverage for two
+            selected treatment categories.
+          </p>
+
+          <p>
+            It may compare measures such as:
+          </p>
+
+          <ul>
+            <li>unique-paper counts,</li>
+            <li>free full-text availability,</li>
+            <li>latest publication year,</li>
+            <li>journal coverage,</li>
+            <li>clinical-trial counts,</li>
+            <li>review counts, and</li>
+            <li>meta-analysis counts.</li>
+          </ul>
+
+          <p>
+            It compares research literature, not which treatment is
+            medically better.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Why are the papers different on the two sides of Compare Treatments?</h2>
+
+          <p>
+            The two treatment searches are performed independently.
+          </p>
+
+          <p>
+            Cancer Insight does not artificially pair one paper from
+            one treatment with one paper from another treatment.
+          </p>
+
+          <p>
+            Each side shows supporting PubMed evidence for that
+            treatment category.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Why can treatment paper counts be different?</h2>
+
+          <p>
+            Different treatment categories may return different
+            amounts of research literature.
+          </p>
+
+          <p>
+            Counts can also vary because of search terms, source
+            metadata, publication indexing, treatment tags,
+            deduplication, and the current retrieved dataset.
+          </p>
+
+          <p>
+            A larger count does not mean a treatment is better or more
+            effective.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>How does Cancer Insight remove duplicate papers?</h2>
+
+          <p>
+            Cancer Insight attempts to identify duplicate research
+            records using available identifiers such as PubMed IDs,
+            DOI values, titles, or other metadata.
+          </p>
+
+          <p>
+            Duplicate records are removed from research counts where
+            possible.
+          </p>
+
+          <p>
+            Some duplicates may remain if identifiers are missing or
+            inconsistent.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>What does Research Analytics show?</h2>
+
+          <p>
+            Research Analytics summarizes characteristics of the
+            currently retrieved research dataset.
+          </p>
+
+          <p>
+            Depending on the available data, this may include:
+          </p>
+
+          <ul>
+            <li>unique-paper counts,</li>
+            <li>free full-text counts,</li>
+            <li>latest publication year,</li>
+            <li>journal coverage,</li>
+            <li>clinical-trial counts,</li>
+            <li>treatment coverage,</li>
+            <li>publication-year trends, and</li>
+            <li>top journals.</li>
+          </ul>
+        </section>
+
+        <section className="legalCard">
+          <h2>Does a larger bar in Research Analytics mean better evidence?</h2>
+
+          <p>
+            No.
+          </p>
+
+          <p>
+            Analytics bars describe the amount or distribution of
+            retrieved research information.
+          </p>
+
+          <p>
+            They do not measure treatment effectiveness, safety,
+            quality, or medical importance.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>What are Cancer Images?</h2>
+
+          <p>
+            Cancer Images are scientific or medically relevant images
+            retrieved from external sources such as Wikimedia Commons.
+          </p>
+
+          <p>
+            Cancer Insight may prioritize material such as pathology,
+            histology, microscopy, MRI, CT, specimens, medical
+            diagrams, or segmentation images.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Can I reuse images from Cancer Insight?</h2>
+
+          <p>
+            You should check the original source first.
+          </p>
+
+          <p>
+            Cancer Insight may display available creator and license
+            information, but reuse rights depend on the original
+            image license.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Can I download a research report?</h2>
+
+          <p>
+            Yes.
+          </p>
+
+          <p>
+            Cancer Insight can generate PDF research reports based on
+            the current research dataset or filtered research set.
+          </p>
+
+          <p>
+            Reports may include research metrics, treatment coverage,
+            study-type information, paper metadata, abstract excerpts,
+            and links to original sources.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Can I export the research data?</h2>
+
+          <p>
+            Yes.
+          </p>
+
+          <p>
+            Cancer Insight can export research-paper data and certain
+            analytics as CSV files.
+          </p>
+
+          <p>
+            CSV files are intended to make the retrieved research
+            information easier to organize or analyze.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Can I save papers?</h2>
+
+          <p>
+            Yes.
+          </p>
+
+          <p>
+            Papers can be saved while browsing Cancer Insight.
+          </p>
+
+          <p>
+            Saved-paper preferences are stored locally in the browser,
+            so they normally remain available on the same browser and
+            device.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Why did my saved papers disappear?</h2>
+
+          <p>
+            Saved-paper information is stored locally in the browser.
+          </p>
+
+          <p>
+            Clearing browser data, using private browsing, switching
+            browsers, or using another device may remove or hide saved
+            papers.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Does Cancer Insight contain every relevant cancer paper?</h2>
+
+          <p>
+            No.
+          </p>
+
+          <p>
+            Cancer Insight displays research returned by its search
+            and retrieval process.
+          </p>
+
+          <p>
+            Some relevant papers may not appear because of search
+            limits, indexing, metadata availability, database changes,
+            source availability, or other technical factors.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Can Cancer Insight research results change over time?</h2>
+
+          <p>
+            Yes.
+          </p>
+
+          <p>
+            Research databases continue to change as new papers are
+            published, metadata is updated, records are corrected, and
+            external services change.
+          </p>
+
+          <p>
+            Cancer Insight itself may also improve its search,
+            filtering, and processing methods.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Why might a paper have missing information?</h2>
+
+          <p>
+            Cancer Insight depends on available source metadata.
+          </p>
+
+          <p>
+            Some records may not include an abstract, publication
+            type, DOI, PMC link, author list, treatment tag, or other
+            information.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>What should I do if a source link is broken or information looks wrong?</h2>
+
+          <p>
+            You can report the problem through the Cancer Insight
+            contact page.
+          </p>
+
+          <p>
+            Including the paper title, cancer type, or broken source
+            information can help identify the problem.
+          </p>
+
+          <a className="sourceButton" href="/contact">
+            Contact Cancer Insight
+          </a>
+        </section>
+
+        <section className="legalCard">
+          <h2>Can I ask Cancer Insight a personal medical question?</h2>
+
+          <p>
+            Cancer Insight is not designed to provide personal medical
+            guidance.
+          </p>
+
+          <p>
+            Do not enter private health records or other sensitive
+            personal information into research search fields.
+          </p>
+
+          <p>
+            Personal medical questions should be discussed with a
+            qualified healthcare professional.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>How can I learn more about how the site works?</h2>
+
+          <p>
+            The Research Methodology page explains how Cancer Insight
+            retrieves, enriches, filters, deduplicates, compares, and
+            presents research information.
+          </p>
+
+          <a className="sourceButton" href="/methodology">
+            Read Research Methodology
+          </a>
         </section>
 
         <div className="legalFooter">
