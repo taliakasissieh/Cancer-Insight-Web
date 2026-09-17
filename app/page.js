@@ -144,13 +144,8 @@ function Paper({
       </div>
 
       <div className="paperMeta">
-        {j && (
-          <span>{j}</span>
-        )}
-
-        {d && (
-          <span>{d}</span>
-        )}
+        {j && <span>{j}</span>}
+        {d && <span>{d}</span>}
 
         {authors && (
           <span className="paperAuthors">
@@ -296,9 +291,7 @@ function Bars({ items }) {
   const max =
     Math.max(
       1,
-      ...items.map(
-        x => x[1]
-      )
+      ...items.map(x => x[1])
     );
 
   return (
@@ -360,9 +353,7 @@ export default function App() {
     setBookmarks(b => {
       const n =
         b.includes(k)
-          ? b.filter(
-              x => x !== k
-            )
+          ? b.filter(x => x !== k)
           : [...b, k];
 
       localStorage.setItem(
@@ -477,31 +468,19 @@ export default function App() {
         {data && (
           <div className="sideinfo dataSummary">
             <b>
-              {title(
-                data.cancer
-              )}{' '}
-              cancer
+              {title(data.cancer)} cancer
             </b>
 
             <br />
 
-            {
-              data.profile
-                .paper_count
-            }{' '}
+            {data.profile.paper_count}{' '}
             papers ·{' '}
-            {
-              data.treatments
-                .length
-            }{' '}
+            {data.treatments.length}{' '}
             treatment types
 
             <br />
 
-            {
-              data.profile
-                .free_full_text_count
-            }{' '}
+            {data.profile.free_full_text_count}{' '}
             free full-text in PMC
           </div>
         )}
@@ -527,8 +506,7 @@ export default function App() {
 
       <main className="main">
         <div className="content">
-          {page ===
-            'Search' && (
+          {page === 'Search' && (
             <Search
               input={input}
               setInput={setInput}
@@ -581,8 +559,7 @@ export default function App() {
             />
           )}
 
-          {page ===
-            'About' && (
+          {page === 'About' && (
             <About />
           )}
 
@@ -860,21 +837,9 @@ function Research({
         x =
           x.filter(p =>
             [
-              best(
-                p,
-                'pubmed_title',
-                'title'
-              ),
-              best(
-                p,
-                'pubmed_abstract',
-                'abstract'
-              ),
-              best(
-                p,
-                'pubmed_journal',
-                'journal'
-              ),
+              best(p, 'pubmed_title', 'title'),
+              best(p, 'pubmed_abstract', 'abstract'),
+              best(p, 'pubmed_journal', 'journal'),
               p.mesh_terms
             ]
               .join(' ')
@@ -992,12 +957,8 @@ function Research({
       ) {
         x.sort(
           (a, b) =>
-            Number(
-              !!b.pmc_id
-            ) -
-            Number(
-              !!a.pmc_id
-            )
+            Number(!!b.pmc_id) -
+            Number(!!a.pmc_id)
         );
       }
 
@@ -1299,9 +1260,7 @@ function Research({
               )
             }
             toggle={toggle}
-            key={
-              key(p) + i
-            }
+            key={key(p) + i}
           />
         )
       )}
@@ -1309,9 +1268,7 @@ function Research({
   );
 }
 
-function Analytics({
-  data
-}) {
+function Analytics({ data }) {
   if (!data) {
     return (
       <>
@@ -1370,8 +1327,7 @@ function Analytics({
       <Bars
         items={
           Object.entries(
-            data.profile
-              .year_counts ||
+            data.profile.year_counts ||
               {}
           ).sort()
         }
@@ -1383,8 +1339,7 @@ function Analytics({
 
       <Bars
         items={
-          data.profile
-            .top_journals ||
+          data.profile.top_journals ||
           []
         }
       />
@@ -1415,10 +1370,7 @@ function Analytics({
 
               'treatment,paper_count\n' +
                 data.treatments
-                  .map(
-                    x =>
-                      x.join(',')
-                  )
+                  .map(x => x.join(','))
                   .join('\n'),
 
               'text/csv'
@@ -1572,9 +1524,7 @@ function Treatment({
                   key={x[0]}
                   value={x[0]}
                 >
-                  {title(
-                    x[0]
-                  )}
+                  {title(x[0])}
                 </option>
               )
             )}
@@ -1633,9 +1583,7 @@ function Treatment({
                 )
               }
               toggle={toggle}
-              key={
-                key(p) + i
-              }
+              key={key(p) + i}
             />
           )
         )
@@ -1662,9 +1610,7 @@ function Treatment({
                 )
               }
               toggle={toggle}
-              key={
-                key(p) + i
-              }
+              key={key(p) + i}
             />
           )
         )}
@@ -1672,9 +1618,7 @@ function Treatment({
   );
 }
 
-function Compare({
-  data
-}) {
+function Compare({ data }) {
   const [a, setA] = useState('');
   const [b, setB] = useState('');
   const [ea, setEa] = useState([]);
@@ -1855,9 +1799,7 @@ function Compare({
                   key={x[0]}
                   value={x[0]}
                 >
-                  {title(
-                    x[0]
-                  )}
+                  {title(x[0])}
                 </option>
               )
             )}
@@ -1881,9 +1823,7 @@ function Compare({
                   key={x[0]}
                   value={x[0]}
                 >
-                  {title(
-                    x[0]
-                  )}
+                  {title(x[0])}
                 </option>
               )
             )}
@@ -1986,9 +1926,7 @@ function Compare({
                       n={i + 1}
                       saved={false}
                       toggle={() => {}}
-                      key={
-                        key(p) + i
-                      }
+                      key={key(p) + i}
                     />
                   )
                 )}
@@ -2008,9 +1946,7 @@ function Compare({
                       n={i + 1}
                       saved={false}
                       toggle={() => {}}
-                      key={
-                        key(p) + i
-                      }
+                      key={key(p) + i}
                     />
                   )
                 )}
@@ -2205,11 +2141,23 @@ function About() {
           </h2>
 
           <p>
-            Cancer Insight is an educational cancer research explorer designed
-            to make scientific cancer research easier to discover and examine.
-            It combines cancer research data with PubMed and NCBI metadata so
-            users can explore research papers, treatment evidence, trends, and
-            free full-text availability while keeping original sources visible.
+            Cancer Insight is an independent educational cancer research
+            explorer available at cancer-insight.com. It is designed to help
+            users discover and examine scientific cancer research while
+            keeping original research sources visible.
+          </p>
+
+          <p>
+            Cancer Insight brings together cancer research papers, PubMed and
+            NCBI metadata, treatment research, publication trends, research
+            analytics, free full-text availability, and scientific cancer
+            images in one research-focused platform.
+          </p>
+
+          <p>
+            The platform is intended for educational and research-exploration
+            purposes and does not provide personal medical advice, diagnosis,
+            or individualized treatment recommendations.
           </p>
         </section>
 
@@ -2447,6 +2395,7 @@ function pdfReport(
 
   const pageW = 210;
   const margin = 16;
+
   const contentW =
     pageW - margin * 2;
 
