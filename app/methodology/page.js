@@ -477,6 +477,102 @@ export default function Methodology() {
           </p>
         </section>
 
+        <section className="legalCard" id="research-gap-atlas">
+          <h2>Research Gap Atlas Method</h2>
+
+          <p>
+            The Cancer Insight Research Gap Atlas is an experimental educational
+            analysis layer that looks for transparent low-coverage signals inside
+            a retrieved cancer-literature dataset.
+          </p>
+
+          <p>
+            The Atlas first builds a broader evidence set than the normal
+            20-paper search. It retrieves a larger group of cancer-relevant
+            records and may add treatment-focused PubMed evidence for several of
+            the most represented treatment categories. Duplicate records are
+            removed where possible before analysis.
+          </p>
+
+          <p>
+            The current method checks six kinds of signals:
+          </p>
+
+          <ul>
+            <li>
+              <b>Study-design coverage:</b> whether clinical trials, randomized
+              controlled trials, systematic reviews, or meta-analyses are rarely
+              represented in available publication-type metadata.
+            </li>
+            <li>
+              <b>Topic coverage:</b> whether predefined research themes such as
+              quality of life, toxicity, recurrence, resistance, biomarkers,
+              pediatric populations, older adults, survivorship, or disparities
+              appear infrequently in titles, abstracts, keywords, or MeSH text.
+            </li>
+            <li>
+              <b>Treatment distribution:</b> whether some retrieved treatment
+              categories have much lower tagged-paper volume than the most
+              represented treatment category in the same dataset.
+            </li>
+            <li>
+              <b>Research recency:</b> whether relatively few retrieved records
+              are dated within the most recent three-year window.
+            </li>
+            <li>
+              <b>Research accessibility:</b> whether few retrieved records have a
+              PubMed Central free-full-text indicator. This is an access signal,
+              not a scientific evidence gap.
+            </li>
+            <li>
+              <b>Metadata completeness:</b> whether a large share of records lack
+              abstracts or other information needed for text analysis.
+            </li>
+          </ul>
+
+          <p>
+            Each signal displays the actual counts, percentage, comparison basis,
+            and a caution explaining what the result cannot establish. Signals are
+            labeled as strong, moderate, or watch signals according to predefined
+            thresholds inside the method. These labels describe how strongly the
+            rule was triggered; they do not measure scientific importance or
+            clinical urgency.
+          </p>
+
+          <p>
+            In method version 1.0, the principal trigger thresholds are: clinical
+            trials below 10% of analyzed papers; randomized controlled trials below
+            5%; systematic reviews below 5%; meta-analyses below 4%; predefined
+            topic coverage below 6%; recent literature below 20% for the current
+            three-year window; PubMed Central free-full-text availability below
+            25%; and missing abstracts above 30%. A treatment-distribution signal
+            may be triggered when a category has no more than 25% of the paper
+            volume of the most represented treatment category, subject to a small
+            count rule. These thresholds are exploratory design choices, not
+            accepted clinical standards.
+          </p>
+
+          <p>
+            The Atlas also displays a dataset-size label based only on the number
+            of unique papers analyzed: fewer than 30 is labeled limited, 30-59 is
+            labeled moderate, and 60 or more is labeled stronger. This is not a
+            scientific confidence score.
+          </p>
+
+          <p>
+            A Research Gap Atlas signal is not proof that the worldwide scientific
+            literature contains a true research gap. Keyword matching can miss
+            synonyms and context, publication-type metadata can be incomplete,
+            treatment tags can be imperfect, and the retrieved dataset is only a
+            subset of the wider literature. The Atlas is designed to generate
+            questions for further investigation, not final conclusions.
+          </p>
+
+          <a className="sourceButton" href="/research-gap-atlas">
+            Open Research Gap Atlas
+          </a>
+        </section>
+
         <section className="legalCard">
           <h2>Important Limitations</h2>
 
@@ -533,6 +629,10 @@ export default function Methodology() {
         <div className="legalFooter">
           <a href="/">
             Cancer Insight
+          </a>
+
+          <a href="/research-gap-atlas">
+            Research Gap Atlas
           </a>
 
           <a href="/methodology">

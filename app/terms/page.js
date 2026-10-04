@@ -388,6 +388,36 @@ export default function Terms() {
         </section>
 
         <section className="legalCard">
+          <h2>Research Gap Atlas</h2>
+
+          <p>
+            Cancer Insight may provide a Research Gap Atlas that identifies
+            low-coverage signals within a retrieved literature dataset using
+            predefined and transparent rules.
+          </p>
+
+          <p>
+            Signals may relate to study types, research themes, treatment-tagged
+            literature distribution, publication recency, free-full-text access,
+            or metadata completeness.
+          </p>
+
+          <p>
+            A signal is not proof of a real-world scientific, clinical, funding,
+            or policy gap. It does not establish that more research is required,
+            that a treatment is superior or inferior, or that a topic should be
+            prioritized.
+          </p>
+
+          <p>
+            The Atlas is an educational research-exploration tool intended to
+            generate questions for further investigation. Users should verify any
+            potential gap through broader literature review and appropriate expert
+            methods before drawing scientific conclusions.
+          </p>
+        </section>
+
+        <section className="legalCard">
           <h2>No Guarantee of Accuracy or Availability</h2>
 
           <p>
@@ -479,6 +509,10 @@ export default function Terms() {
         <div className="legalFooter">
           <a href="/">
             Cancer Insight
+          </a>
+
+          <a href="/research-gap-atlas">
+            Research Gap Atlas
           </a>
 
           <a href="/methodology">

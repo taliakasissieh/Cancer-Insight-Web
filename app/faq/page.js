@@ -607,6 +607,57 @@ export default function FAQ() {
         </section>
 
         <section className="legalCard">
+          <h2>What is the Cancer Research Gap Atlas?</h2>
+
+          <p>
+            The Research Gap Atlas is an experimental Cancer Insight tool that
+            looks for areas of low visible coverage inside a retrieved cancer
+            research dataset.
+          </p>
+
+          <p>
+            It can flag patterns such as relatively few clinical trials, low
+            visibility of a predefined research theme, uneven treatment-tagged
+            literature, limited recent publications, low free-full-text access,
+            or incomplete metadata.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Does a Gap Atlas signal prove that research is missing?</h2>
+
+          <p>No.</p>
+
+          <p>
+            A signal means a transparent rule detected low coverage inside the
+            retrieved dataset. It does not prove that the worldwide literature
+            lacks research, that a topic deserves more funding, or that a
+            treatment should be preferred.
+          </p>
+
+          <p>
+            Every signal includes the counts and caution needed to inspect why it
+            was triggered.
+          </p>
+        </section>
+
+        <section className="legalCard">
+          <h2>Can I export Research Gap Atlas results?</h2>
+
+          <p>Yes.</p>
+
+          <p>
+            The Atlas can export detected signals as CSV and the complete analysis
+            snapshot as JSON so the method and results can be reviewed outside the
+            website.
+          </p>
+
+          <a className="sourceButton" href="/research-gap-atlas">
+            Open Research Gap Atlas
+          </a>
+        </section>
+
+        <section className="legalCard">
           <h2>How can I learn more about how the site works?</h2>
 
           <p>
@@ -623,6 +674,10 @@ export default function FAQ() {
         <div className="legalFooter">
           <a href="/">
             Cancer Insight
+          </a>
+
+          <a href="/research-gap-atlas">
+            Research Gap Atlas
           </a>
 
           <a href="/methodology">

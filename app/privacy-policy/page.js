@@ -335,6 +335,10 @@ export default function PrivacyPolicy() {
             Cancer Insight
           </a>
 
+          <a href="/research-gap-atlas">
+            Research Gap Atlas
+          </a>
+
           <a href="/methodology">
             Methodology
           </a>

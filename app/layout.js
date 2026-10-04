@@ -44,6 +44,8 @@ export const metadata = {
     'free cancer research papers',
     'open access cancer research',
     'cancer research resources',
+    'cancer research gaps',
+    'research gap atlas',
   ],
 
   authors: [
@@ -147,7 +149,7 @@ export default function RootLayout({ children }) {
     },
 
     description:
-      'Cancer Insight is an independent educational cancer research explorer that helps users discover scientific cancer research papers, PubMed abstracts, treatment studies, research analytics, free full-text research, study information, and scientific cancer resources.',
+      'Cancer Insight is an independent educational cancer research explorer that helps users discover scientific cancer research papers, PubMed abstracts, treatment studies, research analytics, free full-text research, study information, research gap signals, and scientific cancer resources.',
 
     email: 'cancerinsight.contact@gmail.com',
 

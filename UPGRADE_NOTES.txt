@@ -1,0 +1,92 @@
+CANCER INSIGHT — RESEARCH GAP ATLAS UPGRADE
+
+This ZIP is a full upgraded copy of the Cancer Insight repository.
+
+NEW MAJOR FEATURE
+- Cancer Research Gap Atlas
+  URL: /research-gap-atlas
+  API: /api/gaps
+
+WHAT THE GAP ATLAS DOES
+- analyzes a broader cancer-research dataset than the normal 20-paper view
+- adds treatment-focused PubMed evidence for top retrieved treatment categories
+- removes duplicate records where possible
+- detects transparent low-coverage signals in:
+  * clinical trials
+  * randomized controlled trials
+  * systematic reviews
+  * meta-analyses
+  * quality of life
+  * toxicity/safety
+  * recurrence/relapse
+  * treatment resistance
+  * biomarkers
+  * pediatric populations
+  * older adults
+  * survivorship / long-term outcomes
+  * access & disparities
+  * treatment research distribution
+  * recent publication activity
+  * free-full-text accessibility
+  * abstract/metadata completeness
+- shows the numerical basis and caution for every signal
+- exports signals as CSV
+- exports the complete evidence snapshot as JSON
+- explicitly avoids ranking treatments or claiming a true scientific gap automatically
+
+NEW FILES
+- app/research-gap-atlas/page.js
+- app/research-gap-atlas/GapAtlasClient.js
+- app/api/gaps/route.js
+- lib/gaps.js
+- lib/relevance.js
+
+UPDATED FILES
+- app/page.js
+- app/globals.css
+- app/api/search/route.js
+- app/layout.js
+- app/sitemap.js
+- app/methodology/page.js
+- app/faq/page.js
+- app/privacy-policy/page.js
+- app/contact/page.js
+- app/terms/page.js
+- README.md
+
+IMPORTANT ARCHITECTURE CHANGE
+The relevance filtering helpers that were previously inside app/api/search/route.js
+were moved into lib/relevance.js so both the normal search endpoint and the Gap
+Atlas can use the same cancer-relevance rules. The normal /api/search behavior is
+preserved at 20 displayed relevant papers.
+
+DEPLOYMENT
+1. Keep your existing Vercel environment variable:
+   CANCER_RESEARCH_API_KEY
+2. Replace your repository files with the files in this ZIP.
+3. Commit/push to GitHub.
+4. Let Vercel deploy.
+5. Test:
+   - homepage search
+   - Research Papers
+   - Treatment Research
+   - Compare Treatments
+   - Cancer Images
+   - Research Gap Atlas
+6. After successful deployment, add /research-gap-atlas to Google Search Console
+   indexing checks if desired. It is already included in sitemap.xml.
+
+VALIDATION PERFORMED HERE
+- JavaScript syntax checks passed for new server/library files.
+- JSX/JavaScript parsing checks passed across app/ and lib/ using TypeScript's parser.
+- The pure Gap Atlas analysis function was run successfully against a mock dataset.
+
+LIMITATION OF LOCAL TESTING
+A complete Next.js production build could not be run in this environment because
+npm dependency installation did not complete. The project files were still parsed
+for syntax, and the new analysis engine was executed independently.
+
+RESEARCH / MEDICAL CAUTION
+The Gap Atlas is intentionally described as an experimental research-exploration
+tool. A low-coverage signal is not proof of a worldwide literature gap, clinical
+need, funding priority, or treatment superiority.

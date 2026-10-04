@@ -7,6 +7,7 @@ const pages = [
   'Search',
   'Research Papers',
   'Research Analytics',
+  'Research Gap Atlas',
   'Treatment Research',
   'Compare Treatments',
   'Cancer Images',
@@ -366,6 +367,12 @@ function SiteFooter() {
         '/',
         'Cancer Insight',
         'footer_home_click'
+      )}
+
+      {trackedLink(
+        '/research-gap-atlas',
+        'Research Gap Atlas',
+        'gap_atlas_footer_click'
       )}
 
       {trackedLink(
@@ -1443,6 +1450,15 @@ export default function App() {
           {page ===
             'Research Analytics' && (
             <Analytics
+              data={
+                data
+              }
+            />
+          )}
+
+          {page ===
+            'Research Gap Atlas' && (
+            <GapAtlasTeaser
               data={
                 data
               }
@@ -4384,6 +4400,122 @@ function Images({
   );
 }
 
+function GapAtlasTeaser({ data }) {
+  const cancer = data?.cancer || '';
+  const href = cancer
+    ? `/research-gap-atlas?cancer=${encodeURIComponent(cancer)}`
+    : '/research-gap-atlas';
+
+  return (
+    <>
+      <div className="pageHeader">
+        <div className="eyebrow darkEyebrow">
+          Experimental Research Tool
+        </div>
+
+        <h1>
+          Cancer Research Gap Atlas
+        </h1>
+
+        <p className="muted">
+          Go beyond finding papers. Map where the retrieved research appears
+          thin, concentrated, inaccessible, or underrepresented using transparent
+          rules that can be inspected and exported.
+        </p>
+      </div>
+
+      <section className="panel evidenceIntro">
+        <div className="eyebrow darkEyebrow">
+          A New Layer of Research Exploration
+        </div>
+
+        <h2>
+          What appears to be missing from the research landscape?
+        </h2>
+
+        <p>
+          The Research Gap Atlas examines a broader set of cancer papers and
+          treatment-focused PubMed evidence. It looks for low-coverage signals in
+          study types, research themes, treatment distribution, recency, access,
+          and metadata completeness.
+        </p>
+
+        <p>
+          Every signal includes the numbers and rule that triggered it. The tool
+          does not claim that a signal is automatically a true scientific gap and
+          does not rank treatments.
+        </p>
+
+        <div className="paperActions">
+          <a
+            className="sourceButton sourcePrimary"
+            href={href}
+            onClick={() =>
+              trackEvent(
+                'gap_atlas_open',
+                {
+                  cancer_type:
+                    cancer ||
+                    'none',
+                  location:
+                    'main_navigation'
+                }
+              )
+            }
+          >
+            {cancer
+              ? `Build ${title(cancer)} Gap Atlas`
+              : 'Open Research Gap Atlas'}
+          </a>
+
+          <a
+            className="sourceButton"
+            href="/methodology#research-gap-atlas"
+          >
+            View Detection Method
+          </a>
+        </div>
+      </section>
+
+      <div className="homeFeatures">
+        <div className="featureCard">
+          <div className="featureIcon">◎</div>
+          <h3>Study-Design Signals</h3>
+          <p>
+            Detect low representation of clinical trials, randomized trials,
+            systematic reviews, and meta-analyses in the retrieved dataset.
+          </p>
+        </div>
+
+        <div className="featureCard">
+          <div className="featureIcon">◇</div>
+          <h3>Topic-Coverage Signals</h3>
+          <p>
+            Examine visibility of quality of life, toxicity, recurrence,
+            resistance, biomarkers, age groups, survivorship, and disparities.
+          </p>
+        </div>
+
+        <div className="featureCard">
+          <div className="featureIcon">↗</div>
+          <h3>Transparent Evidence</h3>
+          <p>
+            See the exact counts behind every flag, export signals as CSV, and
+            download the full evidence snapshot as JSON.
+          </p>
+        </div>
+      </div>
+
+      <div className="panel comparisonNotice">
+        <b>Research signal, not a medical conclusion.</b>{' '}
+        A low-coverage signal means something is uncommon in the retrieved
+        dataset. It does not prove that the worldwide literature lacks research,
+        that funding is insufficient, or that any treatment should be preferred.
+      </div>
+    </>
+  );
+}
+
 function About() {
   return (
     <>
@@ -4499,6 +4631,34 @@ function About() {
               identified.
             </li>
           </ul>
+        </section>
+
+        <section className="panel aboutCard">
+          <h2>
+            Research Gap Atlas
+          </h2>
+
+          <p>
+            Cancer Insight can analyze a broader retrieved literature set for
+            transparent low-coverage signals in study design, research topics,
+            treatment distribution, recency, access, and metadata completeness.
+          </p>
+
+          <a
+            className="sourceButton"
+            href="/research-gap-atlas"
+            onClick={() =>
+              trackEvent(
+                'gap_atlas_open',
+                {
+                  location:
+                    'about_page'
+                }
+              )
+            }
+          >
+            Open Research Gap Atlas
+          </a>
         </section>
 
         <section className="panel aboutCard">
