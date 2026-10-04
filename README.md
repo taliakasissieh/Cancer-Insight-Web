@@ -19,7 +19,7 @@ Cancer Insight is an independent educational cancer research explorer built with
 
 ## Cancer Research Gap Atlas
 
-The Research Gap Atlas is an experimental research-exploration layer that looks for low-coverage signals inside a retrieved cancer-literature dataset.
+The Research Gap Atlas is an experimental research-exploration layer that looks for low-coverage signals inside a retrieved cancer-literature dataset. Method version 2.0 adds year-diverse PubMed sampling, cancer-relevance filtering for the sampled records, stronger publication-date fallbacks, and paper-level evidence provenance.
 
 It analyzes:
 
@@ -31,7 +31,7 @@ It analyzes:
 - free-full-text accessibility
 - metadata completeness
 
-Every signal exposes its numerical basis and a caution. A signal is **not proof of a true scientific or clinical gap**, does not rank treatments, and should be treated as a prompt for further investigation.
+Every signal exposes its numerical basis and a caution. The evidence export includes source/retrieval provenance where available. A signal is **not proof of a true scientific or clinical gap**, does not rank treatments, and should be treated as a prompt for further investigation.
 
 The main files are:
 
