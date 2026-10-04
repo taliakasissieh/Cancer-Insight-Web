@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { searchCancer, treatmentEvidence } from '../../../lib/research';
+import { searchCancer, treatmentEvidence, gapAtlasPubMedSample } from '../../../lib/research';
 import {
   normalizeCancer,
   getRelevantPapers,
@@ -29,6 +29,13 @@ export async function POST(req) {
       rawPapers,
       normalizedCancer,
       60
+    );
+
+    const yearDiverseRaw = await gapAtlasPubMedSample(normalizedCancer, 18);
+    const yearDiversePapers = getRelevantPapers(
+      yearDiverseRaw,
+      normalizedCancer,
+      72
     );
 
     const topTreatments = treatmentCounts(relevantBase)
@@ -62,8 +69,9 @@ export async function POST(req) {
     );
 
     const combined = removeDuplicates([
-      ...relevantBase,
-      ...treatmentSets.flat(),
+      ...relevantBase.map(paper => ({ ...paper, evidenceSource: paper?.evidenceSource || 'Cancer Research API + PubMed enrichment', retrievalMethod: paper?.retrievalMethod || 'relevance-ranked-base' })),
+      ...yearDiversePapers,
+      ...treatmentSets.flat().map(paper => ({ ...paper, evidenceSource: paper?.evidenceSource || 'PubMed', retrievalMethod: paper?.retrievalMethod || 'treatment-focused-query' })),
     ]).slice(0, 100);
 
     const analysis = analyzeResearchGaps(
@@ -76,7 +84,10 @@ export async function POST(req) {
       retrieval: {
         baseRelevantPapers: relevantBase.length,
         treatmentQueries: topTreatments,
+        yearDiversePubMedCandidates: yearDiverseRaw.length,
+        yearDiversePubMedPapers: yearDiversePapers.length,
         enrichedPaperCount: combined.length,
+        samplingMethod: 'relevance-ranked base + four PubMed publication-year windows + treatment-focused PubMed queries',
       },
     });
   } catch (e) {
