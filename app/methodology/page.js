@@ -488,10 +488,14 @@ export default function Methodology() {
 
           <p>
             The Atlas first builds a broader evidence set than the normal
-            20-paper search. It retrieves a larger group of cancer-relevant
-            records and may add treatment-focused PubMed evidence for several of
-            the most represented treatment categories. Duplicate records are
-            removed where possible before analysis.
+            20-paper search. Method version 2.0 combines cancer-relevant records
+            from the main research retrieval with PubMed records sampled across
+            four publication-year windows (recent, mid, older, and historical).
+            It may also add treatment-focused PubMed evidence for several of the
+            most represented treatment categories. The year-diverse PubMed
+            records pass through the same cancer-relevance filtering used by
+            Cancer Insight, and duplicate records are removed where possible
+            before analysis.
           </p>
 
           <p>
@@ -540,7 +544,7 @@ export default function Methodology() {
           </p>
 
           <p>
-            In method version 1.0, the principal trigger thresholds are: clinical
+            In method version 2.0, the principal trigger thresholds are: clinical
             trials below 10% of analyzed papers; randomized controlled trials below
             5%; systematic reviews below 5%; meta-analyses below 4%; predefined
             topic coverage below 6%; recent literature below 20% for the current
@@ -550,6 +554,14 @@ export default function Methodology() {
             volume of the most represented treatment category, subject to a small
             count rule. These thresholds are exploratory design choices, not
             accepted clinical standards.
+          </p>
+
+          <p>
+            Version 2.0 also records evidence provenance where available, including
+            PubMed links, publication dates, journals, retrieval method, and the
+            publication-year sampling window. This is intended to make the
+            retrieved evidence set inspectable and reproducible rather than
+            presenting gap signals as unexplained scores.
           </p>
 
           <p>
