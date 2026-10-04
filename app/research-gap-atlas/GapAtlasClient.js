@@ -521,6 +521,50 @@ export default function GapAtlasClient() {
               </div>
             </section>
 
+            <section className="gapSection">
+              <div className="gapSectionHeading">
+                <div>
+                  <div className="gapEyebrow">EVIDENCE PROVENANCE</div>
+                  <h2>Evidence Behind This Atlas</h2>
+                </div>
+              </div>
+
+              <div className="gapWarning">
+                This is a sampled evidence set, not an exhaustive systematic review.
+                V2 combines relevance-ranked records with PubMed records sampled
+                across publication-year windows and treatment-focused searches.
+              </div>
+
+              <details>
+                <summary>
+                  View retrieved evidence ({result.evidence?.length || 0} papers)
+                </summary>
+                <div className="gapDetailsBody">
+                  {(result.evidence || []).map((paper, index) => (
+                    <p key={paper.id || index}>
+                      <b>{paper.title || 'Untitled record'}</b>
+                      {paper.date ? ` · ${paper.date}` : ''}
+                      {paper.journal ? ` · ${paper.journal}` : ''}
+                      {paper.retrievalWindow ? ` · ${paper.retrievalWindow} window` : ''}
+                      {paper.url ? (
+                        <>
+                          {' · '}
+                          <a href={paper.url} target="_blank" rel="noreferrer">
+                            PubMed
+                          </a>
+                        </>
+                      ) : null}
+                    </p>
+                  ))}
+                </div>
+              </details>
+
+              <p className="muted">
+                Sampling method: {result.retrieval?.samplingMethod || 'retrieved evidence set'}.
+                {' '}Dated records: {result.dataset.datedPaperCount}/{result.dataset.paperCount}.
+              </p>
+            </section>
+
             <section className="gapMethodPanel">
               <div>
                 <div className="gapEyebrow">TRANSPARENCY FIRST</div>
