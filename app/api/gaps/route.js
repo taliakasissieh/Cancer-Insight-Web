@@ -31,7 +31,12 @@ export async function POST(req) {
       60
     );
 
-    const yearDiversePapers = await gapAtlasPubMedSample(normalizedCancer, 18);
+    const yearDiverseRaw = await gapAtlasPubMedSample(normalizedCancer, 18);
+    const yearDiversePapers = getRelevantPapers(
+      yearDiverseRaw,
+      normalizedCancer,
+      72
+    );
 
     const topTreatments = treatmentCounts(relevantBase)
       .slice(0, 5)
@@ -79,6 +84,7 @@ export async function POST(req) {
       retrieval: {
         baseRelevantPapers: relevantBase.length,
         treatmentQueries: topTreatments,
+        yearDiversePubMedCandidates: yearDiverseRaw.length,
         yearDiversePubMedPapers: yearDiversePapers.length,
         enrichedPaperCount: combined.length,
         samplingMethod: 'relevance-ranked base + four PubMed publication-year windows + treatment-focused PubMed queries',
