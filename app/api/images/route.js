@@ -41,7 +41,10 @@ function cleanArtist(value) {
 }
 
 function words(list) {
-  return new RegExp(`\\b(?:${list.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`, 'i');
+  return new RegExp(
+    `\\b(?:${list.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
+    'i'
+  );
 }
 
 const VISUAL_TERMS = words([
@@ -252,7 +255,8 @@ async function findImagesRaw(slug, label, phrasesKey) {
     .map(({ score: _s, mime: _m, ...image }) => ({
       ...image,
       title: image.title.replace(/\.[a-z0-9]+$/i, '').replace(/_/g, ' '),
-      description: image.description.length > 240 ? `${image.description.slice(0, 237)}…` : image.description,
+      description:
+        image.description.length > 240 ? `${image.description.slice(0, 237)}…` : image.description,
     }));
 }
 

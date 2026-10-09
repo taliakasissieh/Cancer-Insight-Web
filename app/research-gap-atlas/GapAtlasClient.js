@@ -1,577 +1,615 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import Link from 'next/link';
+import CancerSearch from '../_components/CancerSearch';
+import CountLink from '../_components/CountLink';
+import ForestPlot from '../_components/ForestPlot';
+import QueryBox from '../_components/QueryBox';
+import Icon from '../_components/Icon';
+import { postJson } from '../../lib/client/api';
+import { download, fileStem, toCsv } from '../../lib/client/exports';
+import { track } from '../../lib/client/track';
+import { fmtDateTime, fmtInt, fmtRatio, fmtShare, lowerFirst } from '../../lib/format';
 
-function title(value) {
-  return String(value || '')
-    .toLowerCase()
-    .replace(/\b\w/g, c => c.toUpperCase());
+const GROUPS = [
+  { id: 'design', label: 'Study design' },
+  { id: 'theme', label: 'Research themes' },
+  { id: 'population', label: 'Population focus' },
+  { id: 'access', label: 'Access' },
+  { id: 'time', label: 'Recency' },
+];
+
+const STATUS_TEXT = {
+  'much-lower': 'Much lower',
+  lower: 'Lower',
+  similar: 'Similar',
+  higher: 'Higher',
+  context: 'Expected (population)',
+  insufficient: 'Too few records',
+  unavailable: 'Unavailable',
+};
+
+function StatusPill({ status }) {
+  return <span className={`statusPill status-${status}`}>{STATUS_TEXT[status] || status}</span>;
 }
 
-function trackEvent(name, params = {}) {
-  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
-    window.gtag('event', name, params);
-  }
+function periodLabel(w) {
+  return w.id === 'historical' ? `Before ${w.end + 1}` : `${w.start}–${w.end}`;
 }
 
-function saveBlob(name, text, type) {
-  const url = URL.createObjectURL(new Blob([text], { type }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = name;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-function csvEscape(value) {
-  return `"${String(value ?? '').replaceAll('"', '""')}"`;
-}
-
-function StrengthBadge({ strength }) {
+function Signal({ s, cancerLabel }) {
+  const b = s.basis;
   return (
-    <span className={`gapStrength gapStrength-${strength || 'watch'}`}>
-      {strength === 'strong'
-        ? 'Strong signal'
-        : strength === 'moderate'
-          ? 'Moderate signal'
-          : 'Watch signal'}
-    </span>
-  );
-}
-
-function CoverageBar({ label, count, total, percent, note }) {
-  const width = Math.min(100, Math.max(0, Number(percent) || 0));
-
-  return (
-    <div className="gapCoverageRow">
-      <div className="gapCoverageTop">
-        <strong>{label}</strong>
-        <span>
-          {count}/{total} · {percent}%
+    <li className="signal" data-level={s.level}>
+      <div className="signalTop">
+        <span className="signalLevel">
+          {s.level === 'much-lower' ? 'Much lower representation' : 'Lower representation'}
         </span>
+        <span className="muted">{s.category}</span>
       </div>
-
-      <div className="gapCoverageTrack" aria-hidden="true">
-        <div className="gapCoverageFill" style={{ width: `${width}%` }} />
-      </div>
-
-      {note && <div className="gapCoverageNote">{note}</div>}
-    </div>
-  );
-}
-
-function Metric({ label, value, sub }) {
-  return (
-    <div className="gapMetric">
-      <span>{label}</span>
-      <strong>{value}</strong>
-      {sub && <small>{sub}</small>}
-    </div>
+      <h3>{s.title}</h3>
+      <p>{s.summary}</p>
+      <details>
+        <summary>Why this is shown</summary>
+        <div className="signalBasis">
+          <div className="tableWrap">
+            <table className="dataTable">
+              <thead>
+                <tr>
+                  <th scope="col">Literature</th>
+                  <th scope="col" className="numCell">
+                    Matching
+                  </th>
+                  <th scope="col" className="numCell">
+                    All records
+                  </th>
+                  <th scope="col" className="numCell">
+                    Share
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">{cancerLabel}</th>
+                  <td className="numCell">
+                    <CountLink count={b.count} url={s.url} />
+                  </td>
+                  <td className="numCell">{fmtInt(b.total)}</td>
+                  <td className="numCell">{fmtShare(b.share)}</td>
+                </tr>
+                <tr>
+                  <th scope="row">All oncology</th>
+                  <td className="numCell">
+                    <CountLink count={b.baselineCount} url={s.baselineUrl} />
+                  </td>
+                  <td className="numCell">{fmtInt(b.baselineTotal)}</td>
+                  <td className="numCell">{fmtShare(b.baselineShare)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <p className="small" style={{ margin: 0 }}>
+            Ratio: {fmtShare(b.share)} ÷ {fmtShare(b.baselineShare)} ={' '}
+            <strong>{fmtRatio(b.ratio)}</strong>, below the {fmtRatio(b.threshold)} threshold.
+          </p>
+          <p className="small muted" style={{ margin: 0 }}>
+            {s.caution}
+          </p>
+        </div>
+      </details>
+    </li>
   );
 }
 
 export default function GapAtlasClient() {
   const [cancer, setCancer] = useState('');
-  const [result, setResult] = useState(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState('');
+  const [state, setState] = useState({ status: 'idle', data: null, error: '' });
+  const token = useRef(0);
+  const resultsRef = useRef(null);
 
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-
-    const params = new URLSearchParams(window.location.search);
-    const initialCancer = params.get('cancer');
-
-    if (initialCancer) {
-      setCancer(initialCancer);
-      runAnalysis(initialCancer);
+  const run = useCallback(async (input, { push = true } = {}) => {
+    const my = ++token.current;
+    setCancer(input);
+    setState({ status: 'loading', data: null, error: '' });
+    if (push) {
+      const url = `/research-gap-atlas?cancer=${encodeURIComponent(input)}`;
+      if (url !== window.location.pathname + window.location.search) {
+        window.history.pushState(null, '', url);
+      }
+    }
+    track('gap_atlas_search', { cancer_type: input });
+    try {
+      const data = await postJson('/api/gaps', { cancer: input });
+      if (token.current !== my) return;
+      setState({ status: 'ok', data, error: '' });
+      document.title = `${data.cancer.label} research coverage | Cancer Insight`;
+      track('gap_atlas_success', { cancer_type: input, signal_count: data.signals.length });
+      requestAnimationFrame(() => {
+        const el = resultsRef.current;
+        if (!el) return;
+        el.focus({ preventScroll: true });
+        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+        el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+      });
+    } catch (error) {
+      if (token.current !== my) return;
+      setState({ status: 'error', data: null, error: error.message });
+      track('gap_atlas_error', { cancer_type: input });
     }
   }, []);
 
-  async function runAnalysis(forcedCancer) {
-    const query = String(forcedCancer || cancer).trim();
-
-    if (!query) {
-      setError('Enter a cancer type to analyze.');
-      return;
-    }
-
-    setBusy(true);
-    setError('');
-    setResult(null);
-
-    trackEvent('gap_atlas_search', {
-      cancer_type: query.toLowerCase(),
-    });
-
-    try {
-      const response = await fetch('/api/gaps', {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-        },
-        body: JSON.stringify({ cancer: query }),
-      });
-
-      const json = await response.json();
-
-      if (!response.ok) {
-        throw new Error(json?.error || 'Gap analysis failed.');
+  useEffect(() => {
+    const read = () => {
+      const c = new URLSearchParams(window.location.search).get('cancer');
+      if (c) run(c.slice(0, 60), { push: false });
+      else {
+        token.current++;
+        setCancer('');
+        setState({ status: 'idle', data: null, error: '' });
       }
+    };
+    read();
+    window.addEventListener('popstate', read);
+    return () => window.removeEventListener('popstate', read);
+  }, [run]);
 
-      setResult(json);
-
-      if (typeof window !== 'undefined') {
-        const next = new URL(window.location.href);
-        next.searchParams.set('cancer', query.toLowerCase());
-        window.history.replaceState({}, '', next.toString());
-      }
-
-      trackEvent('gap_atlas_success', {
-        cancer_type: query.toLowerCase(),
-        paper_count: json?.dataset?.paperCount || 0,
-        signal_count: json?.signals?.length || 0,
-      });
-    } catch (e) {
-      setError(e?.message || 'Something went wrong.');
-      trackEvent('gap_atlas_error', {
-        cancer_type: query.toLowerCase(),
-      });
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  function submit(e) {
-    e.preventDefault();
-    runAnalysis();
-  }
-
-  const strongest = useMemo(() => {
-    if (!result?.signals) return [];
-    return result.signals.filter(x => x.strength === 'strong');
-  }, [result]);
+  const d = state.data;
 
   function exportCsv() {
-    if (!result) return;
-
     const rows = [
-      ['category', 'signal', 'strength', 'summary', 'matched', 'total', 'percent', 'caution'],
-      ...result.signals.map(signal => [
-        signal.category,
-        signal.title,
-        signal.strength,
-        signal.summary,
-        signal.basis?.matched ?? '',
-        signal.basis?.total ?? '',
-        signal.basis?.percent ?? '',
-        signal.caution,
+      ['# Cancer Insight Research Gap Atlas', `Method ${d.methodVersion}`],
+      ['# generated', d.generatedAt],
+      ['# cancer', d.cancer.label],
+      ['# cancer_query', d.cancer.term],
+      ['# oncology_baseline_query', d.baseline.term],
+      [
+        '# note',
+        'A lower share is a prompt for investigation, not proof of a research gap. Not medical advice.',
+      ],
+      [
+        'group',
+        'measure',
+        'status',
+        'cancer_records_matching',
+        'cancer_records_total',
+        'cancer_share',
+        'oncology_records_matching',
+        'oncology_records_total',
+        'oncology_share',
+        'ratio',
+        'measure_query',
+        'pubmed_url',
+        'oncology_pubmed_url',
+        'baseline_source',
+      ],
+      ...d.measures.map(m => [
+        m.group,
+        m.label,
+        m.status,
+        m.count,
+        m.total,
+        m.share,
+        m.baselineCount,
+        m.baselineTotal,
+        m.baselineShare,
+        m.ratio,
+        m.definition,
+        m.url,
+        m.baselineUrl,
+        m.baselineSource,
       ]),
     ];
-
-    const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n');
-
-    saveBlob(`cancer_insight_${result.cancer.replace(/\s+/g, '_')}_gap_atlas.csv`, csv, 'text/csv');
-
-    trackEvent('gap_atlas_export', {
-      cancer_type: result.cancer,
-      format: 'csv',
-    });
+    download(`${fileStem(d.cancer.label, 'gap-atlas')}.csv`, toCsv(rows), 'text/csv');
+    track('gap_atlas_export', { cancer_type: cancer, format: 'csv' });
   }
 
   function exportJson() {
-    if (!result) return;
-
-    saveBlob(
-      `cancer_insight_${result.cancer.replace(/\s+/g, '_')}_gap_atlas.json`,
-      JSON.stringify(result, null, 2),
+    download(
+      `${fileStem(d.cancer.label, 'gap-atlas')}.json`,
+      JSON.stringify(d, null, 2),
       'application/json'
     );
-
-    trackEvent('gap_atlas_export', {
-      cancer_type: result.cancer,
-      format: 'json',
-    });
+    track('gap_atlas_export', { cancer_type: cancer, format: 'json' });
   }
 
   return (
-    <main className="gapPage">
-      <div className="gapContainer">
-        <a className="backLink" href="/">
-          ← Back to Cancer Insight
-        </a>
-
-        <section className="gapHero">
-          <div>
-            <div className="gapEyebrow">CANCER INSIGHT EXPERIMENTAL RESEARCH TOOL</div>
-            <h1>Cancer Research Gap Atlas</h1>
-            <p className="gapLead">
-              Explore where research appears thin, concentrated, inaccessible, or underrepresented
-              inside a retrieved cancer-literature dataset — with every signal explained by
-              transparent rules.
-            </p>
-
-            <div className="gapHeroPills">
-              <span>Transparent rules</span>
-              <span>PubMed-linked evidence</span>
-              <span>No treatment ranking</span>
-              <span>Exportable results</span>
-            </div>
-          </div>
-
-          <div className="gapHeroCard">
-            <strong>What makes this different?</strong>
-            <p>
-              Normal search tools show what exists. The Gap Atlas asks a second question:{' '}
-              <b>what appears underrepresented in the retrieved evidence?</b>
-            </p>
-            <p>
-              It does not claim a true scientific gap automatically. It creates reproducible signals
-              that researchers can investigate.
-            </p>
-          </div>
-        </section>
-
-        <section className="gapSearchPanel">
-          <form onSubmit={submit} className="gapSearchForm">
-            <label>
-              Cancer type
-              <input
-                value={cancer}
-                onChange={e => setCancer(e.target.value)}
-                placeholder="For example: brain, breast, lung, leukemia..."
-              />
-            </label>
-
-            <button className="primary" type="submit" disabled={busy}>
-              {busy ? 'Building Gap Atlas…' : 'Build Research Gap Atlas'}
-            </button>
-          </form>
-
-          <p className="gapSearchHint">
-            The analysis uses a broader research set than the standard 20-paper search and enriches
-            it with treatment-focused PubMed evidence where available.
-          </p>
-        </section>
-
-        {error && <div className="error">{error}</div>}
-
-        {busy && (
-          <div className="gapLoading">
-            <div className="gapSpinner" />
+    <>
+      <section className="pageHead" aria-labelledby="atlas-title">
+        <div className="pageHeadInner">
+          <div className="atlasHeadGrid">
             <div>
-              <strong>Mapping the research landscape…</strong>
-              <span>
-                Retrieving papers, checking study types, topics, treatment distribution, recency,
-                access, and metadata completeness.
-              </span>
+              <h1 id="atlas-title">Research Gap Atlas</h1>
+              <p className="lede">
+                See which study designs and research themes make up a smaller share of a cancer’s
+                PubMed literature than of oncology overall — and check every count yourself.
+              </p>
+              <CancerSearch
+                onSearch={c => run(c)}
+                initialValue={cancer}
+                buttonLabel="Build atlas"
+              />
             </div>
+            <aside className="atlasPromise" aria-label="How to read the atlas">
+              <p>
+                <strong>Shares, not totals.</strong> Large and small literatures are compared by
+                proportion, so a common cancer does not look better covered just because it is
+                common.
+              </p>
+              <p>
+                <strong>A prompt, not proof.</strong> A lower share can reflect biology,
+                epidemiology or indexing rather than neglect. The atlas never claims a real research
+                gap.
+              </p>
+              <p style={{ marginBottom: 0 }}>
+                <strong>Reproducible.</strong> Every number opens the PubMed search that produced
+                it. <Link href="/methodology#gap-atlas">Read the method</Link>.
+              </p>
+            </aside>
+          </div>
+        </div>
+      </section>
+
+      <div className="viewBody">
+        {state.status === 'idle' && (
+          <div className="emptyState">
+            <h2>Choose a cancer to build its atlas</h2>
+            <p>
+              The atlas runs about 45 PubMed count searches. The first run for a cancer usually
+              takes 5–15 seconds; results are then cached for a day.
+            </p>
           </div>
         )}
 
-        {result && (
-          <>
-            <section className="gapResultHeader">
+        {state.status === 'loading' && (
+          <div aria-busy="true" aria-live="polite">
+            <p className="loadingLine">
+              <span className="spinner" aria-hidden="true" />
+              Counting PubMed records for {cancer} and for oncology overall. The first run usually
+              takes 5–15 seconds.
+            </p>
+            <div className="skeleton" style={{ height: 420, marginTop: 16 }} />
+          </div>
+        )}
+
+        {state.status === 'error' && (
+          <div className="emptyState" role="alert">
+            <h2>The atlas could not be built</h2>
+            <p>{state.error}</p>
+            <button
+              type="button"
+              className="btn btnPrimary"
+              onClick={() => run(cancer, { push: false })}
+            >
+              Try again
+            </button>
+          </div>
+        )}
+
+        {d && (
+          <div ref={resultsRef} tabIndex={-1} style={{ outline: 'none' }}>
+            <div className="resultIntro">
               <div>
-                <div className="gapEyebrow">RESEARCH LANDSCAPE</div>
-                <h2>{title(result.cancer)} Cancer</h2>
-                <p>
-                  Analysis generated from {result.dataset.paperCount} unique papers. Signals
-                  describe this retrieved dataset only.
+                <h2>{d.cancer.label}: research coverage</h2>
+                <p className="muted" style={{ margin: 0 }}>
+                  Based on <CountLink count={d.totals.records} url={d.totals.url} />{' '}
+                  {lowerFirst(d.cancer.label)} records and{' '}
+                  <CountLink count={d.baseline.total} url={d.baseline.url} /> oncology records in
+                  PubMed. Generated {fmtDateTime(d.generatedAt)} with method {d.methodVersion}.
+                  {d.baseline.source !== 'live' && d.baseline.snapshotDate
+                    ? ` Some oncology counts used the ${d.baseline.snapshotDate} reference snapshot because live counts were unavailable.`
+                    : ''}
                 </p>
               </div>
-
-              <div className="gapActions">
-                <button className="gapSecondaryButton" onClick={exportCsv}>
-                  Export Signals CSV
+              <div className="btnRow">
+                <button type="button" className="btn btnSecondary btnSmall" onClick={exportCsv}>
+                  <Icon name="download" size={16} />
+                  Measures CSV
                 </button>
-                <button className="gapSecondaryButton" onClick={exportJson}>
-                  Export Evidence JSON
+                <button type="button" className="btn btnSecondary btnSmall" onClick={exportJson}>
+                  <Icon name="download" size={16} />
+                  Evidence JSON
                 </button>
+                <Link
+                  className="btn btnQuiet btnSmall"
+                  href={`/explore?cancer=${encodeURIComponent(d.cancer.input)}`}
+                >
+                  Explore the papers
+                </Link>
               </div>
-            </section>
-
-            <div className="gapMetricGrid">
-              <Metric
-                label="Papers analyzed"
-                value={result.dataset.paperCount}
-                sub={`${result.dataset.confidence} dataset-size label`}
-              />
-              <Metric
-                label="Gap signals"
-                value={result.signals.length}
-                sub={`${strongest.length} strong signals`}
-              />
-              <Metric
-                label="Treatment categories"
-                value={result.dataset.treatmentCount}
-                sub="retrieved tags"
-              />
-              <Metric
-                label="Recent papers"
-                value={`${result.dataset.recentPercent}%`}
-                sub={`${result.dataset.recentStartYear}–present`}
-              />
-              <Metric label="Journals" value={result.dataset.journalCount} sub="represented" />
-              <Metric
-                label="Year range"
-                value={
-                  result.dataset.earliestYear && result.dataset.latestYear
-                    ? `${result.dataset.earliestYear}–${result.dataset.latestYear}`
-                    : '—'
-                }
-                sub="available metadata"
-              />
             </div>
 
-            <section className="gapSection">
-              <div className="gapSectionHeading">
+            <QueryBox term={d.cancer.term} title="PubMed query for this cancer" />
+
+            <section className="section" aria-labelledby="signals-h">
+              <div className="sectionHead">
                 <div>
-                  <div className="gapEyebrow">SIGNAL DETECTION</div>
-                  <h2>Potential Research Gap Signals</h2>
+                  <h2 id="signals-h">Lower-representation signals</h2>
+                  <p className="muted">
+                    Measures where this cancer’s share is below {fmtRatio(d.thresholds.lower)} the
+                    oncology-wide share.
+                  </p>
                 </div>
-                <a className="sourceButton" href="/methodology#research-gap-atlas">
-                  How signals are calculated
-                </a>
               </div>
-
-              <div className="gapWarning">
-                <b>Important:</b> a signal is not proof of a real-world scientific or clinical gap.
-                It means that a predefined type of evidence or topic is relatively scarce in this
-                retrieved dataset.
-              </div>
-
-              {result.signals.length ? (
-                <div className="gapSignalGrid">
-                  {result.signals.map(signal => (
-                    <article className="gapSignalCard" key={signal.id}>
-                      <div className="gapSignalTop">
-                        <span className="gapCategory">{signal.category}</span>
-                        <StrengthBadge strength={signal.strength} />
-                      </div>
-
-                      <h3>{signal.title}</h3>
-                      <p>{signal.summary}</p>
-
-                      <details>
-                        <summary>Why was this flagged?</summary>
-                        <div className="gapDetailsBody">
-                          {signal.basis?.total !== undefined && (
-                            <p>
-                              <b>Dataset basis:</b> {signal.basis.matched} of {signal.basis.total}
-                              {signal.basis.percent !== undefined
-                                ? ` (${signal.basis.percent}%)`
-                                : ''}
-                            </p>
-                          )}
-
-                          {signal.basis?.benchmark !== undefined && (
-                            <p>
-                              <b>Comparison basis:</b> {signal.basis.matched} papers versus{' '}
-                              {signal.basis.benchmark} for {title(signal.basis.benchmarkTreatment)}.
-                            </p>
-                          )}
-
-                          <p className="gapCaution">{signal.caution}</p>
-                        </div>
-                      </details>
-                    </article>
+              {d.signals.length ? (
+                <ul className="signalList">
+                  {d.signals.map(s => (
+                    <Signal key={s.id} s={s} cancerLabel={d.cancer.label} />
                   ))}
-                </div>
+                </ul>
               ) : (
                 <div className="emptyState">
-                  <strong>No predefined low-coverage signals were triggered</strong>
-                  <span>
-                    This does not mean the research field has no gaps. It only means none of the
-                    current transparent rules crossed their thresholds.
-                  </span>
+                  <h3>No measure fell below the threshold</h3>
+                  <p>
+                    None of the {d.measures.length} measures is under {fmtRatio(d.thresholds.lower)}{' '}
+                    the oncology-wide share. That does not mean this literature has no gaps — only
+                    that these measures did not flag any.
+                  </p>
+                </div>
+              )}
+              {d.contextNotes.length > 0 && (
+                <div className="notice small" style={{ marginTop: 14 }}>
+                  {d.contextNotes.map(n => (
+                    <p key={n.id}>{n.note}</p>
+                  ))}
                 </div>
               )}
             </section>
 
-            <section className="gapTwoCol">
-              <div className="gapPanel">
-                <div className="gapEyebrow">STUDY DESIGN</div>
-                <h2>Study-Type Coverage</h2>
-                <p className="muted">
-                  Based on publication-type metadata available in the retrieved records.
-                </p>
-
-                {result.studyDesign.map(item => (
-                  <CoverageBar
-                    key={item.id}
-                    label={item.label}
-                    count={item.count}
-                    total={item.total}
-                    percent={item.percent}
-                  />
-                ))}
-              </div>
-
-              <div className="gapPanel">
-                <div className="gapEyebrow">TOPIC COVERAGE</div>
-                <h2>Research Theme Visibility</h2>
-                <p className="muted">
-                  Keyword signals across titles, abstracts, keywords, and MeSH text.
-                </p>
-
-                {result.topics.map(item => (
-                  <CoverageBar
-                    key={item.id}
-                    label={item.label}
-                    count={item.count}
-                    total={item.total}
-                    percent={item.percent}
-                  />
-                ))}
-              </div>
-            </section>
-
-            <section className="gapTwoCol">
-              <div className="gapPanel">
-                <div className="gapEyebrow">TREATMENT LANDSCAPE</div>
-                <h2>Retrieved Treatment Distribution</h2>
-
-                {result.treatments.length ? (
-                  result.treatments.map(item => {
-                    const max = result.treatments[0]?.count || 1;
-                    const width = Math.max(2, (item.count / max) * 100);
-
-                    return (
-                      <div className="gapTreatmentRow" key={item.name}>
-                        <div className="gapTreatmentTop">
-                          <span>{title(item.name)}</span>
-                          <b>{item.count}</b>
-                        </div>
-                        <div className="gapCoverageTrack">
-                          <div className="gapCoverageFill" style={{ width: `${width}%` }} />
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <p className="muted">No treatment tags were available.</p>
-                )}
-              </div>
-
-              <div className="gapPanel">
-                <div className="gapEyebrow">PUBLICATION TIMELINE</div>
-                <h2>Research Activity by Year</h2>
-
-                {result.timeline.length ? (
-                  <div className="gapTimeline">
-                    {result.timeline.slice(-15).map(item => {
-                      const max = Math.max(1, ...result.timeline.slice(-15).map(x => x.count));
-                      const height = Math.max(8, (item.count / max) * 100);
-
-                      return (
-                        <div className="gapYearColumn" key={item.year}>
-                          <span className="gapYearCount">{item.count}</span>
-                          <div className="gapYearBarBox">
-                            <div className="gapYearBar" style={{ height: `${height}%` }} />
-                          </div>
-                          <span className="gapYearLabel">{String(item.year).slice(-2)}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="muted">No publication-year data was available.</p>
-                )}
-              </div>
-            </section>
-
-            <section className="gapSection">
-              <div className="gapSectionHeading">
+            <section className="section" aria-labelledby="profile-h">
+              <div className="sectionHead">
                 <div>
-                  <div className="gapEyebrow">EVIDENCE PROVENANCE</div>
-                  <h2>Evidence Behind This Atlas</h2>
+                  <h2 id="profile-h">Representation profile</h2>
+                  <p className="muted">
+                    Each marker is this cancer’s share divided by the oncology-wide share; 1× means
+                    the same share. Select a row to open its PubMed search.
+                  </p>
                 </div>
               </div>
-
-              <div className="gapWarning">
-                This is a sampled evidence set, not an exhaustive systematic review. V2 combines
-                relevance-ranked records with PubMed records sampled across publication-year windows
-                and treatment-focused searches.
+              <div className="panel">
+                <ForestPlot
+                  rows={d.measures}
+                  groups={GROUPS}
+                  idPrefix="atlas"
+                  title={`${d.cancer.label}: representation relative to oncology`}
+                />
               </div>
-
-              <details>
-                <summary>View retrieved evidence ({result.evidence?.length || 0} papers)</summary>
-                <div className="gapDetailsBody">
-                  {(result.evidence || []).map((paper, index) => (
-                    <p key={paper.id || index}>
-                      <b>{paper.title || 'Untitled record'}</b>
-                      {paper.date ? ` · ${paper.date}` : ''}
-                      {paper.journal ? ` · ${paper.journal}` : ''}
-                      {paper.retrievalWindow ? ` · ${paper.retrievalWindow} window` : ''}
-                      {paper.url ? (
-                        <>
-                          {' · '}
-                          <a href={paper.url} target="_blank" rel="noreferrer">
-                            PubMed
-                          </a>
-                        </>
-                      ) : null}
-                    </p>
-                  ))}
+              <details style={{ marginTop: 12 }}>
+                <summary>Show every number as a table</summary>
+                <div className="tableWrap" style={{ marginTop: 10 }}>
+                  <table className="dataTable">
+                    <caption className="visuallyHidden">All measures</caption>
+                    <thead>
+                      <tr>
+                        <th scope="col">Measure</th>
+                        <th scope="col" className="numCell">
+                          {d.cancer.label}
+                        </th>
+                        <th scope="col" className="numCell">
+                          Share
+                        </th>
+                        <th scope="col" className="numCell">
+                          Oncology
+                        </th>
+                        <th scope="col" className="numCell">
+                          Share
+                        </th>
+                        <th scope="col" className="numCell">
+                          Ratio
+                        </th>
+                        <th scope="col">Reading</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {d.measures.map(m => (
+                        <tr key={m.id}>
+                          <th scope="row">
+                            {m.label}
+                            <div className="small muted">{m.category}</div>
+                          </th>
+                          <td className="numCell">
+                            <CountLink count={m.count} url={m.url} />
+                          </td>
+                          <td className="numCell">{fmtShare(m.share)}</td>
+                          <td className="numCell">
+                            <CountLink count={m.baselineCount} url={m.baselineUrl} />
+                          </td>
+                          <td className="numCell">{fmtShare(m.baselineShare)}</td>
+                          <td className="numCell">{fmtRatio(m.ratio)}</td>
+                          <td>
+                            <StatusPill status={m.status} />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </details>
-
-              <p className="muted">
-                Sampling method: {result.retrieval?.samplingMethod || 'retrieved evidence set'}.{' '}
-                Dated records: {result.dataset.datedPaperCount}/{result.dataset.paperCount}.
-              </p>
             </section>
 
-            <section className="gapMethodPanel">
-              <div>
-                <div className="gapEyebrow">TRANSPARENCY FIRST</div>
-                <h2>What the Atlas can — and cannot — claim</h2>
+            <section className="section" aria-labelledby="time-h">
+              <h2 id="time-h">Records by publication period</h2>
+              <p className="muted" style={{ maxWidth: '72ch' }}>
+                PubMed records for this cancer in each period. Yearly averages make periods of
+                different length comparable. PubMed’s journal coverage has grown over time, so
+                rising numbers reflect indexing as well as research activity.
+              </p>
+              <div className="windowBars">
+                {d.timeWindows.map(w => (
+                  <div key={w.id} className="windowBar">
+                    <span>{periodLabel(w)}</span>
+                    <strong>
+                      <CountLink count={w.records} url={w.url} />
+                    </strong>
+                    <span>
+                      {w.perYear != null
+                        ? `about ${fmtInt(Math.round(w.perYear))} a year`
+                        : 'records in total'}
+                    </span>
+                  </div>
+                ))}
               </div>
+            </section>
 
-              <div className="gapMethodGrid">
+            <section className="section" aria-labelledby="treat-h">
+              <h2 id="treat-h">Treatment categories</h2>
+              <p className="muted" style={{ maxWidth: '72ch' }}>
+                PubMed records that mention each category. These are never flagged as gaps: whether
+                a treatment is relevant depends on the biology of each cancer, and more records do
+                not mean a better treatment.
+              </p>
+              <div className="tableWrap">
+                <table className="dataTable" style={{ maxWidth: 720 }}>
+                  <thead>
+                    <tr>
+                      <th scope="col">Treatment category</th>
+                      <th scope="col" className="numCell">
+                        Records
+                      </th>
+                      <th scope="col" className="numCell">
+                        Share of {lowerFirst(d.cancer.label)} records
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {d.treatments.map(t => (
+                      <tr key={t.id}>
+                        <th scope="row">{t.label}</th>
+                        <td className="numCell">
+                          <CountLink count={t.count} url={t.url} />
+                        </td>
+                        <td className="numCell">{fmtShare(t.share)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <section className="section" aria-labelledby="sample-h">
+              <h2 id="sample-h">Evidence behind this atlas</h2>
+              <p style={{ maxWidth: '72ch' }}>
+                The figures above are counts across all of PubMed. To make the queries inspectable,
+                the atlas also draws a small sample of real records. {d.sample.method}
+              </p>
+              <p className="notice small" style={{ maxWidth: '78ch' }}>
+                The sample illustrates and audits the queries. It does not feed any signal, and its
+                spread across periods is set by design, not by publication volume.
+              </p>
+              <div className="tableWrap" style={{ marginTop: 14 }}>
+                <table className="dataTable">
+                  <caption className="visuallyHidden">Sample retrieval by period</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">Period</th>
+                      <th scope="col" className="numCell">
+                        PubMed records
+                      </th>
+                      <th scope="col" className="numCell">
+                        Requested
+                      </th>
+                      <th scope="col" className="numCell">
+                        Retrieved
+                      </th>
+                      <th scope="col" className="numCell">
+                        Kept after relevance check
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {d.sample.perWindow.map(w => (
+                      <tr key={w.id}>
+                        <th scope="row">{periodLabel(w)}</th>
+                        <td className="numCell">
+                          <CountLink count={w.totalRecords} url={w.url} />
+                        </td>
+                        <td className="numCell">{w.requested}</td>
+                        <td className="numCell">{w.retrieved}</td>
+                        <td className="numCell">{w.kept}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <dl className="factList" style={{ marginTop: 16 }}>
+                <dt>Sampled records with an abstract</dt>
+                <dd className="num">
+                  {d.sample.stats.withAbstract} of {d.sample.stats.total}
+                </dd>
+                <dt>With a specific publication type</dt>
+                <dd className="num">
+                  {d.sample.stats.withSpecificType} of {d.sample.stats.total}
+                </dd>
+                <dt>With a free full text in PMC</dt>
+                <dd className="num">
+                  {d.sample.stats.withPmc} of {d.sample.stats.total}
+                </dd>
+                <dt>With a DOI</dt>
+                <dd className="num">
+                  {d.sample.stats.withDoi} of {d.sample.stats.total}
+                </dd>
+                <dt>Retracted</dt>
+                <dd className="num">{d.sample.stats.retracted}</dd>
+              </dl>
+              <details style={{ marginTop: 14 }}>
+                <summary>View the {d.sample.papers.length} sampled records</summary>
+                <ul className="sampleList">
+                  {d.sample.papers.map(p => (
+                    <li key={`${p.retrievalWindow}-${p.pmid}`}>
+                      {p.url ? (
+                        <a href={p.url} target="_blank" rel="noopener noreferrer">
+                          {p.title || 'Untitled record'}
+                        </a>
+                      ) : (
+                        p.title
+                      )}
+                      <div className="sampleMeta">
+                        <span>{p.evidenceType}</span>
+                        {p.retracted && (
+                          <span style={{ color: 'var(--rose)', fontWeight: 700 }}>Retracted</span>
+                        )}
+                        {p.journal && <span>{p.journal}</span>}
+                        {p.date && <span>{p.date}</span>}
+                        <span>Sampled from the {p.retrievalWindow} period</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            </section>
+
+            <section className="section" aria-labelledby="claims-h">
+              <h2 id="claims-h">What this atlas can and cannot claim</h2>
+              <div className="claims panel">
                 <div>
                   <h3>It can show</h3>
                   <ul>
-                    <li>which predefined topics appear rarely in the dataset,</li>
-                    <li>which study types are uncommon in available metadata,</li>
-                    <li>how treatment-tagged literature is distributed,</li>
-                    <li>how recent the retrieved literature is, and</li>
-                    <li>where access or metadata completeness is limited.</li>
+                    <li>how this cancer’s indexed literature divides across designs and themes;</li>
+                    <li>where that division differs markedly from oncology overall;</li>
+                    <li>the exact PubMed query and count behind every figure.</li>
                   </ul>
                 </div>
-
                 <div>
-                  <h3>It cannot prove</h3>
+                  <h3>It cannot show</h3>
                   <ul>
-                    <li>that the worldwide literature truly lacks research,</li>
-                    <li>that a treatment is better or worse,</li>
-                    <li>that a low-volume topic deserves more funding,</li>
-                    <li>that missing keywords mean a topic was not studied, or</li>
-                    <li>what treatment any patient should receive.</li>
+                    <li>that a real scientific or clinical research gap exists;</li>
+                    <li>that a topic deserves more research or funding;</li>
+                    <li>that any treatment is better, worse or appropriate for anyone.</li>
                   </ul>
                 </div>
               </div>
-
-              <p className="gapMethodFootnote">
-                Method version {result.methodVersion}. {result.methodology.datasetNote}
-              </p>
+              <details style={{ marginTop: 14 }}>
+                <summary>Known limitations</summary>
+                <ul style={{ marginTop: 8 }}>
+                  {d.limitations.map(l => (
+                    <li key={l}>{l}</li>
+                  ))}
+                </ul>
+              </details>
             </section>
-          </>
+          </div>
         )}
-
-        <footer className="legalFooter">
-          <a href="/">Cancer Insight</a>
-          <a href="/research-gap-atlas">Research Gap Atlas</a>
-          <a href="/methodology">Methodology</a>
-          <a href="/faq">FAQ</a>
-          <a href="/privacy-policy">Privacy Policy</a>
-          <a href="/contact">Contact</a>
-          <a href="/terms">Terms & Disclaimer</a>
-        </footer>
       </div>
-    </main>
+    </>
   );
 }

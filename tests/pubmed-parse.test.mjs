@@ -11,6 +11,7 @@ test('numeric entities in author names are decoded', () => {
   assert.match(p.pubmed_authors, /Laura K Kjær/);
   assert.match(p.pubmed_authors, /Morten Orebo Holmström/);
   assert.ok(p.author_list.includes('Danish Pancreas Group'));
+  assert.deepEqual(p.author_citation.slice(0, 2), ['Kjær LK', 'Theile S']);
 });
 
 test('scientific tokens are never split', () => {

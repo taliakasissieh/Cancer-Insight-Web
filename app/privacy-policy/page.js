@@ -1,304 +1,130 @@
+import Link from 'next/link';
+import DocPage from '../_components/DocPage';
+
 export const metadata = {
-  title: 'Privacy Policy | Cancer Insight',
-  description: 'Privacy Policy for Cancer Insight, an educational cancer research explorer.',
+  title: 'Privacy policy',
+  description:
+    'What Cancer Insight collects, which services receive your searches, how analytics works and how to opt out.',
+  alternates: { canonical: '/privacy-policy' },
 };
+
+const TOC = [
+  { id: 'summary', label: 'Summary' },
+  { id: 'searches', label: 'What you search' },
+  { id: 'analytics', label: 'Analytics and cookies' },
+  { id: 'storage', label: 'Saved papers' },
+  { id: 'hosting', label: 'Hosting and logs' },
+  { id: 'links', label: 'External links' },
+  { id: 'children', label: 'Children' },
+  { id: 'choices', label: 'Your choices' },
+  { id: 'changes', label: 'Changes and contact' },
+];
 
 export default function PrivacyPolicy() {
   return (
-    <main className="legalPage">
-      <div className="legalContainer">
-        <a className="backLink" href="/">
-          ← Back to Cancer Insight
+    <DocPage title="Privacy policy" updated="9 October 2026" toc={TOC}>
+      <h2 id="summary">Summary</h2>
+      <ul>
+        <li>
+          Cancer Insight has no accounts and does not ask for your name or health information.
+        </li>
+        <li>
+          Your search terms are sent to the research services that answer them, and are recorded in
+          Google Analytics unless your browser asks not to be tracked.
+        </li>
+        <li>Saved papers stay in your browser.</li>
+        <li>Cancer Insight shows no advertising and does not sell data.</li>
+      </ul>
+      <p>
+        <strong>Please search for cancer types and research topics only.</strong> Do not enter
+        names, medical record numbers or other personal health details.
+      </p>
+
+      <h2 id="searches">What you search</h2>
+      <p>
+        To answer a search, Cancer Insight’s server sends the cancer type (and, where relevant, a
+        treatment category) to:
+      </p>
+      <ul>
+        <li>NCBI E-utilities (PubMed), operated by the U.S. National Library of Medicine;</li>
+        <li>the Cure Cancer With AI research API, for recent records and treatment tags;</li>
+        <li>the Wikimedia Commons API, for images.</li>
+      </ul>
+      <p>
+        These requests come from Cancer Insight’s server, not your browser, and carry no information
+        about you. Each service handles requests under its own policies. Results may be cached on
+        the server for up to 24 hours so repeated searches do not repeat these requests.
+      </p>
+
+      <h2 id="analytics">Analytics and cookies</h2>
+      <p>
+        Cancer Insight uses Google Analytics 4 to understand which features are used. It records
+        page views, approximate location (such as country or city), device and browser type, and
+        events such as starting a search (including the cancer type searched), changing views,
+        saving papers, opening sources and downloading exports. Google Analytics sets first-party
+        cookies (named
+        <code>_ga</code>) to distinguish visits.
+      </p>
+      <p>
+        Analytics is not loaded at all if your browser sends a{' '}
+        <a href="https://globalprivacycontrol.org/" target="_blank" rel="noopener noreferrer">
+          Global Privacy Control
+        </a>{' '}
+        or Do Not Track signal. You can also block it with browser settings or Google’s{' '}
+        <a
+          href="https://tools.google.com/dlpage/gaoptout"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          opt-out add-on
         </a>
-
-        <div className="legalHeader">
-          <div className="legalMark">✚</div>
-
-          <div>
-            <div className="legalEyebrow">CANCER INSIGHT</div>
-
-            <h1>Privacy Policy</h1>
-
-            <p>Last updated: September 2026</p>
-          </div>
-        </div>
-
-        <section className="legalCard">
-          <h2>Overview</h2>
-
-          <p>
-            Cancer Insight is an independent educational cancer research explorer designed to help
-            users discover scientific research, treatment literature, research analytics, study
-            information, and related scientific resources.
-          </p>
-
-          <p>
-            This Privacy Policy explains what information may be collected when you use Cancer
-            Insight and how that information may be used.
-          </p>
-        </section>
-
-        <section className="legalCard importantLegalCard">
-          <h2>Please Do Not Submit Sensitive Information</h2>
-
-          <p>
-            Cancer Insight is not designed to collect personal medical records or confidential
-            health information.
-          </p>
-
-          <p>
-            Users should not enter names, medical record numbers, passwords, financial information,
-            private health records, or other sensitive personal information into Cancer Insight
-            search fields.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Information You Enter</h2>
-
-          <p>
-            Cancer Insight allows users to enter cancer types and research-related search terms.
-            These searches are used to retrieve and display research information.
-          </p>
-
-          <p>
-            Search terms may also be included in analytics events so Cancer Insight can understand
-            which research topics are being used and improve the website.
-          </p>
-
-          <p>Users should use research-topic terms rather than personal medical information.</p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Google Analytics</h2>
-
-          <p>
-            Cancer Insight uses Google Analytics to understand how visitors use the website and
-            which features are useful.
-          </p>
-
-          <p>
-            Google Analytics may collect information such as device type, browser type, approximate
-            geographic area, traffic source, pages viewed, session activity, and interactions with
-            the website.
-          </p>
-
-          <p>
-            Cancer Insight also records selected website events, which may include actions such as:
-          </p>
-
-          <ul>
-            <li>starting and completing cancer research searches,</li>
-            <li>opening sections of the website,</li>
-            <li>saving or unsaving research papers,</li>
-            <li>using study-type or research filters,</li>
-            <li>opening PubMed, PMC, or publisher source links,</li>
-            <li>downloading PDF reports or CSV research data,</li>
-            <li>using treatment comparison features,</li>
-            <li>opening scientific image sources, and</li>
-            <li>opening Methodology, FAQ, Contact, Privacy, or Terms pages.</li>
-          </ul>
-
-          <p>
-            Analytics information is used to understand website performance, improve usability,
-            identify useful features, and guide development of Cancer Insight.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Cookies and Similar Technologies</h2>
-
-          <p>
-            Cancer Insight and third-party services used by the website may use cookies or similar
-            technologies for analytics, security, preferences, and website functionality.
-          </p>
-
-          <p>
-            Visitors can usually control, block, or delete cookies through their browser settings.
-            Blocking some technologies may affect certain website features or analytics measurement.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Saved Papers and Local Storage</h2>
-
-          <p>
-            When a user saves a research paper, Cancer Insight may store the saved-paper preference
-            locally in the browser using local storage.
-          </p>
-
-          <p>
-            This allows saved papers to remain available on the same browser and device. Saved-paper
-            data is not intended to contain personal medical information.
-          </p>
-
-          <p>Clearing browser storage may remove saved-paper preferences.</p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Research Filters and Website Preferences</h2>
-
-          <p>
-            Cancer Insight may process selections such as treatment, study type, year range, access
-            type, saved-paper status, sorting preference, and other research filters in order to
-            display the requested research results.
-          </p>
-
-          <p>
-            Some interactions may also be measured through analytics so Cancer Insight can
-            understand how research tools are being used.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Third-Party Research Sources</h2>
-
-          <p>
-            Cancer Insight may provide links to external research and scientific sources including
-            PubMed, PubMed Central, NCBI resources, DOI pages, publishers, and Wikimedia Commons.
-          </p>
-
-          <p>
-            When a visitor opens an external source, that external website may collect information
-            according to its own privacy policy, cookie practices, and terms.
-          </p>
-
-          <p>
-            Cancer Insight does not control the privacy practices, tracking technologies, or data
-            handling of external websites.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Scientific Images</h2>
-
-          <p>
-            Scientific images displayed by Cancer Insight may come from external sources such as
-            Wikimedia Commons.
-          </p>
-
-          <p>
-            Opening an original image source will take the visitor to an external website that may
-            have its own privacy practices.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Downloads</h2>
-
-          <p>
-            Cancer Insight can generate downloadable PDF research reports and CSV research-data
-            files in the visitor's browser.
-          </p>
-
-          <p>
-            Analytics may record that a download occurred, along with general research context such
-            as the cancer type and number of papers included.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Advertising</h2>
-
-          <p>
-            Cancer Insight does not currently describe advertising as a required part of the
-            research experience, but advertising services may be introduced in the future.
-          </p>
-
-          <p>
-            If advertising services such as Google AdSense are activated, this Privacy Policy should
-            be updated to describe the advertising provider, cookies or similar technologies,
-            consent requirements, and any additional data processing involved.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Children's Privacy</h2>
-
-          <p>
-            Cancer Insight is an educational research website and does not intentionally request
-            personal medical, financial, or other sensitive information from children.
-          </p>
-
-          <p>
-            Users should not submit personal or sensitive information through Cancer Insight search
-            fields or other website features.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Data Accuracy and Research Content</h2>
-
-          <p>
-            Cancer Insight displays research information retrieved from external scientific sources.
-            Research metadata, abstracts, publication types, treatment tags, and other research
-            information may change or may contain errors originating from source data or automated
-            processing.
-          </p>
-
-          <p>
-            Research information displayed by Cancer Insight should not be treated as personal
-            medical information about the visitor.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Security</h2>
-
-          <p>
-            Cancer Insight aims to use reasonable technical practices to operate the website safely.
-            However, no website or internet transmission can be guaranteed to be completely secure.
-          </p>
-
-          <p>
-            Visitors should avoid submitting confidential or sensitive information that Cancer
-            Insight does not need in order to provide its research features.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Changes to This Policy</h2>
-
-          <p>
-            This Privacy Policy may be updated as Cancer Insight develops, changes its analytics
-            configuration, adds new features, or introduces new third-party services.
-          </p>
-
-          <p>
-            The "Last updated" date at the top of this page should be changed when meaningful
-            privacy-related changes are made.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Contact</h2>
-
-          <p>
-            Questions about this Privacy Policy or Cancer Insight's website practices can be sent
-            through the Cancer Insight contact page.
-          </p>
-
-          <a className="sourceButton" href="/contact">
-            Contact Cancer Insight
-          </a>
-        </section>
-
-        <div className="legalFooter">
-          <a href="/">Cancer Insight</a>
-
-          <a href="/research-gap-atlas">Research Gap Atlas</a>
-
-          <a href="/methodology">Methodology</a>
-
-          <a href="/faq">FAQ</a>
-
-          <a href="/privacy-policy">Privacy Policy</a>
-
-          <a href="/contact">Contact</a>
-
-          <a href="/terms">Terms & Disclaimer</a>
-        </div>
-      </div>
-    </main>
+        . Cancer Insight uses no advertising or cross-site tracking cookies.
+      </p>
+
+      <h2 id="storage">Saved papers</h2>
+      <p>
+        When you save a paper, its title, journal, date, identifiers and links are stored in your
+        browser’s local storage. They are not sent to Cancer Insight. Clearing site data removes
+        them.
+      </p>
+
+      <h2 id="hosting">Hosting and logs</h2>
+      <p>
+        The site is hosted on Vercel, which processes technical request data such as IP addresses
+        and request times to deliver and secure the service. Cancer Insight does not combine this
+        data with analytics or use it to identify visitors.
+      </p>
+
+      <h2 id="links">External links</h2>
+      <p>
+        Links to PubMed, PubMed Central, publishers, DOI resolvers and Wikimedia open those sites,
+        which have their own privacy practices.
+      </p>
+
+      <h2 id="children">Children</h2>
+      <p>
+        Cancer Insight is an educational research site and does not knowingly collect personal
+        information from anyone, including children.
+      </p>
+
+      <h2 id="choices">Your choices</h2>
+      <ul>
+        <li>Turn on Global Privacy Control or Do Not Track to stop analytics.</li>
+        <li>
+          Clear this site’s data in your browser to remove saved papers and analytics cookies.
+        </li>
+        <li>
+          Ask questions or make a privacy request through the{' '}
+          <Link href="/contact">contact page</Link>.
+        </li>
+      </ul>
+
+      <h2 id="changes">Changes and contact</h2>
+      <p>
+        This policy is updated when the site’s data practices change; the date above shows the
+        latest version. Contact:{' '}
+        <a href="mailto:cancerinsight.contact@gmail.com">cancerinsight.contact@gmail.com</a>.
+      </p>
+    </DocPage>
   );
 }

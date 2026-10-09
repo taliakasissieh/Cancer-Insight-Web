@@ -1,572 +1,490 @@
+import Link from 'next/link';
+import DocPage from '../_components/DocPage';
+import {
+  ATLAS_DESIGN_IDS,
+  ATLAS_METHOD_VERSION,
+  ATLAS_THRESHOLDS,
+  BASELINE_TERM,
+  CANCERS,
+  DESIGN_BY_ID,
+  DESIGNS,
+  FREE_FULL_TEXT,
+  THEMES,
+  TREATMENTS,
+  resolveCancer,
+} from '../../lib/queries';
+
 export const metadata = {
-  title: 'Methodology | Cancer Insight',
+  title: 'Methodology',
   description:
-    'How Cancer Insight finds, organizes, filters, enriches, deduplicates, and presents cancer research evidence.',
+    'How Cancer Insight retrieves, checks, classifies and counts cancer research — including the exact PubMed queries and the Research Gap Atlas Method 3.0.',
+  alternates: { canonical: '/methodology' },
 };
 
+const TOC = [
+  { id: 'purpose', label: 'Purpose' },
+  { id: 'sources', label: 'Sources' },
+  { id: 'queries', label: 'From search to PubMed query' },
+  { id: 'recent', label: 'Recent research' },
+  { id: 'evidence-types', label: 'Evidence types' },
+  { id: 'footprint', label: 'PubMed counts' },
+  { id: 'treatments', label: 'Treatment literature' },
+  { id: 'gap-atlas', label: 'Research Gap Atlas' },
+  { id: 'images', label: 'Images' },
+  { id: 'exports', label: 'Exports and saved papers' },
+  { id: 'reproducibility', label: 'Reproducibility' },
+  { id: 'limitations', label: 'Limitations' },
+  { id: 'versions', label: 'Version history' },
+];
+
+const FEED_CANCERS = Object.entries(CANCERS)
+  .filter(([id, c]) => c.feed === id)
+  .map(([, c]) => c.label);
+
+const EVIDENCE_ROWS = [
+  ['Meta-analysis', 'Meta-Analysis', 'Evidence synthesis'],
+  ['Systematic review', 'Systematic Review', 'Evidence synthesis'],
+  [
+    'Randomized controlled trial',
+    'Randomized Controlled Trial (with phase when indexed)',
+    'Primary research',
+  ],
+  [
+    'Clinical trial',
+    'Clinical Trial; Phase I–IV; Controlled, Pragmatic, Equivalence or Adaptive Clinical Trial',
+    'Primary research',
+  ],
+  ['Guideline', 'Guideline; Practice Guideline; Consensus Development Conference', 'Guidance'],
+  ['Review', 'Review; Scoping Review', 'Evidence synthesis'],
+  ['Observational study', 'Observational Study', 'Primary research'],
+  ['Case report', 'Case Reports', 'Primary research'],
+  ['Trial protocol', 'Clinical Trial Protocol (not counted as a trial)', 'Other'],
+  ['Editorial, comment or letter', 'Editorial; Comment; Letter; News', 'Commentary'],
+  ['Journal article', 'Only “Journal Article” (design not indexed)', 'Design not indexed'],
+];
+
 export default function Methodology() {
+  const pancreatic = resolveCancer('pancreatic');
+  const t = ATLAS_THRESHOLDS;
   return (
-    <main className="legalPage">
-      <div className="legalContainer">
-        <a className="backLink" href="/">
-          ← Back to Cancer Insight
-        </a>
-
-        <div className="legalHeader">
-          <div className="legalMark">✚</div>
-
-          <div>
-            <div className="legalEyebrow">CANCER INSIGHT</div>
-
-            <h1>Research Methodology</h1>
-
-            <p>How Cancer Insight finds, organizes, filters, and presents research evidence</p>
-          </div>
-        </div>
-
-        <section className="legalCard importantLegalCard">
-          <h2>Purpose</h2>
-
-          <p>Cancer Insight is an independent educational cancer research explorer.</p>
-
-          <p>
-            Its purpose is to help users discover and examine scientific cancer research while
-            keeping original research sources visible.
-          </p>
-
-          <p>
-            Cancer Insight does not provide medical diagnosis, individualized treatment
-            recommendations, or professional medical advice.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Research Sources</h2>
-
-          <p>
-            Cancer Insight may use research information from sources including PubMed, PubMed
-            Central, NCBI resources, DOI records, scientific publisher pages, and Wikimedia Commons
-            for scientific images.
-          </p>
-
-          <p>
-            Source links are shown whenever available so users can review the original research
-            record or source page directly.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Cancer Research Search</h2>
-
-          <p>A user begins by entering a cancer type or research topic.</p>
-
-          <p>
-            Cancer Insight sends the research request to its search system and retrieves a set of
-            research papers and related metadata.
-          </p>
-
-          <p>
-            Search results represent the records returned for that search at that time. They are not
-            intended to represent every paper ever published about that cancer type.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>PubMed Metadata Enrichment</h2>
-
-          <p>
-            When a PubMed identifier or related metadata is available, Cancer Insight may enrich a
-            research record with information such as:
-          </p>
-
-          <ul>
-            <li>paper title,</li>
-            <li>journal name,</li>
-            <li>publication date,</li>
-            <li>author information,</li>
-            <li>abstract text,</li>
-            <li>publication types,</li>
-            <li>PubMed links,</li>
-            <li>PubMed Central links,</li>
-            <li>DOI information, and</li>
-            <li>publisher links.</li>
-          </ul>
-
-          <p>Some papers may contain more complete metadata than others.</p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Duplicate Paper Handling</h2>
-
-          <p>
-            Cancer Insight attempts to remove duplicate research records before calculating paper
-            counts and other research metrics.
-          </p>
-
-          <p>
-            Deduplication may use available identifiers such as PubMed IDs, DOI values, paper
-            titles, or other record information.
-          </p>
-
-          <p>
-            Duplicate removal is performed where possible, but it may not detect every duplicate
-            when source identifiers are missing, inconsistent, or formatted differently.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Research Paper Filters</h2>
-
-          <p>
-            The Research Papers section allows users to narrow the currently retrieved research set.
-          </p>
-
-          <p>Available filters may include:</p>
-
-          <ul>
-            <li>
-              text search across titles, abstracts, journals, study types, and related metadata,
-            </li>
-            <li>free full-text availability,</li>
-            <li>abstract availability,</li>
-            <li>full-text source availability,</li>
-            <li>treatment category,</li>
-            <li>study type,</li>
-            <li>publication year range, and</li>
-            <li>saved-paper status.</li>
-          </ul>
-
-          <p>
-            Filters change which papers from the retrieved dataset are displayed. They do not
-            independently determine scientific quality or clinical importance.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Study-Type Classification</h2>
-
-          <p>
-            Cancer Insight may identify study types using publication-type metadata supplied by
-            research sources.
-          </p>
-
-          <p>Examples may include:</p>
-
-          <ul>
-            <li>Clinical Trial,</li>
-            <li>Randomized Controlled Trial,</li>
-            <li>Review,</li>
-            <li>Systematic Review, and</li>
-            <li>Meta-analysis.</li>
-          </ul>
-
-          <p>
-            These labels depend on the available source metadata and may not be present for every
-            paper.
-          </p>
-
-          <p>
-            Study-type classification is descriptive and should not be treated as a complete
-            assessment of study quality, certainty of evidence, or clinical importance.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Publication Year Filtering</h2>
-
-          <p>Cancer Insight may allow users to choose a starting year, ending year, or both.</p>
-
-          <p>The year is extracted from available publication-date metadata.</p>
-
-          <p>
-            Papers without a recognizable publication year may not appear when a year-range filter
-            is active.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Why This Paper Is Relevant</h2>
-
-          <p>Cancer Insight may display a short relevance explanation for a paper.</p>
-
-          <p>This explanation is based only on available retrieved information, such as:</p>
-
-          <ul>
-            <li>the paper title,</li>
-            <li>the abstract,</li>
-            <li>treatment tags,</li>
-            <li>publication types, and</li>
-            <li>the current cancer research query.</li>
-          </ul>
-
-          <p>
-            This feature is intended to help users understand why a paper appears in the research
-            set.
-          </p>
-
-          <p>
-            It is not a scientific conclusion, independent quality assessment, or medical
-            recommendation.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Treatment Research</h2>
-
-          <p>
-            Cancer Insight groups or retrieves research associated with treatment categories
-            relevant to the current cancer search.
-          </p>
-
-          <p>The Treatment Research section may combine:</p>
-
-          <ul>
-            <li>papers already found in the main cancer search, and</li>
-            <li>additional treatment-focused PubMed evidence.</li>
-          </ul>
-
-          <p>
-            The combined set is deduplicated before research totals are calculated where possible.
-          </p>
-
-          <p>
-            Treatment research counts describe the amount of retrieved research literature and do
-            not indicate treatment superiority, safety, or effectiveness.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Treatment Comparisons</h2>
-
-          <p>
-            The Compare Treatments section retrieves and summarizes research separately for two
-            selected treatment categories.
-          </p>
-
-          <p>Comparison measures may include:</p>
-
-          <ul>
-            <li>unique evidence-paper counts,</li>
-            <li>free full-text availability,</li>
-            <li>latest publication year,</li>
-            <li>journal coverage,</li>
-            <li>clinical-trial counts,</li>
-            <li>review counts, and</li>
-            <li>meta-analysis counts.</li>
-          </ul>
-
-          <p>
-            Papers shown under each treatment are supporting research examples for that treatment
-            and are not artificially paired with papers from the other treatment.
-          </p>
-
-          <p>The comparison is a research-coverage comparison only.</p>
-
-          <p>
-            More papers, newer studies, or more clinical trials do not mean that one treatment is
-            medically better or more appropriate than another.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Research Analytics</h2>
-
-          <p>Cancer Insight may generate summary analytics from the retrieved research set.</p>
-
-          <p>Examples may include:</p>
-
-          <ul>
-            <li>paper counts,</li>
-            <li>free full-text counts,</li>
-            <li>latest publication year,</li>
-            <li>journal counts,</li>
-            <li>clinical-trial counts,</li>
-            <li>treatment coverage,</li>
-            <li>publication timelines, and</li>
-            <li>top journals.</li>
-          </ul>
-
-          <p>Where possible, unique-paper counts are used to reduce duplicate records.</p>
-
-          <p>
-            Analytics describe the retrieved research dataset and are not measures of clinical
-            effectiveness.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Free Full Text</h2>
-
-          <p>
-            A paper may be labeled as free full text when Cancer Insight identifies a freely
-            readable source, such as PubMed Central.
-          </p>
-
-          <p>
-            Free availability does not automatically mean the content can be reused, modified,
-            republished, or redistributed without restriction.
-          </p>
-
-          <p>Users should check the original source and license before reusing content.</p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Saved Papers</h2>
-
-          <p>Users may save papers for easier access while browsing Cancer Insight.</p>
-
-          <p>Saved-paper identifiers are stored locally in the user's browser.</p>
-
-          <p>
-            Saved status does not change research ranking, relevance, or scientific interpretation.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>PDF Research Reports</h2>
-
-          <p>
-            Cancer Insight can generate downloadable PDF reports based on the current research set.
-          </p>
-
-          <p>Reports may include:</p>
-
-          <ul>
-            <li>unique-paper counts,</li>
-            <li>free full-text counts,</li>
-            <li>publication year information,</li>
-            <li>clinical-trial counts,</li>
-            <li>treatment research coverage,</li>
-            <li>paper titles and metadata,</li>
-            <li>study-type information,</li>
-            <li>abstract excerpts, and</li>
-            <li>links to original research sources.</li>
-          </ul>
-
-          <p>
-            PDF reports describe retrieved research literature and are not medical reports or
-            clinical recommendations.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>CSV Research Exports</h2>
-
-          <p>
-            Cancer Insight may allow research records or treatment-count data to be exported as CSV
-            files.
-          </p>
-
-          <p>
-            CSV exports are intended to make research data easier to inspect, organize, or analyze.
-          </p>
-
-          <p>
-            Exported information remains subject to the same source limitations and interpretation
-            cautions as information displayed on the website.
-          </p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Scientific Images</h2>
-
-          <p>
-            Cancer Insight may retrieve scientific images from Wikimedia Commons and prioritize
-            medically relevant material such as:
-          </p>
-
-          <ul>
-            <li>pathology images,</li>
-            <li>histology,</li>
-            <li>microscopy,</li>
-            <li>MRI or CT images,</li>
-            <li>medical diagrams,</li>
-            <li>specimens, and</li>
-            <li>segmentation or research images.</li>
-          </ul>
-
-          <p>
-            Original-source links, licensing information, and creator information are shown when
-            available.
-          </p>
-
-          <p>Users should verify the original image source and license before reuse.</p>
-        </section>
-
-        <section className="legalCard">
-          <h2>Research Source Links</h2>
-
-          <p>Cancer Insight keeps source links visible whenever available.</p>
-
-          <p>These may include:</p>
-
-          <ul>
-            <li>PubMed,</li>
-            <li>PubMed Central,</li>
-            <li>publisher pages,</li>
-            <li>DOI records, and</li>
-            <li>Wikimedia Commons source pages.</li>
-          </ul>
-
-          <p>Users are encouraged to open the original sources for full scientific context.</p>
-        </section>
-
-        <section className="legalCard" id="research-gap-atlas">
-          <h2>Research Gap Atlas Method</h2>
-
-          <p>
-            The Cancer Insight Research Gap Atlas is an experimental educational analysis layer that
-            looks for transparent low-coverage signals inside a retrieved cancer-literature dataset.
-          </p>
-
-          <p>
-            The Atlas first builds a broader evidence set than the normal 20-paper search. Method
-            version 2.0 combines cancer-relevant records from the main research retrieval with
-            PubMed records sampled across four publication-year windows (recent, mid, older, and
-            historical). It may also add treatment-focused PubMed evidence for several of the most
-            represented treatment categories. The year-diverse PubMed records pass through the same
-            cancer-relevance filtering used by Cancer Insight, and duplicate records are removed
-            where possible before analysis.
-          </p>
-
-          <p>The current method checks six kinds of signals:</p>
-
-          <ul>
-            <li>
-              <b>Study-design coverage:</b> whether clinical trials, randomized controlled trials,
-              systematic reviews, or meta-analyses are rarely represented in available
-              publication-type metadata.
-            </li>
-            <li>
-              <b>Topic coverage:</b> whether predefined research themes such as quality of life,
-              toxicity, recurrence, resistance, biomarkers, pediatric populations, older adults,
-              survivorship, or disparities appear infrequently in titles, abstracts, keywords, or
-              MeSH text.
-            </li>
-            <li>
-              <b>Treatment distribution:</b> whether some retrieved treatment categories have much
-              lower tagged-paper volume than the most represented treatment category in the same
-              dataset.
-            </li>
-            <li>
-              <b>Research recency:</b> whether relatively few retrieved records are dated within the
-              most recent three-year window.
-            </li>
-            <li>
-              <b>Research accessibility:</b> whether few retrieved records have a PubMed Central
-              free-full-text indicator. This is an access signal, not a scientific evidence gap.
-            </li>
-            <li>
-              <b>Metadata completeness:</b> whether a large share of records lack abstracts or other
-              information needed for text analysis.
-            </li>
-          </ul>
-
-          <p>
-            Each signal displays the actual counts, percentage, comparison basis, and a caution
-            explaining what the result cannot establish. Signals are labeled as strong, moderate, or
-            watch signals according to predefined thresholds inside the method. These labels
-            describe how strongly the rule was triggered; they do not measure scientific importance
-            or clinical urgency.
-          </p>
-
-          <p>
-            In method version 2.0, the principal trigger thresholds are: clinical trials below 10%
-            of analyzed papers; randomized controlled trials below 5%; systematic reviews below 5%;
-            meta-analyses below 4%; predefined topic coverage below 6%; recent literature below 20%
-            for the current three-year window; PubMed Central free-full-text availability below 25%;
-            and missing abstracts above 30%. A treatment-distribution signal may be triggered when a
-            category has no more than 25% of the paper volume of the most represented treatment
-            category, subject to a small count rule. These thresholds are exploratory design
-            choices, not accepted clinical standards.
-          </p>
-
-          <p>
-            Version 2.0 also records evidence provenance where available, including PubMed links,
-            publication dates, journals, retrieval method, and the publication-year sampling window.
-            This is intended to make the retrieved evidence set inspectable and reproducible rather
-            than presenting gap signals as unexplained scores.
-          </p>
-
-          <p>
-            The Atlas also displays a dataset-size label based only on the number of unique papers
-            analyzed: fewer than 30 is labeled limited, 30-59 is labeled moderate, and 60 or more is
-            labeled stronger. This is not a scientific confidence score.
-          </p>
-
-          <p>
-            A Research Gap Atlas signal is not proof that the worldwide scientific literature
-            contains a true research gap. Keyword matching can miss synonyms and context,
-            publication-type metadata can be incomplete, treatment tags can be imperfect, and the
-            retrieved dataset is only a subset of the wider literature. The Atlas is designed to
-            generate questions for further investigation, not final conclusions.
-          </p>
-
-          <a className="sourceButton" href="/research-gap-atlas">
-            Open Research Gap Atlas
-          </a>
-        </section>
-
-        <section className="legalCard">
-          <h2>Important Limitations</h2>
-
-          <p>
-            Cancer Insight relies on external research sources, metadata, automated processing, and
-            search logic.
-          </p>
-
-          <p>As a result:</p>
-
-          <ul>
-            <li>some relevant papers may not be retrieved,</li>
-            <li>some metadata may be incomplete,</li>
-            <li>study-type labels may be missing or imperfect,</li>
-            <li>duplicate detection may not identify every duplicate,</li>
-            <li>treatment tags may not capture every scientific nuance,</li>
-            <li>relevance notes may simplify complex research context, and</li>
-            <li>external links or source availability may change.</li>
-          </ul>
-
-          <p>
-            Users should always review original research sources when scientific accuracy or
-            detailed interpretation is important.
-          </p>
-        </section>
-
-        <section className="legalCard importantLegalCard">
-          <h2>Medical Disclaimer</h2>
-
-          <p>Cancer Insight is for educational and research-exploration purposes only.</p>
-
-          <p>
-            It does not provide diagnosis, treatment recommendations, medical advice, or
-            individualized healthcare guidance.
-          </p>
-
-          <p>
-            Research-paper counts, study types, treatment comparisons, relevance notes, and
-            analytics must not be used to decide which treatment a person should receive.
-          </p>
-
-          <p>Personal medical decisions should be made with qualified healthcare professionals.</p>
-        </section>
-
-        <div className="legalFooter">
-          <a href="/">Cancer Insight</a>
-
-          <a href="/research-gap-atlas">Research Gap Atlas</a>
-
-          <a href="/methodology">Methodology</a>
-
-          <a href="/faq">FAQ</a>
-
-          <a href="/privacy-policy">Privacy Policy</a>
-
-          <a href="/contact">Contact</a>
-
-          <a href="/terms">Terms & Disclaimer</a>
-        </div>
+    <DocPage
+      title="Methodology"
+      intro="How Cancer Insight retrieves, checks, classifies and counts cancer research. The tables on this page are generated from the same code that runs the site."
+      updated="9 October 2026"
+      toc={TOC}
+    >
+      <h2 id="purpose">Purpose</h2>
+      <p>
+        Cancer Insight is an independent, educational explorer of cancer research literature. Its
+        job is to show what research exists while keeping the original evidence visible: what was
+        retrieved, where it came from, why it appears and what the numbers do — and do not — mean.
+      </p>
+      <p>
+        It does not diagnose, recommend treatments or give medical advice. Counts of papers describe
+        research activity, never how well a treatment works.
+      </p>
+
+      <h2 id="sources">Sources</h2>
+      <ul>
+        <li>
+          <strong>NCBI PubMed and PubMed Central</strong> (U.S. National Library of Medicine), via
+          the E-utilities API: record counts, Best Match and newest-first record lists, and metadata
+          (titles, abstracts, authors, journals, dates, publication types, MeSH headings, DOIs and
+          PMC links).
+        </li>
+        <li>
+          <strong>Cure Cancer With AI research API</strong>: a third-party feed of the newest
+          research records for {FEED_CANCERS.length} cancer types ({FEED_CANCERS.join(', ')}),
+          including treatment-category tags. Cancer Insight re-checks every feed record and replaces
+          its metadata with PubMed’s where a PubMed ID exists.
+        </li>
+        <li>
+          <strong>Wikimedia Commons</strong>: openly licensed scientific images.
+        </li>
+      </ul>
+      <p>
+        Searches are sent from Cancer Insight’s server to these services. Cancer Insight is not
+        affiliated with any of them.
+      </p>
+
+      <h2 id="queries">From search to PubMed query</h2>
+      <p>
+        Every cancer type is turned into one PubMed query that combines MeSH headings (which include
+        narrower headings) with title/abstract phrases. The same query is used for every count, list
+        and Gap Atlas measure for that cancer, and it is shown wherever results appear. For example,
+        “pancreatic cancer” becomes:
+      </p>
+      <code className="formula">{pancreatic.term}</code>
+      <p>
+        Cancer Insight recognises {Object.keys(CANCERS).length} cancer types and common synonyms
+        (for example colon → colorectal, NSCLC → non-small cell lung cancer). Other inputs are
+        searched as title/abstract phrases such as “appendix cancer”. Inputs are limited to letters,
+        numbers, spaces and hyphens so they cannot change the structure of a query.
+      </p>
+
+      <h2 id="recent">Recent research</h2>
+      <ol>
+        <li>
+          For cancers the feed covers, Cancer Insight requests the 100 newest feed records (cached
+          for up to an hour).
+        </li>
+        <li>
+          Each record is enriched with PubMed metadata and checked for relevance. It is kept when
+          the cancer appears in the title, MeSH headings or keywords, or in the abstract of a record
+          the feed tags with that cancer. Records whose title is about a different cancer are
+          dropped. The matching field is shown on each paper as “Why it’s here”.
+        </li>
+        <li>
+          Up to 20 records are kept, most relevant first and then newest. If fewer than 8 pass, the
+          newest PubMed records for the query fill the list and are labelled as such. Cancers the
+          feed does not cover use PubMed directly.
+        </li>
+        <li>
+          Treatment tags come from the feed. A “stem cell transplant” tag is kept only when the text
+          describes a transplant, so papers about cancer stem cells are not mislabelled.
+        </li>
+      </ol>
+      <p>
+        Because the feed returns the newest records, this list shows <em>what is new</em>. It is not
+        a sample of the whole literature, and statistics about it (for example its publication
+        years) describe these records only. The Papers view can also show{' '}
+        <strong>PubMed Best Match</strong>: PubMed’s own relevance ranking across all years.
+      </p>
+
+      <h2 id="evidence-types">Evidence types</h2>
+      <p>
+        Evidence types come from PubMed publication types, using one classifier everywhere on the
+        site. When a record has several types, the first matching row below wins.
+      </p>
+      <div className="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Label shown</th>
+              <th>PubMed publication types</th>
+              <th>Family</th>
+            </tr>
+          </thead>
+          <tbody>
+            {EVIDENCE_ROWS.map(([label, types, family]) => (
+              <tr key={label}>
+                <td>{label}</td>
+                <td>{types}</td>
+                <td>{family}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
-    </main>
+      <ul>
+        <li>Randomized controlled trials always count as clinical trials.</li>
+        <li>
+          “Design not indexed” is common: many original studies, including laboratory and clinical
+          research, carry only the generic “Journal Article” type. It is not a judgement.
+        </li>
+        <li>
+          Records indexed as “Retracted Publication” show a retraction warning everywhere they
+          appear, including exports.
+        </li>
+        <li>
+          Evidence types describe what kind of record a paper is. They are not quality or
+          certainty-of-evidence ratings.
+        </li>
+      </ul>
+
+      <h2 id="footprint">PubMed counts</h2>
+      <p>
+        The Overview counts PubMed records matching the cancer query in total, in each of the last
+        11 publication years, and for each study design below. Each count is a separate PubMed
+        search and links to it.
+      </p>
+      <div className="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Measure</th>
+              <th>Added to the cancer query</th>
+            </tr>
+          </thead>
+          <tbody>
+            {DESIGNS.map(d => (
+              <tr key={d.id}>
+                <td>{d.label}</td>
+                <td>
+                  <code>AND {d.term}</code>
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td>{FREE_FULL_TEXT.label}</td>
+              <td>
+                <code>AND {FREE_FULL_TEXT.term}</code>
+              </td>
+            </tr>
+            <tr>
+              <td>A publication year, e.g. 2024</td>
+              <td>
+                <code>AND (&quot;2024&quot;[dp] : &quot;2024&quot;[dp])</code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Read these counts with three cautions: PubMed indexes more journals than it used to, so
+        growth over time partly reflects coverage; the current year is incomplete; and publication
+        types are added during indexing, so the newest records are under-counted by design.
+      </p>
+
+      <h2 id="treatments">Treatment literature</h2>
+      <p>
+        Treatment categories are matched with the PubMed terms below, combined with the cancer
+        query. For a category, Cancer Insight reports the number of records, their share of the
+        cancer’s literature, the study designs among them, how many were published in the last five
+        years and how many have a free full text. Example records are PubMed Best Match.
+      </p>
+      <div className="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>PubMed terms</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(TREATMENTS).map(([id, tr]) => (
+              <tr key={id}>
+                <td>{tr.label}</td>
+                <td>
+                  <code>{tr.term}</code>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p>
+        A comparison of two categories compares literature: how much has been published and in which
+        designs. It does not compare effectiveness or safety, and the two lists of example records
+        are not paired. More records, more trials or newer records never mean a better treatment.
+      </p>
+
+      <h2 id="gap-atlas">Research Gap Atlas — Method {ATLAS_METHOD_VERSION}</h2>
+      <p>
+        The atlas asks whether a study design, research theme, access filter or publication period
+        makes up a smaller share of a cancer’s PubMed literature than of oncology as a whole.
+      </p>
+      <code className="formula">
+        {`share(cancer)   = records(cancer AND measure) ÷ records(cancer)
+share(oncology) = records(oncology AND measure) ÷ records(oncology)
+ratio           = share(cancer) ÷ share(oncology)`}
+      </code>
+      <div className="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Reading</th>
+              <th>Rule</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Much lower representation</td>
+              <td>ratio below {t.muchLower}</td>
+            </tr>
+            <tr>
+              <td>Lower representation (a signal)</td>
+              <td>ratio below {t.lower}</td>
+            </tr>
+            <tr>
+              <td>Higher representation (shown, never a signal)</td>
+              <td>ratio above {t.higher}</td>
+            </tr>
+            <tr>
+              <td>Too few records</td>
+              <td>
+                fewer than {t.minRecords} records for the cancer, or fewer than {t.minExpected}{' '}
+                matching records expected at the oncology-wide share
+              </td>
+            </tr>
+            <tr>
+              <td>Expected (population)</td>
+              <td>
+                a low share of pediatric studies in cancers that occur mainly in adults, or of
+                older-adult studies in cancers that occur mainly in children
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        These thresholds are exploratory design choices, not accepted standards. Because the atlas
+        compares shares across the whole index rather than a sample, sampling error does not apply;
+        the uncertainty lies in how well each query captures its concept.
+      </p>
+      <h3>Measures</h3>
+      <div className="tableWrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Measure</th>
+              <th>PubMed terms</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ATLAS_DESIGN_IDS.map(id => (
+              <tr key={id}>
+                <td>{DESIGN_BY_ID[id].label}</td>
+                <td>
+                  <code>{DESIGN_BY_ID[id].term}</code>
+                </td>
+              </tr>
+            ))}
+            {THEMES.map(th => (
+              <tr key={th.id}>
+                <td>
+                  {th.label}
+                  {th.kind === 'population' ? ' (title/abstract only)' : ''}
+                </td>
+                <td>
+                  <code>{th.term}</code>
+                </td>
+              </tr>
+            ))}
+            <tr>
+              <td>{FREE_FULL_TEXT.label}</td>
+              <td>
+                <code>{FREE_FULL_TEXT.term}</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Published in the last three years</td>
+              <td>
+                <code>(&quot;YYYY−2&quot;[dp] : &quot;YYYY&quot;[dp])</code>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p>
+        Population themes use title/abstract wording only, so they count studies that focus on a
+        population rather than every study that enrolled it. The oncology baseline is:
+      </p>
+      <code className="formula">{BASELINE_TERM}</code>
+      <p>
+        If a live baseline count cannot be retrieved, the atlas uses a dated reference snapshot for
+        that measure and says so.
+      </p>
+      <h3>What the atlas deliberately does not do</h3>
+      <ul>
+        <li>
+          It never flags treatment categories. It reports how many records mention each one, but
+          relevance depends on the biology of each cancer, so a low count is not a gap.
+        </li>
+        <li>It never claims that a real scientific or clinical research gap exists.</li>
+        <li>It never ranks cancers, treatments or topics by importance.</li>
+      </ul>
+      <h3>Evidence behind the atlas</h3>
+      <p>
+        To make the queries inspectable, the atlas also retrieves the PubMed Best Match records
+        inside four publication periods (the last 3 years, the 5 before, the 10 before those and
+        everything earlier), checks them for cancer relevance and lists them with their period,
+        evidence type and metadata completeness. Equal numbers are requested per period, so this
+        sample is spread across time by design and does not feed any signal.
+      </p>
+      <h3>Changes from version 2.0</h3>
+      <p>
+        Version 2.0 computed coverage inside a sample of 28–100 records. Three problems led to
+        Method 3.0:
+      </p>
+      <ul>
+        <li>
+          Treatment-focused records, deliberately added for the most common treatments, were counted
+          in general study-design and topic denominators, and they made the treatment distribution
+          signal circular.
+        </li>
+        <li>
+          The “recent literature” measure was produced by the sampling design: one of the four
+          sampling periods <em>was</em> the recent period.
+        </li>
+        <li>
+          Fixed thresholds on small samples could flag large literatures as lacking trials: on 9
+          October 2026 the published atlas (method 1.0) reported “0 clinical trials” for pancreatic
+          cancer, which has more than 4,000 clinical-trial records in PubMed.
+        </li>
+      </ul>
+
+      <h2 id="images">Images</h2>
+      <p>
+        Images come from Wikimedia Commons searches for the cancer combined with histopathology,
+        micrograph, CT and MRI. Documents, scans of books, posters and awareness campaigns are
+        excluded; each image needs the cancer in its title, or in its description together with a
+        specific imaging term. Creator, licence and a licence link are shown. Images are educational
+        illustrations, not diagnostic references.
+      </p>
+
+      <h2 id="exports">Exports and saved papers</h2>
+      <ul>
+        <li>
+          <strong>CSV</strong> files start with provenance rows (date, cancer, query, source,
+          filters) and neutralise cells that spreadsheets could run as formulas.
+        </li>
+        <li>
+          <strong>RIS</strong> files import into Zotero, EndNote and Mendeley; retractions are
+          noted.
+        </li>
+        <li>
+          <strong>PDF reports</strong> state when and how records were retrieved, the query, the
+          evidence-type mix and links to every source.
+        </li>
+        <li>
+          <strong>Gap Atlas JSON</strong> contains every count, query, link, threshold and sampled
+          record.
+        </li>
+        <li>
+          <strong>Saved papers</strong> are stored only in your browser, with enough metadata to
+          show them across searches.
+        </li>
+      </ul>
+
+      <h2 id="reproducibility">Reproducibility</h2>
+      <p>
+        PubMed counts are cached for up to 24 hours and record lists for up to 12 hours, so a number
+        can lag PubMed by a day. Opening a count’s link runs the same query on PubMed; small
+        differences are normal as records are added and re-indexed. Requests follow NCBI’s usage
+        policy (identified tool, contact address, rate limits and retries).
+      </p>
+
+      <h2 id="limitations">Limitations</h2>
+      <ul>
+        <li>
+          PubMed does not index every journal, conference abstract, trial registry or preprint.
+        </li>
+        <li>MeSH headings and publication types lag behind the newest records.</li>
+        <li>Title/abstract matching catches incidental mentions and misses unusual wording.</li>
+        <li>The research feed’s coverage and tagging rules are controlled by its provider.</li>
+        <li>Deduplication relies on PubMed IDs, DOIs and titles and can miss duplicates.</li>
+      </ul>
+      <p>
+        If something looks wrong, <Link href="/contact">tell us</Link> — include the cancer, the
+        page and, if possible, the PubMed ID.
+      </p>
+
+      <h2 id="versions">Version history</h2>
+      <ul>
+        <li>
+          <strong>October 2026</strong> — Research Gap Atlas Method 3.0; shared query catalogue;
+          PubMed counts with linked queries; evidence-type classifier; retraction warnings.
+        </li>
+        <li>
+          <strong>Method 2.0</strong> (not released) — year-stratified sample and provenance export,
+          superseded by 3.0 before release.
+        </li>
+        <li>
+          <strong>Method 1.0</strong> — first Research Gap Atlas, based on the records retrieved for
+          a search.
+        </li>
+      </ul>
+    </DocPage>
   );
 }

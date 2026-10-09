@@ -22,7 +22,7 @@ test('protocols and veterinary trials are not clinical trials', () => {
 test('phase is shown and syntheses outrank primary labels', () => {
   assert.equal(
     classifyEvidence(['Randomized Controlled Trial', 'Clinical Trial, Phase III']).label,
-    'Randomized controlled trial · Phase III'
+    'Randomized controlled trial, phase III'
   );
   assert.equal(
     classifyEvidence(['Systematic Review', 'Meta-Analysis']).label,
@@ -47,7 +47,13 @@ test('filters use the shared classifier', () => {
 
 test('paper-set description keeps explicit denominators', () => {
   const papers = [
-    { pubmedId: '1', publication_types: ['Randomized Controlled Trial'], pubmed_date: '2024 Jan', pmc_id: 'PMC1', pubmed_abstract: 'x' },
+    {
+      pubmedId: '1',
+      publication_types: ['Randomized Controlled Trial'],
+      pubmed_date: '2024 Jan',
+      pmc_id: 'PMC1',
+      pubmed_abstract: 'x',
+    },
     { pubmedId: '1', publication_types: ['Review'] },
     { pubmedId: '2', publication_types: ['Review'], pubmed_date: '2019' },
     { pubmedId: '3', publication_types: [] },
