@@ -7,8 +7,8 @@ on 9 October 2026 against the production API routes and against NCBI E-utilities
 Severity scale: **CRITICAL** (misleading science or broken core promise) · **HIGH** (broken
 feature, major trust/SEO/UX problem) · **MEDIUM** (noticeable quality problem) · **LOW** (polish).
 
-The "Resolution" column records what this upgrade did. "Recommended" items need an owner decision
-or an external account (they are listed again in `docs/UPGRADE-NOTES.md`).
+The "Resolution" column records what this upgrade did. Items that need an owner decision or an
+external account are listed in `docs/UPGRADE-NOTES.md` under "Your decisions".
 
 ---
 
@@ -21,6 +21,7 @@ or an external account (they are listed again in `docs/UPGRADE-NOTES.md`).
 | PubMed: pancreatic-cancer records tagged *Clinical Trial* | **4,034** (1,418 RCTs, 1,695 systematic reviews, 1,581 meta-analyses) |
 | `/api/treatment` (chemotherapy) | 14 papers, all Sep–Oct 2026; top hits about fibrinolysis, epigenetics, a rare histotype — PubMed default sort is *most recent*, not relevance |
 | `/api/images` | **8.3 s** (48 sequential Wikimedia requests) |
+| `/api/search` with natural inputs | **Fails** for “pancreatic cancer”, “lung cancer”, “breast cancer”, “colon”, “gastric”, “skin”, “NSCLC”, “myeloma”, “thyroid”… — the research feed accepts only 16 fixed keys and there was no fallback |
 | Author names | `Laura K Kj&#xe6;r`, `Morten Orebo Holmstr&#xf6;m` — numeric XML entities not decoded |
 | Titles/abstracts | `Mini GPT-Pancreas`, `lnc RNAs`, `Chat GPT`, `i HD-SBRT` — text "repair" regex splits scientific tokens (also `mRNA → m RNA`, `siRNA → si RNA`) |
 
@@ -40,6 +41,7 @@ month's papers*, not the literature.
 | C4 | Gap Atlas V2 | "Recent literature" signal and "Recent papers %" metric are produced by the sampling design (one of four windows *is* the recent window; base set is recent-only). | Recency is now a relative measure: share of the cancer's PubMed records published in the last 3 years vs the same share oncology-wide. |
 | C5 | Gap Atlas V2 | `slice(0, 100)` after concatenating base (≤60) + windows (≤72) + treatment (≤50) silently drops whole strata (often all treatment papers and part of the historical window). | Inspectable sample is balanced per window and never truncated across strata; its statistics are labelled as sample statistics. |
 | C6 | Analytics | "Publication Timeline", "Latest year" and "Clinical trials" describe 20 recent-feed papers (one bar: 2026) but are labelled as publication patterns for the cancer. | Replaced by an **Evidence Landscape**: PubMed records per publication year and study-design composition (true counts), clearly separated from "recent feed" statistics. |
+| C8 | Search | The core search returns “No research papers were found” for natural inputs such as “pancreatic cancer” or “lung cancer”, and for every cancer outside the feed’s 16 keys (thyroid, myeloma, sarcoma, skin…). | Shared cancer catalogue maps inputs and synonyms to the feed’s keys; anything else (or a feed outage) falls back to PubMed, so a search never dead-ends. |
 | C7 | Compare Treatments | Compares capped retrieval counts (≈ limit 12 + a few tagged papers) as "Unique evidence papers" — the numbers are artefacts of the request limit. Example papers are labelled "Supporting PubMed Evidence". | Comparison now uses PubMed record counts for each cancer × treatment query, design composition and shares; examples use Best Match and are labelled "Example records". |
 
 ## 3. HIGH

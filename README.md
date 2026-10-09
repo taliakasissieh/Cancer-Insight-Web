@@ -1,58 +1,62 @@
 # Cancer Insight
 
-Cancer Insight is an independent educational cancer research explorer built with Next.js. It helps users discover and inspect cancer research literature while keeping original scientific sources visible.
+Cancer Insight is an independent, educational explorer of cancer research literature, built with
+Next.js. It shows what research exists while keeping the evidence trail visible: every PubMed count
+links to the exact query that reproduces it.
 
-## Current features
+It is not a medical tool. It does not diagnose, recommend treatments or give medical advice.
 
-- Cancer research search with PubMed enrichment
-- Research-paper deduplication and relevance filtering
-- Study-type and year-range filters
-- Treatment Research
-- Compare Treatments
-- Research Analytics
-- Scientific cancer images
-- Saved papers in browser local storage
-- PDF research reports and CSV exports
-- Methodology, FAQ, Privacy, Contact, and Terms pages
-- Google Analytics event tracking
-- **Cancer Research Gap Atlas**
+## What it does
 
-## Cancer Research Gap Atlas
+| Area | Route | What it shows |
+|---|---|---|
+| Landing | `/` | Search, a worked example, how numbers are produced, limits |
+| Explore → Overview | `/explore?cancer=…` | PubMed records per year and by study design (linked counts); recent-research summary |
+| Explore → Papers | `…&view=papers` | Recent research feed or PubMed Best Match; evidence types, retraction warnings, filters, CSV/RIS/PDF |
+| Explore → Treatments | `…&view=treatments` | Literature per treatment category, or two side by side (never effectiveness) |
+| Explore → Images | `…&view=images` | Wikimedia Commons images with licence attribution |
+| Explore → Saved | `/explore?view=saved` | Reading list stored in the browser, exportable |
+| Research Gap Atlas | `/research-gap-atlas?cancer=…` | Method 3.0: shares of PubMed records vs oncology overall, forest-plot profile, inspectable sample, CSV/JSON |
+| Methodology, FAQ, About, Privacy, Terms, Contact | | Generated in part from the same query definitions as the code |
 
-The Research Gap Atlas is an experimental research-exploration layer that looks for low-coverage signals inside a retrieved cancer-literature dataset. Method version 2.0 adds year-diverse PubMed sampling, cancer-relevance filtering for the sampled records, stronger publication-date fallbacks, and paper-level evidence provenance.
+## Architecture
 
-It analyzes:
-
-- clinical-trial and review coverage
-- randomized controlled trial coverage
-- predefined research-topic visibility
-- treatment-tagged literature distribution
-- publication recency
-- free-full-text accessibility
-- metadata completeness
-
-Every signal exposes its numerical basis and a caution. The evidence export includes source/retrieval provenance where available. A signal is **not proof of a true scientific or clinical gap**, does not rank treatments, and should be treated as a prompt for further investigation.
-
-The main files are:
-
-- `app/research-gap-atlas/page.js`
-- `app/research-gap-atlas/GapAtlasClient.js`
-- `app/api/gaps/route.js`
-- `lib/gaps.js`
-- `lib/relevance.js`
+```
+lib/queries.js       cancer catalogue, PubMed query builder, designs, themes, treatments (isomorphic)
+lib/evidence.js      publication-type classifier and paper-set statistics (isomorphic)
+lib/relevance.js     cancer-relevance check with a recorded explanation
+lib/pubmed.js        NCBI E-utilities client: rate limit, retries, cached counts/records (server)
+lib/pubmed-parse.js  PubMed XML parsing without altering scientific text (pure)
+lib/research.js      research feed + PubMed fallback, footprint counts, treatment profiles (server)
+lib/gaps.js          Research Gap Atlas Method 3.0 (server)
+lib/client/*         browser helpers: API cache, saved papers, exports, PDF report, analytics
+app/api/*            search, papers, footprint, treatment, gaps, images, records
+app/_components/*    UI components (explorer views, forest plot, year chart, paper item…)
+tests/*.test.mjs     unit tests for the pure modules (node --test)
+docs/AUDIT.md        full audit with findings and resolutions
+docs/UPGRADE-NOTES.md deployment and verification checklist
+```
 
 ## Local setup
 
-1. Install Node.js 20+.
-2. Run `npm install`.
-3. Create `.env.local`.
-4. Add `CANCER_RESEARCH_API_KEY=<your private key>`.
-5. Run `npm run dev`.
+1. Install Node.js 20.19+ (or 22+).
+2. `npm install`
+3. Create `.env.local`:
+   ```
+   CANCER_RESEARCH_API_KEY=<research feed key>
+   NCBI_API_KEY=<free NCBI key — strongly recommended>
+   ```
+4. `npm run dev`, then open http://localhost:3000
+5. `npm test` runs the unit tests.
 
-## Production / Vercel
+Without `CANCER_RESEARCH_API_KEY` the site still works: searches fall back to PubMed (no
+treatment tags). Without `NCBI_API_KEY` PubMed requests are limited to 3 per second, so a first
+Gap Atlas run takes roughly 10–15 seconds instead of 3–5.
 
-Import the repository into Vercel and add `CANCER_RESEARCH_API_KEY` in Project Settings → Environment Variables. Do not prefix the variable with `NEXT_PUBLIC_`. Redeploy after changing environment variables.
+## Production (Vercel)
 
-The production domain is intended to be:
+Add both environment variables in Project Settings → Environment Variables (never prefix them with
+`NEXT_PUBLIC_`), then redeploy. API routes declare `maxDuration` of 30–60 seconds. PubMed counts,
+record lists and image searches use the Next.js data cache (up to 24 hours).
 
-`https://www.cancer-insight.com`
+The production domain is `https://www.cancer-insight.com`.

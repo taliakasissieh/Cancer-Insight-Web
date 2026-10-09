@@ -39,7 +39,7 @@ const TOC = [
 
 const FEED_CANCERS = Object.entries(CANCERS)
   .filter(([id, c]) => c.feed === id)
-  .map(([, c]) => c.label);
+  .map(([, c]) => c.label.charAt(0).toLowerCase() + c.label.slice(1));
 
 const EVIDENCE_ROWS = [
   ['Meta-analysis', 'Meta-Analysis', 'Evidence synthesis'],
