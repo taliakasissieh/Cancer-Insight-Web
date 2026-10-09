@@ -16,33 +16,27 @@ export default function Methodology() {
           <div className="legalMark">✚</div>
 
           <div>
-            <div className="legalEyebrow">
-              CANCER INSIGHT
-            </div>
+            <div className="legalEyebrow">CANCER INSIGHT</div>
 
             <h1>Research Methodology</h1>
 
-            <p>
-              How Cancer Insight finds, organizes, filters, and presents research evidence
-            </p>
+            <p>How Cancer Insight finds, organizes, filters, and presents research evidence</p>
           </div>
         </div>
 
         <section className="legalCard importantLegalCard">
           <h2>Purpose</h2>
 
+          <p>Cancer Insight is an independent educational cancer research explorer.</p>
+
           <p>
-            Cancer Insight is an independent educational cancer research explorer.
+            Its purpose is to help users discover and examine scientific cancer research while
+            keeping original research sources visible.
           </p>
 
           <p>
-            Its purpose is to help users discover and examine scientific cancer
-            research while keeping original research sources visible.
-          </p>
-
-          <p>
-            Cancer Insight does not provide medical diagnosis, individualized
-            treatment recommendations, or professional medical advice.
+            Cancer Insight does not provide medical diagnosis, individualized treatment
+            recommendations, or professional medical advice.
           </p>
         </section>
 
@@ -50,33 +44,30 @@ export default function Methodology() {
           <h2>Research Sources</h2>
 
           <p>
-            Cancer Insight may use research information from sources including
-            PubMed, PubMed Central, NCBI resources, DOI records, scientific
-            publisher pages, and Wikimedia Commons for scientific images.
+            Cancer Insight may use research information from sources including PubMed, PubMed
+            Central, NCBI resources, DOI records, scientific publisher pages, and Wikimedia Commons
+            for scientific images.
           </p>
 
           <p>
-            Source links are shown whenever available so users can review the
-            original research record or source page directly.
+            Source links are shown whenever available so users can review the original research
+            record or source page directly.
           </p>
         </section>
 
         <section className="legalCard">
           <h2>Cancer Research Search</h2>
 
+          <p>A user begins by entering a cancer type or research topic.</p>
+
           <p>
-            A user begins by entering a cancer type or research topic.
+            Cancer Insight sends the research request to its search system and retrieves a set of
+            research papers and related metadata.
           </p>
 
           <p>
-            Cancer Insight sends the research request to its search system and
-            retrieves a set of research papers and related metadata.
-          </p>
-
-          <p>
-            Search results represent the records returned for that search at that
-            time. They are not intended to represent every paper ever published
-            about that cancer type.
+            Search results represent the records returned for that search at that time. They are not
+            intended to represent every paper ever published about that cancer type.
           </p>
         </section>
 
@@ -84,8 +75,8 @@ export default function Methodology() {
           <h2>PubMed Metadata Enrichment</h2>
 
           <p>
-            When a PubMed identifier or related metadata is available, Cancer
-            Insight may enrich a research record with information such as:
+            When a PubMed identifier or related metadata is available, Cancer Insight may enrich a
+            research record with information such as:
           </p>
 
           <ul>
@@ -101,28 +92,25 @@ export default function Methodology() {
             <li>publisher links.</li>
           </ul>
 
-          <p>
-            Some papers may contain more complete metadata than others.
-          </p>
+          <p>Some papers may contain more complete metadata than others.</p>
         </section>
 
         <section className="legalCard">
           <h2>Duplicate Paper Handling</h2>
 
           <p>
-            Cancer Insight attempts to remove duplicate research records before
-            calculating paper counts and other research metrics.
+            Cancer Insight attempts to remove duplicate research records before calculating paper
+            counts and other research metrics.
           </p>
 
           <p>
-            Deduplication may use available identifiers such as PubMed IDs, DOI
-            values, paper titles, or other record information.
+            Deduplication may use available identifiers such as PubMed IDs, DOI values, paper
+            titles, or other record information.
           </p>
 
           <p>
-            Duplicate removal is performed where possible, but it may not detect
-            every duplicate when source identifiers are missing, inconsistent, or
-            formatted differently.
+            Duplicate removal is performed where possible, but it may not detect every duplicate
+            when source identifiers are missing, inconsistent, or formatted differently.
           </p>
         </section>
 
@@ -130,16 +118,15 @@ export default function Methodology() {
           <h2>Research Paper Filters</h2>
 
           <p>
-            The Research Papers section allows users to narrow the currently
-            retrieved research set.
+            The Research Papers section allows users to narrow the currently retrieved research set.
           </p>
 
-          <p>
-            Available filters may include:
-          </p>
+          <p>Available filters may include:</p>
 
           <ul>
-            <li>text search across titles, abstracts, journals, study types, and related metadata,</li>
+            <li>
+              text search across titles, abstracts, journals, study types, and related metadata,
+            </li>
             <li>free full-text availability,</li>
             <li>abstract availability,</li>
             <li>full-text source availability,</li>
@@ -150,9 +137,8 @@ export default function Methodology() {
           </ul>
 
           <p>
-            Filters change which papers from the retrieved dataset are displayed.
-            They do not independently determine scientific quality or clinical
-            importance.
+            Filters change which papers from the retrieved dataset are displayed. They do not
+            independently determine scientific quality or clinical importance.
           </p>
         </section>
 
@@ -160,13 +146,11 @@ export default function Methodology() {
           <h2>Study-Type Classification</h2>
 
           <p>
-            Cancer Insight may identify study types using publication-type
-            metadata supplied by research sources.
+            Cancer Insight may identify study types using publication-type metadata supplied by
+            research sources.
           </p>
 
-          <p>
-            Examples may include:
-          </p>
+          <p>Examples may include:</p>
 
           <ul>
             <li>Clinical Trial,</li>
@@ -177,46 +161,35 @@ export default function Methodology() {
           </ul>
 
           <p>
-            These labels depend on the available source metadata and may not be
-            present for every paper.
+            These labels depend on the available source metadata and may not be present for every
+            paper.
           </p>
 
           <p>
-            Study-type classification is descriptive and should not be treated as
-            a complete assessment of study quality, certainty of evidence, or
-            clinical importance.
+            Study-type classification is descriptive and should not be treated as a complete
+            assessment of study quality, certainty of evidence, or clinical importance.
           </p>
         </section>
 
         <section className="legalCard">
           <h2>Publication Year Filtering</h2>
 
-          <p>
-            Cancer Insight may allow users to choose a starting year, ending year,
-            or both.
-          </p>
+          <p>Cancer Insight may allow users to choose a starting year, ending year, or both.</p>
+
+          <p>The year is extracted from available publication-date metadata.</p>
 
           <p>
-            The year is extracted from available publication-date metadata.
-          </p>
-
-          <p>
-            Papers without a recognizable publication year may not appear when a
-            year-range filter is active.
+            Papers without a recognizable publication year may not appear when a year-range filter
+            is active.
           </p>
         </section>
 
         <section className="legalCard">
           <h2>Why This Paper Is Relevant</h2>
 
-          <p>
-            Cancer Insight may display a short relevance explanation for a paper.
-          </p>
+          <p>Cancer Insight may display a short relevance explanation for a paper.</p>
 
-          <p>
-            This explanation is based only on available retrieved information,
-            such as:
-          </p>
+          <p>This explanation is based only on available retrieved information, such as:</p>
 
           <ul>
             <li>the paper title,</li>
@@ -227,13 +200,13 @@ export default function Methodology() {
           </ul>
 
           <p>
-            This feature is intended to help users understand why a paper appears
-            in the research set.
+            This feature is intended to help users understand why a paper appears in the research
+            set.
           </p>
 
           <p>
-            It is not a scientific conclusion, independent quality assessment, or
-            medical recommendation.
+            It is not a scientific conclusion, independent quality assessment, or medical
+            recommendation.
           </p>
         </section>
 
@@ -241,13 +214,11 @@ export default function Methodology() {
           <h2>Treatment Research</h2>
 
           <p>
-            Cancer Insight groups or retrieves research associated with treatment
-            categories relevant to the current cancer search.
+            Cancer Insight groups or retrieves research associated with treatment categories
+            relevant to the current cancer search.
           </p>
 
-          <p>
-            The Treatment Research section may combine:
-          </p>
+          <p>The Treatment Research section may combine:</p>
 
           <ul>
             <li>papers already found in the main cancer search, and</li>
@@ -255,14 +226,12 @@ export default function Methodology() {
           </ul>
 
           <p>
-            The combined set is deduplicated before research totals are
-            calculated where possible.
+            The combined set is deduplicated before research totals are calculated where possible.
           </p>
 
           <p>
-            Treatment research counts describe the amount of retrieved research
-            literature and do not indicate treatment superiority, safety, or
-            effectiveness.
+            Treatment research counts describe the amount of retrieved research literature and do
+            not indicate treatment superiority, safety, or effectiveness.
           </p>
         </section>
 
@@ -270,13 +239,11 @@ export default function Methodology() {
           <h2>Treatment Comparisons</h2>
 
           <p>
-            The Compare Treatments section retrieves and summarizes research
-            separately for two selected treatment categories.
+            The Compare Treatments section retrieves and summarizes research separately for two
+            selected treatment categories.
           </p>
 
-          <p>
-            Comparison measures may include:
-          </p>
+          <p>Comparison measures may include:</p>
 
           <ul>
             <li>unique evidence-paper counts,</li>
@@ -289,32 +256,24 @@ export default function Methodology() {
           </ul>
 
           <p>
-            Papers shown under each treatment are supporting research examples
-            for that treatment and are not artificially paired with papers from
-            the other treatment.
+            Papers shown under each treatment are supporting research examples for that treatment
+            and are not artificially paired with papers from the other treatment.
           </p>
 
-          <p>
-            The comparison is a research-coverage comparison only.
-          </p>
+          <p>The comparison is a research-coverage comparison only.</p>
 
           <p>
-            More papers, newer studies, or more clinical trials do not mean that
-            one treatment is medically better or more appropriate than another.
+            More papers, newer studies, or more clinical trials do not mean that one treatment is
+            medically better or more appropriate than another.
           </p>
         </section>
 
         <section className="legalCard">
           <h2>Research Analytics</h2>
 
-          <p>
-            Cancer Insight may generate summary analytics from the retrieved
-            research set.
-          </p>
+          <p>Cancer Insight may generate summary analytics from the retrieved research set.</p>
 
-          <p>
-            Examples may include:
-          </p>
+          <p>Examples may include:</p>
 
           <ul>
             <li>paper counts,</li>
@@ -327,14 +286,11 @@ export default function Methodology() {
             <li>top journals.</li>
           </ul>
 
-          <p>
-            Where possible, unique-paper counts are used to reduce duplicate
-            records.
-          </p>
+          <p>Where possible, unique-paper counts are used to reduce duplicate records.</p>
 
           <p>
-            Analytics describe the retrieved research dataset and are not measures
-            of clinical effectiveness.
+            Analytics describe the retrieved research dataset and are not measures of clinical
+            effectiveness.
           </p>
         </section>
 
@@ -342,36 +298,27 @@ export default function Methodology() {
           <h2>Free Full Text</h2>
 
           <p>
-            A paper may be labeled as free full text when Cancer Insight
-            identifies a freely readable source, such as PubMed Central.
+            A paper may be labeled as free full text when Cancer Insight identifies a freely
+            readable source, such as PubMed Central.
           </p>
 
           <p>
-            Free availability does not automatically mean the content can be
-            reused, modified, republished, or redistributed without restriction.
+            Free availability does not automatically mean the content can be reused, modified,
+            republished, or redistributed without restriction.
           </p>
 
-          <p>
-            Users should check the original source and license before reusing
-            content.
-          </p>
+          <p>Users should check the original source and license before reusing content.</p>
         </section>
 
         <section className="legalCard">
           <h2>Saved Papers</h2>
 
-          <p>
-            Users may save papers for easier access while browsing Cancer
-            Insight.
-          </p>
+          <p>Users may save papers for easier access while browsing Cancer Insight.</p>
+
+          <p>Saved-paper identifiers are stored locally in the user's browser.</p>
 
           <p>
-            Saved-paper identifiers are stored locally in the user's browser.
-          </p>
-
-          <p>
-            Saved status does not change research ranking, relevance, or
-            scientific interpretation.
+            Saved status does not change research ranking, relevance, or scientific interpretation.
           </p>
         </section>
 
@@ -379,13 +326,10 @@ export default function Methodology() {
           <h2>PDF Research Reports</h2>
 
           <p>
-            Cancer Insight can generate downloadable PDF reports based on the
-            current research set.
+            Cancer Insight can generate downloadable PDF reports based on the current research set.
           </p>
 
-          <p>
-            Reports may include:
-          </p>
+          <p>Reports may include:</p>
 
           <ul>
             <li>unique-paper counts,</li>
@@ -400,8 +344,8 @@ export default function Methodology() {
           </ul>
 
           <p>
-            PDF reports describe retrieved research literature and are not medical
-            reports or clinical recommendations.
+            PDF reports describe retrieved research literature and are not medical reports or
+            clinical recommendations.
           </p>
         </section>
 
@@ -409,18 +353,17 @@ export default function Methodology() {
           <h2>CSV Research Exports</h2>
 
           <p>
-            Cancer Insight may allow research records or treatment-count data to
-            be exported as CSV files.
+            Cancer Insight may allow research records or treatment-count data to be exported as CSV
+            files.
           </p>
 
           <p>
-            CSV exports are intended to make research data easier to inspect,
-            organize, or analyze.
+            CSV exports are intended to make research data easier to inspect, organize, or analyze.
           </p>
 
           <p>
-            Exported information remains subject to the same source limitations
-            and interpretation cautions as information displayed on the website.
+            Exported information remains subject to the same source limitations and interpretation
+            cautions as information displayed on the website.
           </p>
         </section>
 
@@ -428,8 +371,8 @@ export default function Methodology() {
           <h2>Scientific Images</h2>
 
           <p>
-            Cancer Insight may retrieve scientific images from Wikimedia Commons
-            and prioritize medically relevant material such as:
+            Cancer Insight may retrieve scientific images from Wikimedia Commons and prioritize
+            medically relevant material such as:
           </p>
 
           <ul>
@@ -443,25 +386,19 @@ export default function Methodology() {
           </ul>
 
           <p>
-            Original-source links, licensing information, and creator information
-            are shown when available.
+            Original-source links, licensing information, and creator information are shown when
+            available.
           </p>
 
-          <p>
-            Users should verify the original image source and license before reuse.
-          </p>
+          <p>Users should verify the original image source and license before reuse.</p>
         </section>
 
         <section className="legalCard">
           <h2>Research Source Links</h2>
 
-          <p>
-            Cancer Insight keeps source links visible whenever available.
-          </p>
+          <p>Cancer Insight keeps source links visible whenever available.</p>
 
-          <p>
-            These may include:
-          </p>
+          <p>These may include:</p>
 
           <ul>
             <li>PubMed,</li>
@@ -471,113 +408,98 @@ export default function Methodology() {
             <li>Wikimedia Commons source pages.</li>
           </ul>
 
-          <p>
-            Users are encouraged to open the original sources for full scientific
-            context.
-          </p>
+          <p>Users are encouraged to open the original sources for full scientific context.</p>
         </section>
 
         <section className="legalCard" id="research-gap-atlas">
           <h2>Research Gap Atlas Method</h2>
 
           <p>
-            The Cancer Insight Research Gap Atlas is an experimental educational
-            analysis layer that looks for transparent low-coverage signals inside
-            a retrieved cancer-literature dataset.
+            The Cancer Insight Research Gap Atlas is an experimental educational analysis layer that
+            looks for transparent low-coverage signals inside a retrieved cancer-literature dataset.
           </p>
 
           <p>
-            The Atlas first builds a broader evidence set than the normal
-            20-paper search. Method version 2.0 combines cancer-relevant records
-            from the main research retrieval with PubMed records sampled across
-            four publication-year windows (recent, mid, older, and historical).
-            It may also add treatment-focused PubMed evidence for several of the
-            most represented treatment categories. The year-diverse PubMed
-            records pass through the same cancer-relevance filtering used by
-            Cancer Insight, and duplicate records are removed where possible
-            before analysis.
+            The Atlas first builds a broader evidence set than the normal 20-paper search. Method
+            version 2.0 combines cancer-relevant records from the main research retrieval with
+            PubMed records sampled across four publication-year windows (recent, mid, older, and
+            historical). It may also add treatment-focused PubMed evidence for several of the most
+            represented treatment categories. The year-diverse PubMed records pass through the same
+            cancer-relevance filtering used by Cancer Insight, and duplicate records are removed
+            where possible before analysis.
           </p>
 
-          <p>
-            The current method checks six kinds of signals:
-          </p>
+          <p>The current method checks six kinds of signals:</p>
 
           <ul>
             <li>
-              <b>Study-design coverage:</b> whether clinical trials, randomized
-              controlled trials, systematic reviews, or meta-analyses are rarely
-              represented in available publication-type metadata.
+              <b>Study-design coverage:</b> whether clinical trials, randomized controlled trials,
+              systematic reviews, or meta-analyses are rarely represented in available
+              publication-type metadata.
             </li>
             <li>
-              <b>Topic coverage:</b> whether predefined research themes such as
-              quality of life, toxicity, recurrence, resistance, biomarkers,
-              pediatric populations, older adults, survivorship, or disparities
-              appear infrequently in titles, abstracts, keywords, or MeSH text.
+              <b>Topic coverage:</b> whether predefined research themes such as quality of life,
+              toxicity, recurrence, resistance, biomarkers, pediatric populations, older adults,
+              survivorship, or disparities appear infrequently in titles, abstracts, keywords, or
+              MeSH text.
             </li>
             <li>
-              <b>Treatment distribution:</b> whether some retrieved treatment
-              categories have much lower tagged-paper volume than the most
-              represented treatment category in the same dataset.
+              <b>Treatment distribution:</b> whether some retrieved treatment categories have much
+              lower tagged-paper volume than the most represented treatment category in the same
+              dataset.
             </li>
             <li>
-              <b>Research recency:</b> whether relatively few retrieved records
-              are dated within the most recent three-year window.
+              <b>Research recency:</b> whether relatively few retrieved records are dated within the
+              most recent three-year window.
             </li>
             <li>
-              <b>Research accessibility:</b> whether few retrieved records have a
-              PubMed Central free-full-text indicator. This is an access signal,
-              not a scientific evidence gap.
+              <b>Research accessibility:</b> whether few retrieved records have a PubMed Central
+              free-full-text indicator. This is an access signal, not a scientific evidence gap.
             </li>
             <li>
-              <b>Metadata completeness:</b> whether a large share of records lack
-              abstracts or other information needed for text analysis.
+              <b>Metadata completeness:</b> whether a large share of records lack abstracts or other
+              information needed for text analysis.
             </li>
           </ul>
 
           <p>
-            Each signal displays the actual counts, percentage, comparison basis,
-            and a caution explaining what the result cannot establish. Signals are
-            labeled as strong, moderate, or watch signals according to predefined
-            thresholds inside the method. These labels describe how strongly the
-            rule was triggered; they do not measure scientific importance or
-            clinical urgency.
+            Each signal displays the actual counts, percentage, comparison basis, and a caution
+            explaining what the result cannot establish. Signals are labeled as strong, moderate, or
+            watch signals according to predefined thresholds inside the method. These labels
+            describe how strongly the rule was triggered; they do not measure scientific importance
+            or clinical urgency.
           </p>
 
           <p>
-            In method version 2.0, the principal trigger thresholds are: clinical
-            trials below 10% of analyzed papers; randomized controlled trials below
-            5%; systematic reviews below 5%; meta-analyses below 4%; predefined
-            topic coverage below 6%; recent literature below 20% for the current
-            three-year window; PubMed Central free-full-text availability below
-            25%; and missing abstracts above 30%. A treatment-distribution signal
-            may be triggered when a category has no more than 25% of the paper
-            volume of the most represented treatment category, subject to a small
-            count rule. These thresholds are exploratory design choices, not
-            accepted clinical standards.
+            In method version 2.0, the principal trigger thresholds are: clinical trials below 10%
+            of analyzed papers; randomized controlled trials below 5%; systematic reviews below 5%;
+            meta-analyses below 4%; predefined topic coverage below 6%; recent literature below 20%
+            for the current three-year window; PubMed Central free-full-text availability below 25%;
+            and missing abstracts above 30%. A treatment-distribution signal may be triggered when a
+            category has no more than 25% of the paper volume of the most represented treatment
+            category, subject to a small count rule. These thresholds are exploratory design
+            choices, not accepted clinical standards.
           </p>
 
           <p>
-            Version 2.0 also records evidence provenance where available, including
-            PubMed links, publication dates, journals, retrieval method, and the
-            publication-year sampling window. This is intended to make the
-            retrieved evidence set inspectable and reproducible rather than
-            presenting gap signals as unexplained scores.
+            Version 2.0 also records evidence provenance where available, including PubMed links,
+            publication dates, journals, retrieval method, and the publication-year sampling window.
+            This is intended to make the retrieved evidence set inspectable and reproducible rather
+            than presenting gap signals as unexplained scores.
           </p>
 
           <p>
-            The Atlas also displays a dataset-size label based only on the number
-            of unique papers analyzed: fewer than 30 is labeled limited, 30-59 is
-            labeled moderate, and 60 or more is labeled stronger. This is not a
-            scientific confidence score.
+            The Atlas also displays a dataset-size label based only on the number of unique papers
+            analyzed: fewer than 30 is labeled limited, 30-59 is labeled moderate, and 60 or more is
+            labeled stronger. This is not a scientific confidence score.
           </p>
 
           <p>
-            A Research Gap Atlas signal is not proof that the worldwide scientific
-            literature contains a true research gap. Keyword matching can miss
-            synonyms and context, publication-type metadata can be incomplete,
-            treatment tags can be imperfect, and the retrieved dataset is only a
-            subset of the wider literature. The Atlas is designed to generate
-            questions for further investigation, not final conclusions.
+            A Research Gap Atlas signal is not proof that the worldwide scientific literature
+            contains a true research gap. Keyword matching can miss synonyms and context,
+            publication-type metadata can be incomplete, treatment tags can be imperfect, and the
+            retrieved dataset is only a subset of the wider literature. The Atlas is designed to
+            generate questions for further investigation, not final conclusions.
           </p>
 
           <a className="sourceButton" href="/research-gap-atlas">
@@ -589,13 +511,11 @@ export default function Methodology() {
           <h2>Important Limitations</h2>
 
           <p>
-            Cancer Insight relies on external research sources, metadata,
-            automated processing, and search logic.
+            Cancer Insight relies on external research sources, metadata, automated processing, and
+            search logic.
           </p>
 
-          <p>
-            As a result:
-          </p>
+          <p>As a result:</p>
 
           <ul>
             <li>some relevant papers may not be retrieved,</li>
@@ -608,64 +528,43 @@ export default function Methodology() {
           </ul>
 
           <p>
-            Users should always review original research sources when scientific
-            accuracy or detailed interpretation is important.
+            Users should always review original research sources when scientific accuracy or
+            detailed interpretation is important.
           </p>
         </section>
 
         <section className="legalCard importantLegalCard">
           <h2>Medical Disclaimer</h2>
 
+          <p>Cancer Insight is for educational and research-exploration purposes only.</p>
+
           <p>
-            Cancer Insight is for educational and research-exploration purposes
-            only.
+            It does not provide diagnosis, treatment recommendations, medical advice, or
+            individualized healthcare guidance.
           </p>
 
           <p>
-            It does not provide diagnosis, treatment recommendations, medical
-            advice, or individualized healthcare guidance.
+            Research-paper counts, study types, treatment comparisons, relevance notes, and
+            analytics must not be used to decide which treatment a person should receive.
           </p>
 
-          <p>
-            Research-paper counts, study types, treatment comparisons, relevance
-            notes, and analytics must not be used to decide which treatment a
-            person should receive.
-          </p>
-
-          <p>
-            Personal medical decisions should be made with qualified healthcare
-            professionals.
-          </p>
+          <p>Personal medical decisions should be made with qualified healthcare professionals.</p>
         </section>
 
         <div className="legalFooter">
-          <a href="/">
-            Cancer Insight
-          </a>
+          <a href="/">Cancer Insight</a>
 
-          <a href="/research-gap-atlas">
-            Research Gap Atlas
-          </a>
+          <a href="/research-gap-atlas">Research Gap Atlas</a>
 
-          <a href="/methodology">
-            Methodology
-          </a>
+          <a href="/methodology">Methodology</a>
 
-          <a href="/faq">
-            FAQ
-          </a>
+          <a href="/faq">FAQ</a>
 
-          <a href="/privacy-policy">
-            Privacy Policy
-          </a>
+          <a href="/privacy-policy">Privacy Policy</a>
 
-          <a href="/contact">
-            Contact
-          </a>
+          <a href="/contact">Contact</a>
 
-          <a href="/terms">
-            Terms & Disclaimer
-          </a>
+          <a href="/terms">Terms & Disclaimer</a>
         </div>
       </div>
     </main>

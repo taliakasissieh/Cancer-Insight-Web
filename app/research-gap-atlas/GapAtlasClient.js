@@ -9,10 +9,7 @@ function title(value) {
 }
 
 function trackEvent(name, params = {}) {
-  if (
-    typeof window !== 'undefined' &&
-    typeof window.gtag === 'function'
-  ) {
+  if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     window.gtag('event', name, params);
   }
 }
@@ -57,10 +54,7 @@ function CoverageBar({ label, count, total, percent, note }) {
       </div>
 
       <div className="gapCoverageTrack" aria-hidden="true">
-        <div
-          className="gapCoverageFill"
-          style={{ width: `${width}%` }}
-        />
+        <div className="gapCoverageFill" style={{ width: `${width}%` }} />
       </div>
 
       {note && <div className="gapCoverageNote">{note}</div>}
@@ -164,16 +158,7 @@ export default function GapAtlasClient() {
     if (!result) return;
 
     const rows = [
-      [
-        'category',
-        'signal',
-        'strength',
-        'summary',
-        'matched',
-        'total',
-        'percent',
-        'caution',
-      ],
+      ['category', 'signal', 'strength', 'summary', 'matched', 'total', 'percent', 'caution'],
       ...result.signals.map(signal => [
         signal.category,
         signal.title,
@@ -186,15 +171,9 @@ export default function GapAtlasClient() {
       ]),
     ];
 
-    const csv = rows
-      .map(row => row.map(csvEscape).join(','))
-      .join('\n');
+    const csv = rows.map(row => row.map(csvEscape).join(',')).join('\n');
 
-    saveBlob(
-      `cancer_insight_${result.cancer.replace(/\s+/g, '_')}_gap_atlas.csv`,
-      csv,
-      'text/csv'
-    );
+    saveBlob(`cancer_insight_${result.cancer.replace(/\s+/g, '_')}_gap_atlas.csv`, csv, 'text/csv');
 
     trackEvent('gap_atlas_export', {
       cancer_type: result.cancer,
@@ -229,9 +208,9 @@ export default function GapAtlasClient() {
             <div className="gapEyebrow">CANCER INSIGHT EXPERIMENTAL RESEARCH TOOL</div>
             <h1>Cancer Research Gap Atlas</h1>
             <p className="gapLead">
-              Explore where research appears thin, concentrated, inaccessible, or
-              underrepresented inside a retrieved cancer-literature dataset — with
-              every signal explained by transparent rules.
+              Explore where research appears thin, concentrated, inaccessible, or underrepresented
+              inside a retrieved cancer-literature dataset — with every signal explained by
+              transparent rules.
             </p>
 
             <div className="gapHeroPills">
@@ -245,12 +224,12 @@ export default function GapAtlasClient() {
           <div className="gapHeroCard">
             <strong>What makes this different?</strong>
             <p>
-              Normal search tools show what exists. The Gap Atlas asks a second
-              question: <b>what appears underrepresented in the retrieved evidence?</b>
+              Normal search tools show what exists. The Gap Atlas asks a second question:{' '}
+              <b>what appears underrepresented in the retrieved evidence?</b>
             </p>
             <p>
-              It does not claim a true scientific gap automatically. It creates
-              reproducible signals that researchers can investigate.
+              It does not claim a true scientific gap automatically. It creates reproducible signals
+              that researchers can investigate.
             </p>
           </div>
         </section>
@@ -272,9 +251,8 @@ export default function GapAtlasClient() {
           </form>
 
           <p className="gapSearchHint">
-            The analysis uses a broader research set than the standard 20-paper
-            search and enriches it with treatment-focused PubMed evidence where
-            available.
+            The analysis uses a broader research set than the standard 20-paper search and enriches
+            it with treatment-focused PubMed evidence where available.
           </p>
         </section>
 
@@ -286,8 +264,8 @@ export default function GapAtlasClient() {
             <div>
               <strong>Mapping the research landscape…</strong>
               <span>
-                Retrieving papers, checking study types, topics, treatment
-                distribution, recency, access, and metadata completeness.
+                Retrieving papers, checking study types, topics, treatment distribution, recency,
+                access, and metadata completeness.
               </span>
             </div>
           </div>
@@ -300,8 +278,8 @@ export default function GapAtlasClient() {
                 <div className="gapEyebrow">RESEARCH LANDSCAPE</div>
                 <h2>{title(result.cancer)} Cancer</h2>
                 <p>
-                  Analysis generated from {result.dataset.paperCount} unique papers.
-                  Signals describe this retrieved dataset only.
+                  Analysis generated from {result.dataset.paperCount} unique papers. Signals
+                  describe this retrieved dataset only.
                 </p>
               </div>
 
@@ -336,11 +314,7 @@ export default function GapAtlasClient() {
                 value={`${result.dataset.recentPercent}%`}
                 sub={`${result.dataset.recentStartYear}–present`}
               />
-              <Metric
-                label="Journals"
-                value={result.dataset.journalCount}
-                sub="represented"
-              />
+              <Metric label="Journals" value={result.dataset.journalCount} sub="represented" />
               <Metric
                 label="Year range"
                 value={
@@ -364,9 +338,9 @@ export default function GapAtlasClient() {
               </div>
 
               <div className="gapWarning">
-                <b>Important:</b> a signal is not proof of a real-world scientific or
-                clinical gap. It means that a predefined type of evidence or topic is
-                relatively scarce in this retrieved dataset.
+                <b>Important:</b> a signal is not proof of a real-world scientific or clinical gap.
+                It means that a predefined type of evidence or topic is relatively scarce in this
+                retrieved dataset.
               </div>
 
               {result.signals.length ? (
@@ -386,8 +360,7 @@ export default function GapAtlasClient() {
                         <div className="gapDetailsBody">
                           {signal.basis?.total !== undefined && (
                             <p>
-                              <b>Dataset basis:</b> {signal.basis.matched} of{' '}
-                              {signal.basis.total}
+                              <b>Dataset basis:</b> {signal.basis.matched} of {signal.basis.total}
                               {signal.basis.percent !== undefined
                                 ? ` (${signal.basis.percent}%)`
                                 : ''}
@@ -396,9 +369,8 @@ export default function GapAtlasClient() {
 
                           {signal.basis?.benchmark !== undefined && (
                             <p>
-                              <b>Comparison basis:</b> {signal.basis.matched} papers
-                              versus {signal.basis.benchmark} for{' '}
-                              {title(signal.basis.benchmarkTreatment)}.
+                              <b>Comparison basis:</b> {signal.basis.matched} papers versus{' '}
+                              {signal.basis.benchmark} for {title(signal.basis.benchmarkTreatment)}.
                             </p>
                           )}
 
@@ -412,8 +384,8 @@ export default function GapAtlasClient() {
                 <div className="emptyState">
                   <strong>No predefined low-coverage signals were triggered</strong>
                   <span>
-                    This does not mean the research field has no gaps. It only means
-                    none of the current transparent rules crossed their thresholds.
+                    This does not mean the research field has no gaps. It only means none of the
+                    current transparent rules crossed their thresholds.
                   </span>
                 </div>
               )}
@@ -424,8 +396,7 @@ export default function GapAtlasClient() {
                 <div className="gapEyebrow">STUDY DESIGN</div>
                 <h2>Study-Type Coverage</h2>
                 <p className="muted">
-                  Based on publication-type metadata available in the retrieved
-                  records.
+                  Based on publication-type metadata available in the retrieved records.
                 </p>
 
                 {result.studyDesign.map(item => (
@@ -475,10 +446,7 @@ export default function GapAtlasClient() {
                           <b>{item.count}</b>
                         </div>
                         <div className="gapCoverageTrack">
-                          <div
-                            className="gapCoverageFill"
-                            style={{ width: `${width}%` }}
-                          />
+                          <div className="gapCoverageFill" style={{ width: `${width}%` }} />
                         </div>
                       </div>
                     );
@@ -495,20 +463,14 @@ export default function GapAtlasClient() {
                 {result.timeline.length ? (
                   <div className="gapTimeline">
                     {result.timeline.slice(-15).map(item => {
-                      const max = Math.max(
-                        1,
-                        ...result.timeline.slice(-15).map(x => x.count)
-                      );
+                      const max = Math.max(1, ...result.timeline.slice(-15).map(x => x.count));
                       const height = Math.max(8, (item.count / max) * 100);
 
                       return (
                         <div className="gapYearColumn" key={item.year}>
                           <span className="gapYearCount">{item.count}</span>
                           <div className="gapYearBarBox">
-                            <div
-                              className="gapYearBar"
-                              style={{ height: `${height}%` }}
-                            />
+                            <div className="gapYearBar" style={{ height: `${height}%` }} />
                           </div>
                           <span className="gapYearLabel">{String(item.year).slice(-2)}</span>
                         </div>
@@ -530,15 +492,13 @@ export default function GapAtlasClient() {
               </div>
 
               <div className="gapWarning">
-                This is a sampled evidence set, not an exhaustive systematic review.
-                V2 combines relevance-ranked records with PubMed records sampled
-                across publication-year windows and treatment-focused searches.
+                This is a sampled evidence set, not an exhaustive systematic review. V2 combines
+                relevance-ranked records with PubMed records sampled across publication-year windows
+                and treatment-focused searches.
               </div>
 
               <details>
-                <summary>
-                  View retrieved evidence ({result.evidence?.length || 0} papers)
-                </summary>
+                <summary>View retrieved evidence ({result.evidence?.length || 0} papers)</summary>
                 <div className="gapDetailsBody">
                   {(result.evidence || []).map((paper, index) => (
                     <p key={paper.id || index}>
@@ -560,8 +520,8 @@ export default function GapAtlasClient() {
               </details>
 
               <p className="muted">
-                Sampling method: {result.retrieval?.samplingMethod || 'retrieved evidence set'}.
-                {' '}Dated records: {result.dataset.datedPaperCount}/{result.dataset.paperCount}.
+                Sampling method: {result.retrieval?.samplingMethod || 'retrieved evidence set'}.{' '}
+                Dated records: {result.dataset.datedPaperCount}/{result.dataset.paperCount}.
               </p>
             </section>
 

@@ -113,10 +113,7 @@ export default function RootLayout({ children }) {
 
     name: 'Cancer Insight',
 
-    alternateName: [
-      'Cancer Insight Research Explorer',
-      'Cancer Insight Cancer Research Explorer',
-    ],
+    alternateName: ['Cancer Insight Research Explorer', 'Cancer Insight Cancer Research Explorer'],
 
     url: 'https://www.cancer-insight.com/',
 
@@ -185,10 +182,7 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
         />
 
-        <Script
-          id="google-analytics"
-          strategy="afterInteractive"
-        >
+        <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
 
