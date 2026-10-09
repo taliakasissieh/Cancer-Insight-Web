@@ -1908,6 +1908,8 @@ details > summary {
 
 .prose {
   max-width: 74ch;
+  min-width: 0;
+  overflow-wrap: break-word;
 }
 .prose h2 {
   margin-top: 2em;
@@ -2009,8 +2011,9 @@ details > summary {
 }
 .contactEmail {
   font-family: var(--font-serif-stack);
-  font-size: 1.4rem;
+  font-size: clamp(1.1rem, 0.9rem + 1.2vw, 1.4rem);
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 /* ---------- responsive ---------- */
