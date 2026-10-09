@@ -331,7 +331,17 @@ export default function GapAtlasClient() {
                   </p>
                 </div>
               </div>
-              {d.signals.length ? (
+              {d.totals.records < d.thresholds.minRecords ? (
+                <div className="emptyState">
+                  <h3>Too few records to compare</h3>
+                  <p>
+                    PubMed has {fmtInt(d.totals.records)} records for this query. Below{' '}
+                    {fmtInt(d.thresholds.minRecords)} records, shares move too much with a handful
+                    of papers to be compared with oncology, so no signals are shown. The counts
+                    below are still accurate and can be opened on PubMed.
+                  </p>
+                </div>
+              ) : d.signals.length ? (
                 <ul className="signalList">
                   {d.signals.map(s => (
                     <Signal key={s.id} s={s} cancerLabel={d.cancer.label} />

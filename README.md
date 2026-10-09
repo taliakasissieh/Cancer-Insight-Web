@@ -8,16 +8,16 @@ It is not a medical tool. It does not diagnose, recommend treatments or give med
 
 ## What it does
 
-| Area | Route | What it shows |
-|---|---|---|
-| Landing | `/` | Search, a worked example, how numbers are produced, limits |
-| Explore → Overview | `/explore?cancer=…` | PubMed records per year and by study design (linked counts); recent-research summary |
-| Explore → Papers | `…&view=papers` | Recent research feed or PubMed Best Match; evidence types, retraction warnings, filters, CSV/RIS/PDF |
-| Explore → Treatments | `…&view=treatments` | Literature per treatment category, or two side by side (never effectiveness) |
-| Explore → Images | `…&view=images` | Wikimedia Commons images with licence attribution |
-| Explore → Saved | `/explore?view=saved` | Reading list stored in the browser, exportable |
-| Research Gap Atlas | `/research-gap-atlas?cancer=…` | Method 3.0: shares of PubMed records vs oncology overall, forest-plot profile, inspectable sample, CSV/JSON |
-| Methodology, FAQ, About, Privacy, Terms, Contact | | Generated in part from the same query definitions as the code |
+| Area                                             | Route                          | What it shows                                                                                               |
+| ------------------------------------------------ | ------------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| Landing                                          | `/`                            | Search, a worked example, how numbers are produced, limits                                                  |
+| Explore → Overview                               | `/explore?cancer=…`            | PubMed records per year and by study design (linked counts); recent-research summary                        |
+| Explore → Papers                                 | `…&view=papers`                | Recent research feed or PubMed Best Match; evidence types, retraction warnings, filters, CSV/RIS/PDF        |
+| Explore → Treatments                             | `…&view=treatments`            | Literature per treatment category, or two side by side (never effectiveness)                                |
+| Explore → Images                                 | `…&view=images`                | Wikimedia Commons images with licence attribution                                                           |
+| Explore → Saved                                  | `/explore?view=saved`          | Reading list stored in the browser, exportable                                                              |
+| Research Gap Atlas                               | `/research-gap-atlas?cancer=…` | Method 3.0: shares of PubMed records vs oncology overall, forest-plot profile, inspectable sample, CSV/JSON |
+| Methodology, FAQ, About, Privacy, Terms, Contact |                                | Generated in part from the same query definitions as the code                                               |
 
 ## Architecture
 

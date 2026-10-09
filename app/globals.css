@@ -18,6 +18,7 @@
   --paper: #ffffff;
   --rule: #d5e2e9;
   --rule-strong: #b6cad6;
+  --control: #7a93a3;
   --ochre: #9a5806;
   --ochre-strong: #774100;
   --ochre-wash: #fbf1e2;
@@ -29,8 +30,8 @@
   --fam-primary: #0b7a80;
   --fam-synthesis: #4a55a2;
   --fam-guidance: #8a5a00;
-  --fam-commentary: #6a7b87;
-  --fam-other: #6a7b87;
+  --fam-commentary: #5c6d79;
+  --fam-other: #5c6d79;
   --fam-unclassified: #a3b5c1;
 
   --font-serif-stack: var(--font-serif, 'Source Serif 4'), 'Iowan Old Style', Georgia, serif;
@@ -135,9 +136,12 @@ textarea {
 }
 
 :focus-visible {
-  outline: 3px solid var(--teal-bright);
+  outline: 3px solid var(--teal);
   outline-offset: 2px;
   border-radius: 3px;
+}
+.siteFooter :focus-visible {
+  outline-color: #ffffff;
 }
 
 ::selection {
@@ -294,7 +298,7 @@ details > summary {
   align-items: center;
   gap: 6px;
   padding: 7px 12px;
-  border: 1px solid var(--rule-strong);
+  border: 1px solid var(--control);
   border-radius: 999px;
   color: var(--ink-2);
   font-weight: 600;
@@ -324,7 +328,7 @@ details > summary {
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
-  border: 1px solid var(--rule-strong);
+  border: 1px solid var(--control);
   border-radius: var(--r-s);
   background: var(--paper);
   font-weight: 600;
@@ -435,7 +439,7 @@ details > summary {
 }
 .btnSecondary {
   background: var(--paper);
-  border-color: var(--rule-strong);
+  border-color: var(--control);
   color: var(--ink);
 }
 .btnSecondary:hover {
@@ -477,7 +481,7 @@ details > summary {
   width: 100%;
   min-height: 42px;
   padding: 8px 12px;
-  border: 1px solid var(--rule-strong);
+  border: 1px solid var(--control);
   border-radius: var(--r-s);
   background: var(--paper);
   font-weight: 400;
@@ -500,6 +504,7 @@ details > summary {
 }
 .checkField input {
   width: 18px;
+  flex: none;
   height: 18px;
   accent-color: var(--teal);
 }
@@ -509,7 +514,7 @@ details > summary {
   align-items: center;
   gap: 6px;
   padding: 5px 12px;
-  border: 1px solid var(--rule-strong);
+  border: 1px solid var(--control);
   border-radius: 999px;
   background: var(--paper);
   color: var(--ink-2);
@@ -710,7 +715,7 @@ details > summary {
   width: 100%;
   min-height: 52px;
   padding: 10px 14px 10px 44px;
-  border: 1px solid var(--rule-strong);
+  border: 1px solid var(--control);
   border-radius: var(--r-s);
   background: var(--paper);
   font-size: 1.08rem;
@@ -1300,7 +1305,7 @@ details > summary {
   gap: 2px;
   text-align: left;
   padding: 10px 12px;
-  border: 1px solid var(--rule);
+  border: 1px solid var(--control);
   border-radius: var(--r-s);
   background: var(--paper);
   cursor: pointer;
@@ -1538,7 +1543,7 @@ details > summary {
 }
 .modeSwitch {
   display: inline-flex;
-  border: 1px solid var(--rule-strong);
+  border: 1px solid var(--control);
   border-radius: var(--r-s);
   overflow: hidden;
   margin-bottom: 18px;
@@ -1552,7 +1557,7 @@ details > summary {
   color: var(--ink-2);
 }
 .modeSwitch button + button {
-  border-left: 1px solid var(--rule-strong);
+  border-left: 1px solid var(--control);
 }
 .modeSwitch button[aria-pressed='true'] {
   background: var(--ink);

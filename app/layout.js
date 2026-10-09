@@ -33,7 +33,6 @@ export const metadata = {
   creator: 'Cancer Insight',
   publisher: 'Cancer Insight',
   category: 'education',
-  icons: { icon: '/icon.png', apple: '/icon.png' },
   robots: {
     index: true,
     follow: true,
