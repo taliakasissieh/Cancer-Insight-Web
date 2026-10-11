@@ -1,38 +1,49 @@
 import GapAtlasClient from './GapAtlasClient';
 
 export const metadata = {
-  title: 'Cancer Research Gap Atlas | Cancer Insight',
+  title: 'Research Gap Atlas',
   description:
-    'Explore transparent low-coverage signals in cancer research literature using Cancer Insight Research Gap Atlas.',
-  alternates: {
-    canonical: '/research-gap-atlas',
-  },
+    'Compare how a cancer’s PubMed literature divides across study designs and research themes with oncology overall. Every count links to the PubMed query behind it; signals are prompts for investigation, not proof of research gaps.',
+  alternates: { canonical: '/research-gap-atlas' },
 };
 
-export default function ResearchGapAtlasPage() {
-  const structuredData = {
-    '@context': 'https://schema.org',
-    '@type': 'WebPage',
-    name: 'Cancer Research Gap Atlas',
-    url: 'https://www.cancer-insight.com/research-gap-atlas',
-    description:
-      'An educational research tool that identifies transparent low-coverage signals inside retrieved cancer research literature.',
-    isPartOf: {
-      '@id': 'https://www.cancer-insight.com/#website',
-    },
-    about: {
-      '@type': 'Thing',
-      name: 'Cancer research literature',
-    },
-  };
+const SITE = 'https://www.cancer-insight.com';
 
+const structuredData = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Cancer Insight Research Gap Atlas',
+    url: `${SITE}/research-gap-atlas`,
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Any (web browser)',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    description:
+      'Educational tool comparing the share of a cancer’s PubMed records in each study design and research theme with the oncology-wide share (Method 3.0).',
+    isPartOf: { '@id': `${SITE}/#website` },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Cancer Insight', item: `${SITE}/` },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Research Gap Atlas',
+        item: `${SITE}/research-gap-atlas`,
+      },
+    ],
+  },
+];
+
+export default function ResearchGapAtlasPage() {
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(structuredData),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <GapAtlasClient />
     </>

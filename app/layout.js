@@ -1,208 +1,110 @@
 import './globals.css';
 
-import Script from 'next/script';
+import { Source_Code_Pro, Source_Sans_3, Source_Serif_4 } from 'next/font/google';
+import SiteHeader from './_components/SiteHeader';
+import SiteFooter from './_components/SiteFooter';
+import Analytics from './_components/Analytics';
+
+const serif = Source_Serif_4({ subsets: ['latin'], display: 'swap', variable: '--font-serif' });
+const sans = Source_Sans_3({ subsets: ['latin'], display: 'swap', variable: '--font-sans' });
+const mono = Source_Code_Pro({ subsets: ['latin'], display: 'swap', variable: '--font-mono' });
+
+const SITE = 'https://www.cancer-insight.com';
 
 export const metadata = {
-  metadataBase: new URL('https://www.cancer-insight.com'),
-
+  metadataBase: new URL(SITE),
   applicationName: 'Cancer Insight',
-
   title: {
-    default: 'Cancer Insight | Cancer Research Explorer',
+    default: 'Cancer Insight — explore cancer research with its evidence trail',
     template: '%s | Cancer Insight',
   },
-
   description:
-    'Cancer Insight is an independent educational cancer research explorer at cancer-insight.com for discovering cancer research papers, PubMed abstracts, cancer treatment studies, oncology research, treatment evidence, research analytics, free full-text studies, and scientific cancer images.',
-
+    'Cancer Insight is an independent, educational explorer of cancer research. Search PubMed-indexed papers, compare the literature on treatments and map research coverage — with every count linked to the PubMed query that reproduces it.',
   keywords: [
-    'Cancer Insight',
-    'cancer insight',
-    'cancer-insight.com',
-    'Cancer Research Explorer',
     'cancer research',
-    'cancer research papers',
-    'PubMed cancer research',
-    'cancer treatment research',
-    'cancer treatments',
-    'cancer studies',
-    'oncology research',
-    'medical research',
     'PubMed',
-    'PubMed Central',
-    'cancer research database',
-    'cancer research articles',
-    'cancer research studies',
-    'cancer treatment studies',
-    'oncology studies',
-    'cancer evidence',
-    'cancer treatment evidence',
-    'cancer research analytics',
-    'cancer research explorer',
-    'cancer scientific papers',
-    'cancer medical research',
-    'free cancer research papers',
-    'open access cancer research',
-    'cancer research resources',
-    'cancer research gaps',
-    'research gap atlas',
+    'cancer research papers',
+    'cancer treatment research',
+    'research gap',
+    'evidence',
+    'oncology literature',
   ],
-
-  authors: [
-    {
-      name: 'Cancer Insight',
-    },
-  ],
-
+  authors: [{ name: 'Cancer Insight' }],
   creator: 'Cancer Insight',
   publisher: 'Cancer Insight',
-
   category: 'education',
-
-  icons: {
-    icon: '/icon.png',
-    shortcut: '/icon.png',
-    apple: '/icon.png',
-  },
-
-  alternates: {
-    canonical: '/',
-  },
-
   robots: {
     index: true,
     follow: true,
-
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-      'max-video-preview': -1,
-    },
+    googleBot: { index: true, follow: true, 'max-image-preview': 'large', 'max-snippet': -1 },
   },
-
   openGraph: {
     type: 'website',
-    url: 'https://www.cancer-insight.com',
     siteName: 'Cancer Insight',
-    title: 'Cancer Insight | Cancer Research Explorer',
-
+    url: SITE,
+    title: 'Cancer Insight — explore cancer research with its evidence trail',
     description:
-      'Cancer Insight is an independent educational cancer research explorer for discovering cancer research papers, PubMed abstracts, treatment studies, oncology research, research analytics, and scientific cancer resources.',
+      'Search cancer research papers, compare treatment literature and map research coverage. Every number links to the PubMed query behind it.',
+    locale: 'en_US',
   },
-
   twitter: {
     card: 'summary_large_image',
-    title: 'Cancer Insight | Cancer Research Explorer',
-
+    title: 'Cancer Insight — explore cancer research with its evidence trail',
     description:
-      'Explore cancer research papers, PubMed abstracts, cancer treatment studies, oncology research, treatment evidence, research analytics, and scientific cancer resources with Cancer Insight.',
-  },
-
-  other: {
-    'theme-color': '#17364D',
+      'Search cancer research papers, compare treatment literature and map research coverage. Every number links to the PubMed query behind it.',
   },
 };
 
-export default function RootLayout({ children }) {
-  const websiteStructuredData = {
+export const viewport = {
+  themeColor: '#12304A',
+  width: 'device-width',
+  initialScale: 1,
+};
+
+const structuredData = [
+  {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    '@id': 'https://www.cancer-insight.com/#website',
-
+    '@id': `${SITE}/#website`,
     name: 'Cancer Insight',
-
-    alternateName: [
-      'Cancer Insight Research Explorer',
-      'Cancer Insight Cancer Research Explorer',
-    ],
-
-    url: 'https://www.cancer-insight.com/',
-
-    description:
-      'Cancer Insight is an independent educational cancer research explorer for discovering and examining scientific cancer research, PubMed literature, treatment evidence, research analytics, and scientific cancer resources.',
-
+    url: `${SITE}/`,
     inLanguage: 'en',
-
-    isAccessibleForFree: true,
-
-    publisher: {
-      '@id': 'https://www.cancer-insight.com/#organization',
+    description:
+      'An independent, educational explorer of cancer research literature with transparent, reproducible PubMed queries.',
+    publisher: { '@id': `${SITE}/#organization` },
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: { '@type': 'EntryPoint', urlTemplate: `${SITE}/explore?cancer={search_term_string}` },
+      'query-input': 'required name=search_term_string',
     },
-  };
-
-  const organizationStructuredData = {
+  },
+  {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': 'https://www.cancer-insight.com/#organization',
-
+    '@id': `${SITE}/#organization`,
     name: 'Cancer Insight',
-
-    alternateName: 'Cancer Insight Research Explorer',
-
-    url: 'https://www.cancer-insight.com/',
-
-    logo: {
-      '@type': 'ImageObject',
-      url: 'https://www.cancer-insight.com/icon.png',
-    },
-
-    description:
-      'Cancer Insight is an independent educational cancer research explorer that helps users discover scientific cancer research papers, PubMed abstracts, treatment studies, research analytics, free full-text research, study information, research gap signals, and scientific cancer resources.',
-
+    url: `${SITE}/`,
+    logo: { '@type': 'ImageObject', url: `${SITE}/icon.png` },
     email: 'cancerinsight.contact@gmail.com',
+    description:
+      'Independent educational project that helps people explore cancer research while keeping the original evidence visible.',
+  },
+];
 
-    contactPoint: {
-      '@type': 'ContactPoint',
-      email: 'cancerinsight.contact@gmail.com',
-      contactType: 'website support',
-      availableLanguage: ['English'],
-    },
-  };
-
+export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${mono.variable}`}>
       <body>
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(websiteStructuredData),
-          }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify(organizationStructuredData),
-          }}
-        />
-
-        {children}
-
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=G-Y2XM3DY8ZT"
-          strategy="afterInteractive"
-        />
-
-        <Script
-          id="google-analytics"
-          strategy="afterInteractive"
-        >
-          {`
-            window.dataLayer = window.dataLayer || [];
-
-            function gtag() {
-              dataLayer.push(arguments);
-            }
-
-            window.gtag = gtag;
-
-            gtag('js', new Date());
-
-            gtag('config', 'G-Y2XM3DY8ZT');
-          `}
-        </Script>
+        <SiteHeader />
+        <main id="main" className="siteMain" tabIndex={-1}>
+          {children}
+        </main>
+        <SiteFooter />
+        <Analytics />
       </body>
     </html>
   );
