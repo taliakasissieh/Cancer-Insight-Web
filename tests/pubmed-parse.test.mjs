@@ -55,3 +55,13 @@ test('text helpers', () => {
   assert.equal(decodeEntities('A &amp; B &#x2265; 3 &lt;x&gt;'), 'A & B ≥ 3 <x>');
   assert.equal(cleanText('  survival ( OS ) was 12 % .  '), 'survival (OS) was 12%.');
 });
+
+test('"[Not Available]." titles fall back to the original-language title', () => {
+  const doc = (article) => `<?xml version="1.0"?><PubmedArticleSet><PubmedArticle><MedlineCitation><PMID Version="1">111</PMID><Article><Journal><Title>Bulletin du cancer</Title></Journal>${article}</Article></MedlineCitation></PubmedArticle></PubmedArticleSet>`;
+  const withVernacular = parsePubmedXml(
+    doc('<ArticleTitle>[Not Available].</ArticleTitle><VernacularTitle>Cancer du sein et actualités thérapeutiques.</VernacularTitle>')
+  );
+  assert.equal(withVernacular['111'].pubmed_title, 'Cancer du sein et actualités thérapeutiques.');
+  const without = parsePubmedXml(doc('<ArticleTitle>[Not Available].</ArticleTitle>'));
+  assert.equal(without['111'].pubmed_title, '[Not Available].');
+});

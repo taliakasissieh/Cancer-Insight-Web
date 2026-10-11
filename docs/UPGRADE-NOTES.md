@@ -142,3 +142,22 @@ Also changed:
 - [ ] `/cancers/pancreatic` shows all five cards
 - [ ] `/ar` and `/ar/explore?cancer=سرطان الثدي` read right to left; the English/العربية link keeps the search
 - [ ] Google Search Console: resubmit `sitemap.xml`
+
+## Fixes after launch — 11 October 2026 (PR #4)
+
+Found in the screen recordings of the live site after PR #3 was merged:
+
+- **A photodynamic-therapy paper was tagged as radiation therapy** by the research feed (breast
+  cancer, Treatments → Radiation therapy). Radiation tags are now kept only when the title,
+  abstract, MeSH headings or keywords mention radiotherapy, irradiation, a dose in Gy or a named
+  radiation technique — the same kind of check already used for stem cell transplant tags.
+  Rules: `lib/tags.js`; tests: `tests/tags.test.mjs`.
+- **"[Not Available]." shown as a paper title.** PubMed uses this placeholder when a record has
+  no English title. The original-language title is shown instead when PubMed has one; otherwise
+  the paper reads "No title in PubMed".
+- **"1 of the recent records carry this treatment tag"** now reads "carries".
+- **Wide tables on phones** (research vs burden, treatment comparison) keep the cancer or measure
+  name in view while you scroll sideways.
+- **CSV files downloaded from Arabic pages** (burden table, trials without posted results) now
+  use English headings like every other export.
+- An Arabic column heading was reworded so "PubMed" and the years read in the right order.
