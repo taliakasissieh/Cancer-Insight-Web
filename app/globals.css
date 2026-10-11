@@ -217,6 +217,14 @@ details > summary {
 .num {
   font-variant-numeric: tabular-nums lining-nums;
 }
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal-strong);
+}
 .mono {
   font-family: var(--font-mono-stack);
   font-size: 0.82rem;
@@ -379,6 +387,116 @@ details > summary {
   background: var(--paper);
   font-weight: 600;
   cursor: pointer;
+}
+
+/* ---------- research vs burden ---------- */
+
+/* Numbers and axis text in charts read left to right in both languages. */
+.forest text:not(.fpLabel),
+.burdenScatter text:not(.scatterLabel),
+.yearChart text {
+  direction: ltr;
+  unicode-bidi: embed; /* SVG applies direction only with embed or bidi-override */
+}
+
+.burdenControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+.burdenControls .modeSwitch {
+  margin: 0;
+}
+.burdenMeasure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+.modeLabel {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.burdenSummary {
+  font-family: var(--font-serif-stack);
+  font-size: 1.15rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.burdenScatter .scatterLabel {
+  font-size: 12px;
+  fill: var(--ink-2);
+}
+@media (max-width: 640px) {
+  .scatterPanel {
+    display: none;
+  }
+}
+
+/* ---------- trials ---------- */
+
+.resultsPanel {
+  border-inline-start: 4px solid var(--ochre);
+}
+.bigStat {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0 0 8px;
+}
+.bigStatValue {
+  font-family: var(--font-serif-stack);
+  font-size: 2.6rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ochre-strong);
+  font-variant-numeric: tabular-nums;
+}
+.bigStatLabel {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.cautionList {
+  margin: 10px 0 0;
+  padding-inline-start: 1.1em;
+  color: var(--ink-2);
+}
+.cautionList li + li {
+  margin-top: 4px;
+}
+.countryFind {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+.countryFind select {
+  width: 100%;
+  max-width: 360px;
+}
+.trialList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.trialList li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.trialList li:last-child {
+  border-bottom: 0;
+}
+.trialList a {
+  font-weight: 600;
+  display: block;
+}
+.trialMeta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.88rem;
+  color: var(--muted);
 }
 
 /* ---------- footer ---------- */
@@ -1605,7 +1723,7 @@ details > summary {
   color: var(--ink-2);
 }
 .modeSwitch button + button {
-  border-left: 1px solid var(--control);
+  border-inline-start: 1px solid var(--control);
 }
 .modeSwitch button[aria-pressed='true'] {
   background: var(--ink);
@@ -1653,6 +1771,7 @@ details > summary {
   white-space: normal;
 }
 .tableWrap {
+  position: relative; /* keeps visually hidden text inside the scroll box */
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;

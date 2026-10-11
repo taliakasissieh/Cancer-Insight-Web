@@ -10,6 +10,7 @@ import Overview from './Overview';
 import Papers from './Papers';
 import Treatments from './Treatments';
 import Images from './Images';
+import Trials from './Trials';
 import Saved from './Saved';
 import StartScreen from './StartScreen';
 import { cachedPost } from '../../../lib/client/api';
@@ -22,10 +23,13 @@ const VIEWS = [
   { id: 'overview', label: 'Overview' },
   { id: 'papers', label: 'Papers' },
   { id: 'treatments', label: 'Treatments' },
+  { id: 'trials', label: 'Trials' },
   { id: 'images', label: 'Images' },
   { id: 'saved', label: 'Saved' },
 ];
 const VIEW_IDS = VIEWS.map(v => v.id);
+/* Views that do not depend on the research-feed search finishing. */
+const INDEPENDENT_VIEWS = ['saved', 'trials'];
 
 function hrefFor({ cancer, view, treatment }) {
   const params = new URLSearchParams();
@@ -214,8 +218,10 @@ export default function Explorer({
       </nav>
 
       <div className="viewBody">
-        {view !== 'saved' && search.status === 'loading' && <LoadingState label={label} />}
-        {view !== 'saved' && search.status === 'error' && (
+        {!INDEPENDENT_VIEWS.includes(view) && search.status === 'loading' && (
+          <LoadingState label={label} />
+        )}
+        {!INDEPENDENT_VIEWS.includes(view) && search.status === 'error' && (
           <ErrorState message={search.error} onRetry={() => setRetryKey(k => k + 1)} />
         )}
         {search.status === 'ok' && view === 'overview' && (
@@ -235,6 +241,7 @@ export default function Explorer({
         {search.status === 'ok' && view === 'images' && (
           <Images cancer={route.cancer} label={label} />
         )}
+        {view === 'trials' && route.cancer && <Trials cancer={route.cancer} label={label} />}
         {view === 'saved' && <Saved saved={saved} />}
       </div>
     </>

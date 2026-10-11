@@ -7,7 +7,7 @@ export const metadata = {
   alternates: { canonical: '/explore' },
 };
 
-const VIEWS = ['overview', 'papers', 'treatments', 'images', 'saved'];
+const VIEWS = ['overview', 'papers', 'treatments', 'trials', 'images', 'saved'];
 
 export default async function ExplorePage({ searchParams }) {
   const sp = (await searchParams) || {};

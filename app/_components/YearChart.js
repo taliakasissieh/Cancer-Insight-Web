@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { fmtInt } from '../../lib/format';
+import { useI18n } from './I18n';
 
 function abbreviate(n) {
   if (n == null) return '';
@@ -10,8 +10,12 @@ function abbreviate(n) {
   return String(n);
 }
 
-/** PubMed records per publication year; each bar opens its year query. */
-export default function YearChart({ years = [], label = 'PubMed records per publication year' }) {
+/**
+ * Counts per year. Bars with a `url` open the search behind them (PubMed year queries);
+ * bars without one are plain. `unit` names what is counted (records, trials…).
+ */
+export default function YearChart({ years = [], label, unit, linkSite = 'PubMed' }) {
+  const { t, num } = useI18n();
   const ref = useRef(null);
   const [W, setW] = useState(640);
   useEffect(() => {
@@ -25,7 +29,9 @@ export default function YearChart({ years = [], label = 'PubMed records per publ
     return () => ro.disconnect();
   }, []);
   const data = years.filter(y => y.count != null);
-  if (!data.length) return <p className="muted small">Yearly counts are unavailable right now.</p>;
+  if (!data.length) return <p className="muted small">{t('chart.yearsUnavailable')}</p>;
+  const chartLabel = label || t('chart.yearsLabel');
+  const unitText = unit || t('chart.records');
   const H = W < 420 ? 180 : 210;
   const shortYears = W / data.length < 40;
   const padB = 26;
@@ -35,8 +41,14 @@ export default function YearChart({ years = [], label = 'PubMed records per publ
   const bw = Math.min(40, slot * 0.64);
 
   return (
-    <figure className="yearChart" style={{ margin: 0 }} ref={ref}>
-      <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="group" aria-label={label}>
+    <figure className="yearChart" style={{ margin: 0 }} ref={ref} dir="ltr">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        width={W}
+        height={H}
+        role="group"
+        aria-label={chartLabel}
+      >
         <defs>
           <pattern
             id="ycHatch"
@@ -54,15 +66,21 @@ export default function YearChart({ years = [], label = 'PubMed records per publ
           const h = ((H - padB - padT) * d.count) / max;
           const cx = slot * i + slot / 2;
           const y = H - padB - h;
-          const desc = `${d.year}${d.partial ? ' (year in progress)' : ''}: ${fmtInt(d.count)} records. Opens the PubMed search.`;
+          const desc = t('chart.yearDesc', {
+            year: String(d.year),
+            partial: d.partial ? t('chart.inProgress') : '',
+            count: num(d.count),
+            unit: unitText,
+            open: d.url ? t('chart.opens', { site: linkSite }) : '',
+          })
+            .replace(/\s+/g, ' ')
+            .trim();
+          const Wrap = d.url ? 'a' : 'g';
+          const wrapProps = d.url
+            ? { href: d.url, target: '_blank', rel: 'noopener noreferrer', 'aria-label': desc }
+            : { role: 'img', 'aria-label': desc };
           return (
-            <a
-              key={d.year}
-              href={d.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label={desc}
-            >
+            <Wrap key={d.year} {...wrapProps}>
               <title>{desc}</title>
               <rect
                 className={d.partial ? 'ycPartial' : 'ycBar'}
@@ -78,7 +96,7 @@ export default function YearChart({ years = [], label = 'PubMed records per publ
               <text className="ycAxis" x={cx} y={H - 8} textAnchor="middle">
                 {shortYears ? `’${String(d.year).slice(-2)}` : d.year}
               </text>
-            </a>
+            </Wrap>
           );
         })}
       </svg>
