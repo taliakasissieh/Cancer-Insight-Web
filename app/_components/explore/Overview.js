@@ -6,8 +6,11 @@ import EvidenceMix from '../EvidenceMix';
 import ShareList from '../ShareList';
 import YearChart from '../YearChart';
 import Icon from '../Icon';
-import { fmtDateTime, fmtInt, fmtShare } from '../../../lib/format';
+import { useI18n } from '../I18n';
+import { fmtDateTime, fmtShare } from '../../../lib/format';
 import { resolveTreatment } from '../../../lib/queries';
+import { localizeError } from '../../../lib/i18n/labels.js';
+import { richText } from '../../../lib/i18n/rich.js';
 
 const DESIGN_ORDER = [
   'clinical-trial',
@@ -21,41 +24,36 @@ const DESIGN_ORDER = [
 ];
 
 function FeedStatus({ provenance }) {
+  const { t } = useI18n();
   const { feed, pubmed } = provenance;
+  const feedLink = (
+    <a href={feed.url} target="_blank" rel="noopener noreferrer" lang="en" dir="ltr">
+      {feed.name}
+    </a>
+  );
   if (feed.status === 'ok' && !pubmed.used) {
-    return (
-      <>
-        {feed.kept} of the {feed.candidates} newest records from the{' '}
-        <a href={feed.url} target="_blank" rel="noopener noreferrer">
-          {feed.name}
-        </a>{' '}
-        passed Cancer Insight’s relevance check.
-      </>
-    );
+    return richText(t('overview.feedOk', { kept: feed.kept, candidates: feed.candidates }), {
+      feed: feedLink,
+    });
   }
   if (feed.status === 'ok' && pubmed.used) {
-    return (
-      <>
-        {feed.kept} relevant records came from the {feed.name}; {pubmed.kept} more are the newest
-        PubMed records for this query.
-      </>
-    );
+    return richText(t('overview.feedPlusPubmed', { kept: feed.kept, pubmed: pubmed.kept }), {
+      feed: feedLink,
+    });
   }
-  const reason =
-    {
-      'not-covered': 'The research feed does not cover this cancer, so',
-      unavailable: 'The research feed could not be reached, so',
-      'not-configured': 'The research feed is not configured on this server, so',
-      empty: 'The research feed returned no records, so',
-    }[feed.status] || 'So';
-  return <>{reason} these are the newest PubMed records matching the query above.</>;
+  const reasonKey = `overview.feedReason.${feed.status}`;
+  const reason = t(reasonKey) === reasonKey ? t('overview.feedReason.other') : t(reasonKey);
+  return t('overview.feedFallback', { reason });
 }
 
 export default function Overview({ data, footprint, onNavigate }) {
+  const { t, locale, path } = useI18n();
   const fp = footprint.data;
   const p = data.profile;
   const designs = fp
-    ? DESIGN_ORDER.map(id => fp.designs.find(d => d.id === id)).filter(Boolean)
+    ? DESIGN_ORDER.map(id => fp.designs.find(d => d.id === id))
+        .filter(Boolean)
+        .map(d => ({ ...d, label: t(`measures.label.${d.id}`) }))
     : [];
   const years =
     p.earliestYear && p.latestYear
@@ -63,46 +61,57 @@ export default function Overview({ data, footprint, onNavigate }) {
         ? `${p.latestYear}`
         : `${p.earliestYear}–${p.latestYear}`
       : '—';
+  const currentYear = fp?.years?.at(-1)?.year;
+  const tagName = tag => {
+    const id = resolveTreatment(tag)?.id || tag;
+    const v = t(`treatments.${id}`);
+    return v === `treatments.${id}` ? resolveTreatment(tag)?.label || tag : v;
+  };
+  const q = encodeURIComponent(data.cancer.input);
 
   return (
     <div className="overviewGrid">
       <div className="stack">
         <section className="panel" aria-labelledby="footprint-h">
-          <h2 id="footprint-h">The whole PubMed literature</h2>
+          <h2 id="footprint-h">{t('overview.literatureTitle')}</h2>
           {footprint.status === 'loading' && (
             <>
               <p className="loadingLine" aria-live="polite">
                 <span className="spinner" aria-hidden="true" />
-                Counting PubMed records year by year…
+                {t('overview.counting')}
               </p>
               <div className="skeleton" style={{ height: 200, marginTop: 12 }} />
             </>
           )}
           {footprint.status === 'error' && (
             <p className="notice noticeWarn">
-              PubMed counts are unavailable right now: {footprint.error}
+              {t('overview.countsUnavailable', {
+                error: localizeError(t, locale, footprint.error),
+              })}
             </p>
           )}
           {fp && (
             <>
               <p className="footprintLead">
-                <CountLink count={fp.total.count} url={fp.total.url} /> records match this cancer in
-                PubMed.
+                {richText(t('overview.lead'), {
+                  count: <CountLink count={fp.total.count} url={fp.total.url} />,
+                })}
               </p>
               <p className="panelNote">
-                Records per publication year, {fp.years[0].year}–{fp.years.at(-1).year}. Each bar
-                opens its PubMed search. The hatched bar is the current, incomplete year.
+                {t('overview.yearsNote', {
+                  from: String(fp.years[0].year),
+                  to: String(fp.years.at(-1).year),
+                })}
               </p>
               <YearChart years={fp.years} />
               <details className="small" style={{ marginTop: 8 }}>
-                <summary>What these counts do and don’t mean</summary>
-                <ul style={{ margin: '8px 0 0', paddingLeft: '1.1em' }}>
-                  {fp.notes.map(n => (
-                    <li key={n}>{n}</li>
-                  ))}
-                  <li>
-                    More records on a topic does not mean better evidence or better treatments.
-                  </li>
+                <summary>{t('overview.meaning')}</summary>
+                <ul className="cautionList">
+                  <li>{t('overview.note1')}</li>
+                  <li>{t('overview.note2')}</li>
+                  <li>{t('overview.note3', { year: String(currentYear ?? '') })}</li>
+                  <li>{t('overview.note4')}</li>
+                  <li>{t('overview.note5')}</li>
                 </ul>
               </details>
             </>
@@ -111,17 +120,24 @@ export default function Overview({ data, footprint, onNavigate }) {
 
         {fp && (
           <section className="panel" aria-labelledby="designs-h">
-            <h2 id="designs-h">Study designs across PubMed</h2>
-            <p className="panelNote">
-              Records indexed with each publication type, as a share of all {fmtInt(fp.total.count)}
-              . Types overlap (an RCT is also a clinical trial; a systematic review is also a
-              review) and many records carry no specific type.
-            </p>
+            <h2 id="designs-h">{t('overview.designsTitle')}</h2>
+            <p className="panelNote">{t('overview.designsNote', { n: fp.total.count })}</p>
             <ShareList rows={designs} />
             {fp.freeFullText?.count != null && (
               <p className="small" style={{ margin: '16px 0 0' }}>
-                <CountLink count={fp.freeFullText.count} url={fp.freeFullText.url} /> records (
-                {fmtShare(fp.freeFullText.share)}) link to a free full text.
+                {richText(
+                  t('overview.freeText', {
+                    share: fmtShare(fp.freeFullText.share, undefined, locale),
+                  }),
+                  { count: <CountLink count={fp.freeFullText.count} url={fp.freeFullText.url} /> }
+                )}
+              </p>
+            )}
+            {fp.retracted?.count > 0 && (
+              <p className="small" style={{ margin: '8px 0 0' }}>
+                {richText(t('overview.retractedLine'), {
+                  count: <CountLink count={fp.retracted.count} url={fp.retracted.url} />,
+                })}
               </p>
             )}
           </section>
@@ -130,29 +146,25 @@ export default function Overview({ data, footprint, onNavigate }) {
 
       <div className="stack">
         <section className="panel" aria-labelledby="feed-h">
-          <h2 id="feed-h">Recent research</h2>
+          <h2 id="feed-h">{t('overview.recentTitle')}</h2>
           <p className="panelNote">
-            <FeedStatus provenance={data.provenance} /> Retrieved{' '}
-            {fmtDateTime(data.provenance.retrievedAt)}.
+            <FeedStatus provenance={data.provenance} />{' '}
+            {t('overview.retrieved', { date: fmtDateTime(data.provenance.retrievedAt, locale) })}
           </p>
-          <h3 className="groupHeading">What kinds of records they are</h3>
+          <h3 className="groupHeading">{t('overview.kinds')}</h3>
           <EvidenceMix byFamily={p.byFamily} total={p.total} />
           <dl className="factList" style={{ marginTop: 16 }}>
-            <dt>Published</dt>
+            <dt>{t('overview.published')}</dt>
             <dd className="num">{years}</dd>
-            <dt>With abstract</dt>
-            <dd className="num">
-              {p.withAbstract} of {p.total}
-            </dd>
-            <dt>Free full text</dt>
-            <dd className="num">
-              {p.withPmc} of {p.total}
-            </dd>
-            <dt>Journals</dt>
+            <dt>{t('overview.withAbstract')}</dt>
+            <dd className="num">{t('common.of', { a: p.withAbstract, b: p.total })}</dd>
+            <dt>{t('overview.freeFullText')}</dt>
+            <dd className="num">{t('common.of', { a: p.withPmc, b: p.total })}</dd>
+            <dt>{t('overview.journals')}</dt>
             <dd className="num">{p.journalCount}</dd>
             {p.retracted > 0 && (
               <>
-                <dt>Retracted</dt>
+                <dt>{t('overview.retracted')}</dt>
                 <dd className="num" style={{ color: 'var(--rose)', fontWeight: 700 }}>
                   {p.retracted}
                 </dd>
@@ -162,26 +174,26 @@ export default function Overview({ data, footprint, onNavigate }) {
           {data.treatments.length > 0 && (
             <>
               <h3 className="groupHeading" style={{ marginTop: 18 }}>
-                Treatment tags in these records
+                {t('overview.tagsTitle')}
               </h3>
               <div className="treatmentPicker">
-                {data.treatments.map(([t, n]) => (
+                {data.treatments.map(([tag, n]) => (
                   <a
-                    key={t}
+                    key={tag}
                     className="chip"
-                    href={`/explore?cancer=${encodeURIComponent(data.cancer.input)}&view=treatments&treatment=${encodeURIComponent(t)}`}
+                    href={path(`/explore?cancer=${q}&view=treatments&treatment=${encodeURIComponent(tag)}`)}
                     onClick={e => {
                       e.preventDefault();
-                      onNavigate({ view: 'treatments', treatment: t });
+                      onNavigate({ view: 'treatments', treatment: tag });
                     }}
                   >
-                    {resolveTreatment(t)?.label || t}
+                    {tagName(tag)}
                     <span className="chipCount">{n}</span>
                   </a>
                 ))}
               </div>
               <p className="small muted" style={{ margin: 0 }}>
-                Tags come from the research feed and describe these {p.total} records only.
+                {t('overview.tagsNote', { n: p.total })}
               </p>
             </>
           )}
@@ -191,40 +203,47 @@ export default function Overview({ data, footprint, onNavigate }) {
               className="btn btnPrimary"
               onClick={() => onNavigate({ view: 'papers' })}
             >
-              Read the papers
+              {t('overview.readPapers')}
             </button>
           </div>
         </section>
 
         <section aria-labelledby="next-h">
           <h2 id="next-h" className="visuallyHidden">
-            Go further
+            {t('overview.goFurther')}
           </h2>
           <div className="nextSteps">
-            <Link
-              className="nextStep"
-              href={`/research-gap-atlas?cancer=${encodeURIComponent(data.cancer.input)}`}
-            >
-              <strong>Map research coverage</strong>
-              <span>
-                See which designs and themes are less represented than across oncology overall.
-              </span>
+            <Link className="nextStep" href={path(`/research-gap-atlas?cancer=${q}`)}>
+              <strong>{t('overview.nextAtlas')}</strong>
+              <span>{t('overview.nextAtlasNote')}</span>
             </Link>
             <button
               type="button"
-              className="nextStep"
-              style={{ textAlign: 'left', width: '100%', cursor: 'pointer', font: 'inherit' }}
+              className="nextStep nextStepButton"
               onClick={() => onNavigate({ view: 'treatments' })}
             >
-              <strong>Compare treatment literature</strong>
-              <span>How many records, trials and reviews exist for each treatment category.</span>
+              <strong>{t('overview.nextTreatments')}</strong>
+              <span>{t('overview.nextTreatmentsNote')}</span>
             </button>
+            <button
+              type="button"
+              className="nextStep nextStepButton"
+              onClick={() => onNavigate({ view: 'trials' })}
+            >
+              <strong>{t('overview.nextTrials')}</strong>
+              <span>{t('overview.nextTrialsNote')}</span>
+            </button>
+            {data.cancer.known && data.cancer.id && (
+              <Link className="nextStep" href={path(`/cancers/${data.cancer.id}`)}>
+                <strong>{t('overview.nextProfile')}</strong>
+                <span>{t('overview.nextProfileNote')}</span>
+              </Link>
+            )}
           </div>
         </section>
 
         <p className="notice small">
-          <Icon name="info" size={16} /> Counts describe published research. They are not a measure
-          of how well a treatment works and are not medical advice.
+          <Icon name="info" size={16} /> {t('overview.disclaimer')}
         </p>
       </div>
     </div>

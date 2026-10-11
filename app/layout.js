@@ -1,8 +1,6 @@
 import './globals.css';
 
 import { Source_Code_Pro, Source_Sans_3, Source_Serif_4 } from 'next/font/google';
-import SiteHeader from './_components/SiteHeader';
-import SiteFooter from './_components/SiteFooter';
 import Analytics from './_components/Analytics';
 
 const serif = Source_Serif_4({ subsets: ['latin'], display: 'swap', variable: '--font-serif' });
@@ -46,6 +44,7 @@ export const metadata = {
     description:
       'Search cancer research papers, compare treatment literature and map research coverage. Every number links to the PubMed query behind it.',
     locale: 'en_US',
+    alternateLocale: ['ar_AR'],
   },
   twitter: {
     card: 'summary_large_image',
@@ -99,11 +98,7 @@ export default function RootLayout({ children }) {
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
-        <SiteHeader />
-        <main id="main" className="siteMain" tabIndex={-1}>
-          {children}
-        </main>
-        <SiteFooter />
+        {children}
         <Analytics />
       </body>
     </html>

@@ -182,7 +182,7 @@ details > summary {
 
 .skipLink {
   position: absolute;
-  left: 12px;
+  inset-inline-start: 12px;
   top: -60px;
   z-index: 100;
   background: var(--ink);
@@ -217,10 +217,47 @@ details > summary {
 .num {
   font-variant-numeric: tabular-nums lining-nums;
 }
+.eyebrow {
+  margin: 0 0 8px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--teal-strong);
+}
 .mono {
   font-family: var(--font-mono-stack);
   font-size: 0.82rem;
   line-height: 1.55;
+}
+
+/* ---------- languages ---------- */
+
+/* The language wrapper carries lang/dir without adding a box (body is a flex column). */
+.localeRoot {
+  display: contents;
+}
+.localeAr {
+  --font-sans-stack:
+    var(--font-arabic, 'IBM Plex Sans Arabic'), var(--font-sans, 'Source Sans 3'), 'Segoe UI',
+    system-ui, sans-serif;
+  --font-serif-stack:
+    var(--font-arabic-serif, 'Noto Naskh Arabic'), var(--font-arabic, 'IBM Plex Sans Arabic'),
+    var(--font-serif, 'Source Serif 4'), Georgia, serif;
+  font-family: var(--font-sans-stack);
+}
+/* Letter-spacing breaks the joining of Arabic letters. */
+.localeAr * {
+  letter-spacing: 0 !important;
+}
+.localeAr :is(h1, h2, h3, h4) {
+  line-height: 1.45;
+}
+/* Latin data inside Arabic pages (paper titles, queries, numbers) keeps its own direction. */
+.ltrData {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: start;
 }
 
 /* ---------- header ---------- */
@@ -264,8 +301,8 @@ details > summary {
 .siteNav {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-left: auto;
+  gap: 14px;
+  margin-inline-start: auto;
 }
 .siteNav ul {
   display: flex;
@@ -310,6 +347,23 @@ details > summary {
   color: var(--teal-strong);
 }
 
+.langLink {
+  padding: 7px 4px;
+  color: var(--ink-2);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.langLink:hover {
+  color: var(--teal-strong);
+  text-decoration: underline;
+}
+.langLink:lang(ar) {
+  font-family: var(--font-arabic, 'IBM Plex Sans Arabic'), 'Noto Sans Arabic', 'Segoe UI', sans-serif;
+  font-size: 1rem;
+}
+
 .countBadge {
   min-width: 20px;
   padding: 0 6px;
@@ -324,7 +378,7 @@ details > summary {
 
 .menuButton {
   display: none;
-  margin-left: auto;
+  margin-inline-start: auto;
   align-items: center;
   gap: 6px;
   padding: 8px 12px;
@@ -333,6 +387,403 @@ details > summary {
   background: var(--paper);
   font-weight: 600;
   cursor: pointer;
+}
+
+/* ---------- research vs burden ---------- */
+
+/* Numbers and axis text in charts read left to right in both languages. */
+.forest text:not(.fpLabel),
+.burdenScatter text:not(.scatterLabel),
+.yearChart text {
+  direction: ltr;
+  unicode-bidi: embed; /* SVG applies direction only with embed or bidi-override */
+}
+
+.burdenControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+.burdenControls .modeSwitch {
+  margin: 0;
+}
+.burdenMeasure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+}
+.modeLabel {
+  font-weight: 600;
+  color: var(--ink-2);
+}
+.burdenSummary {
+  font-family: var(--font-serif-stack);
+  font-size: 1.15rem;
+  line-height: 1.5;
+  margin: 0;
+}
+.burdenScatter .scatterLabel {
+  font-size: 12px;
+  fill: var(--ink-2);
+}
+@media (max-width: 640px) {
+  .scatterPanel {
+    display: none;
+  }
+}
+
+/* ---------- all-cancer map ---------- */
+
+.mapControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+.mapSort select {
+  min-width: 240px;
+}
+.progressBar {
+  height: 6px;
+  margin-top: 8px;
+  border-radius: 3px;
+  background: var(--rule);
+  overflow: hidden;
+}
+.progressBar span {
+  display: block;
+  height: 100%;
+  background: var(--teal-bright);
+  transition: width 0.3s ease;
+}
+.mapLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.mapLegendTitle {
+  font-weight: 600;
+}
+.mapLegend ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mapLegend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mapLegend i {
+  width: 18px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.mapLegend .keyContext,
+.mapCell.isContext {
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1.5px var(--rule-strong);
+}
+.mapLegend .keyInsufficient,
+.mapCell.isInsufficient {
+  background: repeating-linear-gradient(
+    45deg,
+    #f3f6f8,
+    #f3f6f8 4px,
+    #e2e9ee 4px,
+    #e2e9ee 6px
+  );
+}
+.mapWrap {
+  border: 1px solid var(--rule);
+  border-radius: var(--r-m);
+  background: var(--paper);
+}
+.mapTable {
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-size: 0.84rem;
+  min-width: 100%;
+}
+.mapTable th,
+.mapTable td {
+  padding: 0;
+}
+.mapTable thead th {
+  font-weight: 600;
+  color: var(--muted);
+  vertical-align: bottom;
+  text-align: center;
+}
+.mapGroup {
+  padding: 8px 4px 4px !important;
+  border-bottom: 2px solid var(--ink);
+  font-size: 0.78rem;
+  color: var(--ink-2) !important;
+}
+.mapMeasure {
+  min-width: 54px;
+  max-width: 70px;
+}
+.mapSortBtn {
+  width: 100%;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.76rem;
+  line-height: 1.2;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.mapSortBtn:hover {
+  background: var(--sky);
+}
+.mapSortBtn.isActive {
+  background: var(--ink);
+  color: #fff;
+}
+.mapCancerCol {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  min-width: 150px;
+  padding: 0 10px !important;
+  background: var(--paper);
+  text-align: start !important;
+  font-weight: 600;
+}
+.mapTable tbody .mapCancerCol a {
+  color: var(--ink);
+  text-decoration: none;
+}
+.mapTable tbody .mapCancerCol a:hover {
+  color: var(--teal-strong);
+  text-decoration: underline;
+}
+.mapRecordsCol {
+  min-width: 72px;
+  padding: 0 8px !important;
+  text-align: end !important;
+}
+.mapCell {
+  height: 34px;
+  border-radius: 4px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.mapCell a {
+  display: block;
+  padding: 8px 2px;
+  color: var(--ink);
+  text-decoration: none;
+  direction: ltr;
+}
+.mapCell a:hover,
+.mapCell a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+.mapCell.isContext a,
+.mapCell.isInsufficient a {
+  color: var(--muted);
+}
+.mapCell.isPending {
+  background: var(--sky);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.mapPending {
+  display: inline-block;
+  width: 40px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--sky);
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+.lowestList {
+  margin: 0;
+  padding-inline-start: 1.3em;
+}
+.lowestList li + li {
+  margin-top: 6px;
+}
+
+/* ---------- cancer profiles ---------- */
+
+.cancerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cancerCard {
+  display: grid;
+  gap: 6px;
+  height: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-m);
+  background: var(--paper);
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.cancerCard strong {
+  font-family: var(--font-serif-stack);
+  font-size: 1.12rem;
+  color: var(--ink);
+}
+.cancerCard:hover {
+  border-color: var(--teal);
+  box-shadow: var(--shadow);
+  color: var(--ink-2);
+}
+.cancerCard:hover strong {
+  color: var(--teal-strong);
+}
+.cancerBar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sky);
+  overflow: hidden;
+}
+.cancerBar i {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  background: var(--navy);
+}
+.signalMini {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.signalMini li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.signalMini li .num {
+  font-weight: 700;
+  color: var(--ochre-strong);
+}
+.retractedList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.retractedList li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.retractedList a {
+  display: block;
+  color: var(--rose);
+  font-weight: 600;
+}
+
+/* ---------- saved ---------- */
+
+.savedOn {
+  margin: 14px 0 -12px;
+  padding-inline-start: 20px;
+}
+
+/* ---------- open data ---------- */
+
+.citeBox {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--r-s);
+  background: var(--sky);
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+/* ---------- trials ---------- */
+
+.resultsPanel {
+  border-inline-start: 4px solid var(--ochre);
+}
+.bigStat {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin: 0 0 8px;
+}
+.bigStatValue {
+  font-family: var(--font-serif-stack);
+  font-size: 2.6rem;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ochre-strong);
+  font-variant-numeric: tabular-nums;
+}
+.bigStatLabel {
+  color: var(--ink-2);
+  font-weight: 600;
+}
+.cautionList {
+  margin: 10px 0 0;
+  padding-inline-start: 1.1em;
+  color: var(--ink-2);
+}
+.cautionList li + li {
+  margin-top: 4px;
+}
+.countryFind {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule);
+}
+.countryFind select {
+  width: 100%;
+  max-width: 360px;
+}
+.trialList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.trialList li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.trialList li:last-child {
+  border-bottom: 0;
+}
+.trialList a {
+  font-weight: 600;
+  display: block;
+}
+.trialMeta {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.88rem;
+  color: var(--muted);
 }
 
 /* ---------- footer ---------- */
@@ -560,6 +1011,7 @@ details > summary {
 }
 
 .panel {
+  min-width: 0;
   background: var(--paper);
   border: 1px solid var(--rule);
   border-radius: var(--r-m);
@@ -681,7 +1133,7 @@ details > summary {
   border: 1px dashed var(--rule-strong);
   border-radius: var(--r-m);
   background: var(--paper);
-  text-align: left;
+  text-align: start;
 }
 .emptyState h3 {
   margin-bottom: 6px;
@@ -705,7 +1157,7 @@ details > summary {
 }
 .searchInputWrap .icon {
   position: absolute;
-  left: 14px;
+  inset-inline-start: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--muted);
@@ -714,7 +1166,8 @@ details > summary {
 .searchInput {
   width: 100%;
   min-height: 52px;
-  padding: 10px 14px 10px 44px;
+  padding-block: 10px;
+  padding-inline: 44px 14px;
   border: 1px solid var(--control);
   border-radius: var(--r-s);
   background: var(--paper);
@@ -820,24 +1273,20 @@ details > summary {
 .toolList {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  border-top: 2px solid var(--ink);
+  gap: 16px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 .toolList li {
-  padding: 22px 24px 8px 0;
-  border-right: 1px solid var(--rule);
-}
-.toolList li + li {
-  padding-left: 24px;
-}
-.toolList li:last-child {
-  border-right: 0;
+  padding: 20px 22px 6px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--teal-bright);
+  border-radius: var(--r-m);
 }
 .toolList h3 {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   margin-bottom: 6px;
 }
 .toolList h3 a {
@@ -850,7 +1299,30 @@ details > summary {
 }
 .toolList p {
   color: var(--ink-2);
-  font-size: 0.98rem;
+  font-size: 0.97rem;
+}
+.dataBand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
+  padding: 24px 28px;
+  border-radius: var(--r-l);
+  background: var(--navy);
+  color: #fff;
+}
+.dataBand h2 {
+  color: #fff;
+  margin-bottom: 4px;
+}
+.dataBand p {
+  margin: 0;
+  max-width: 70ch;
+  color: #dbe7ee;
+}
+.dataBand .btn {
+  background: #fff;
 }
 .toolAnswers {
   font-size: 0.9rem;
@@ -912,7 +1384,7 @@ details > summary {
 }
 .limitsGrid ul {
   margin: 0;
-  padding-left: 1.1em;
+  padding-inline-start: 1.1em;
 }
 .limitsGrid li {
   margin-bottom: 6px;
@@ -1105,6 +1577,7 @@ details > summary {
 }
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
 .footprintLead {
@@ -1184,12 +1657,12 @@ details > summary {
   border-radius: 4px;
 }
 .shareValue {
-  text-align: right;
+  text-align: end;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .shareValue .muted {
-  margin-left: 6px;
+  margin-inline-start: 6px;
   font-size: 0.85rem;
 }
 
@@ -1218,7 +1691,7 @@ details > summary {
   gap: 8px;
 }
 .mixLegend .num {
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 .swatch {
   width: 10px;
@@ -1242,10 +1715,6 @@ details > summary {
   color: var(--ink);
 }
 
-.nextSteps {
-  display: grid;
-  gap: 10px;
-}
 .nextStep {
   display: block;
   padding: 14px 16px;
@@ -1268,6 +1737,16 @@ details > summary {
 .nextStep span {
   font-size: 0.92rem;
   color: var(--ink-2);
+}
+.nextStepButton {
+  width: 100%;
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+}
+.nextSteps {
+  display: grid;
+  gap: 10px;
 }
 
 /* ---------- papers ---------- */
@@ -1303,7 +1782,7 @@ details > summary {
 .sourceSwitch button {
   display: grid;
   gap: 2px;
-  text-align: left;
+  text-align: start;
   padding: 10px 12px;
   border: 1px solid var(--control);
   border-radius: var(--r-s);
@@ -1352,13 +1831,14 @@ details > summary {
 
 .paperItem {
   position: relative;
-  padding: 22px 0 22px 20px;
+  padding-block: 22px;
+  padding-inline: 20px 0;
   border-bottom: 1px solid var(--rule);
 }
 .paperItem::before {
   content: '';
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   top: 24px;
   bottom: 24px;
   width: 3px;
@@ -1557,7 +2037,7 @@ details > summary {
   color: var(--ink-2);
 }
 .modeSwitch button + button {
-  border-left: 1px solid var(--control);
+  border-inline-start: 1px solid var(--control);
 }
 .modeSwitch button[aria-pressed='true'] {
   background: var(--ink);
@@ -1581,7 +2061,7 @@ details > summary {
 .dataTable td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--rule);
-  text-align: left;
+  text-align: start;
   vertical-align: top;
 }
 .dataTable thead th {
@@ -1592,7 +2072,7 @@ details > summary {
 }
 .dataTable td.numCell,
 .dataTable th.numCell {
-  text-align: right;
+  text-align: end;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -1600,7 +2080,12 @@ details > summary {
   font-weight: 600;
   color: var(--ink);
 }
+/* Notes under a number ("15.1% of pancreatic cancer") may wrap; the number itself does not. */
+.dataTable td.numCell .small {
+  white-space: normal;
+}
 .tableWrap {
+  position: relative; /* keeps visually hidden text inside the scroll box */
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -1611,7 +2096,7 @@ details > summary {
   border-radius: 3px;
   background: var(--teal-bright);
   vertical-align: middle;
-  margin-right: 8px;
+  margin-inline-end: 8px;
 }
 
 /* ---------- images ---------- */
@@ -1855,7 +2340,7 @@ details > summary {
 }
 .claims ul {
   margin: 0;
-  padding-left: 1.1em;
+  padding-inline-start: 1.1em;
 }
 .claims li {
   margin-bottom: 6px;
@@ -1923,7 +2408,7 @@ details > summary {
 }
 .prose ul,
 .prose ol {
-  padding-left: 1.2em;
+  padding-inline-start: 1.2em;
   margin: 0 0 1em;
 }
 .prose li {
@@ -1957,7 +2442,7 @@ details > summary {
 .prose td {
   border-bottom: 1px solid var(--rule);
   padding: 8px 10px;
-  text-align: left;
+  text-align: start;
   vertical-align: top;
 }
 .prose thead th {
@@ -2031,6 +2516,9 @@ details > summary {
   .overviewGrid {
     grid-template-columns: minmax(0, 1fr);
   }
+  .toolList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .pipeline {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2087,17 +2575,14 @@ details > summary {
   .siteNav ul a[aria-current='page'] {
     box-shadow: inset 3px 0 0 var(--teal-bright);
   }
+  [dir='rtl'] .siteNav ul a[aria-current='page'] {
+    box-shadow: inset -3px 0 0 var(--teal-bright);
+  }
   .savedLink {
     justify-content: center;
   }
   .toolList {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .toolList li,
-  .toolList li + li {
-    padding: 18px 0 6px;
-    border-right: 0;
-    border-bottom: 1px solid var(--rule);
   }
   .limitsGrid,
   .claims,
@@ -2179,8 +2664,23 @@ details > summary {
   .panel {
     padding: 18px;
   }
+  .dataTable {
+    font-size: 0.88rem;
+  }
+  .dataTable th,
+  .dataTable td {
+    padding: 8px 6px;
+  }
+  .dataTable th:first-child,
+  .dataTable td:first-child {
+    padding-inline-start: 0;
+  }
+  .dataTable th:last-child,
+  .dataTable td:last-child {
+    padding-inline-end: 0;
+  }
   .paperItem {
-    padding-left: 14px;
+    padding-inline-start: 14px;
   }
   .limitsGrid {
     padding: 20px;

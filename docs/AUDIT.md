@@ -114,3 +114,21 @@ supported by the available data:
   Landscape; a second page would repeat it.
 - **Per-treatment gap signals** — treatment relevance depends on cancer biology (e.g. hormone
   therapy in pancreatic cancer), so low counts are not interpretable as gaps.
+
+---
+
+## 7. Added after the audit (11 October 2026)
+
+New features are listed in `docs/UPGRADE-NOTES.md`. Each was checked against the rules above:
+
+- **Trial tracker** — counts registrations only. "Completed without results posted" is defined
+  exactly (interventional, completed, ≥ 24 months past primary completion, no results section),
+  is never called "hidden" or "unpublished", and the page lists the reasons it overstates.
+- **Research vs burden** — the ratio describes attention relative to deaths or cases; the page
+  says burden is one reason among many and never says what a cancer "should" receive. Subtypes
+  and cancers GLOBOCAN does not report are listed as excluded rather than approximated.
+- **All-cancer map** — reuses the atlas ratio and thresholds; extra colour steps do not create new
+  signal categories, values are printed in every cell, and the palette was checked for contrast.
+- **Retraction watch** — reports counts and a rate; does not rank cancers or imply misconduct.
+- **Arabic edition** — same queries and numbers as English; exports stay in English for reference
+  managers; paper titles and abstracts are not machine-translated.

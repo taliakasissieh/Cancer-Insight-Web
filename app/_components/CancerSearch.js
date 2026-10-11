@@ -3,9 +3,20 @@
 import { useRouter } from 'next/navigation';
 import { useEffect, useId, useState } from 'react';
 import Icon from './Icon';
+import { useI18n } from './I18n';
 import { CANCERS, EXAMPLE_CANCERS, resolveCancer } from '../../lib/queries';
+import { hasArabic, resolveArabicCancer } from '../../lib/i18n/arabic-search.js';
 
 const SUGGESTIONS = [...new Set(Object.values(CANCERS).map(c => c.label))].sort();
+
+/** Arabic names resolve to catalogue ids; everything else goes through resolveCancer. */
+function resolveInput(raw) {
+  if (hasArabic(raw)) {
+    const id = resolveArabicCancer(raw);
+    return id ? resolveCancer(id) : null;
+  }
+  return resolveCancer(raw);
+}
 
 /**
  * Cancer search box. Without `onSearch` it navigates to /explore (or `target`).
@@ -16,27 +27,38 @@ export default function CancerSearch({
   target = '/explore',
   compact = false,
   showExamples = true,
-  buttonLabel = 'Explore research',
+  buttonLabel,
   autoFocus = false,
-  label = 'Cancer type',
+  label,
   hideLabel = true,
 }) {
+  const { t, locale, path } = useI18n();
   const router = useRouter();
   const id = useId();
-  const [value, setValue] = useState(initialValue);
+  /* On the Arabic site, show catalogue cancers by their Arabic name. */
+  function displayValue(v) {
+    if (locale !== 'ar' || !v || hasArabic(v)) return v;
+    const r = resolveCancer(v);
+    return r?.known ? t(`cancers.${r.id}`) : v;
+  }
+  const [value, setValue] = useState(() => displayValue(initialValue));
   const [error, setError] = useState('');
 
-  useEffect(() => setValue(initialValue), [initialValue]);
+  useEffect(() => setValue(displayValue(initialValue)), [initialValue]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const suggestions =
+    locale === 'ar' ? Object.keys(CANCERS).map(id => t(`cancers.${id}`)) : SUGGESTIONS;
 
   function go(raw) {
-    const resolved = resolveCancer(raw);
+    const resolved = resolveInput(raw);
     if (!resolved) {
-      setError('Enter a specific cancer type, for example pancreatic, breast or leukemia.');
+      setError(t('search.error'));
       return;
     }
     setError('');
-    if (onSearch) onSearch(resolved.input);
-    else router.push(`${target}?cancer=${encodeURIComponent(resolved.input)}`);
+    const q = resolved.known && hasArabic(raw) ? resolved.id : resolved.input;
+    if (onSearch) onSearch(q);
+    else router.push(`${path(target)}?cancer=${encodeURIComponent(q)}`);
   }
 
   return (
@@ -51,7 +73,7 @@ export default function CancerSearch({
       >
         <div className="searchInputWrap">
           <label htmlFor={`${id}-input`} className={hideLabel ? 'visuallyHidden' : 'field'}>
-            {label}
+            {label || t('search.label')}
           </label>
           <Icon name="search" size={20} />
           <input
@@ -61,7 +83,7 @@ export default function CancerSearch({
             list={`${id}-list`}
             value={value}
             onChange={e => setValue(e.target.value)}
-            placeholder="Search a cancer type, e.g. pancreatic"
+            placeholder={t('search.placeholder')}
             autoComplete="off"
             spellCheck="false"
             autoFocus={autoFocus}
@@ -70,13 +92,13 @@ export default function CancerSearch({
             maxLength={60}
           />
           <datalist id={`${id}-list`}>
-            {SUGGESTIONS.map(s => (
+            {suggestions.map(s => (
               <option key={s} value={s} />
             ))}
           </datalist>
         </div>
         <button className="btn btnPrimary" type="submit">
-          {buttonLabel}
+          {buttonLabel || t('search.explore')}
         </button>
       </form>
       {error && (
@@ -86,10 +108,10 @@ export default function CancerSearch({
       )}
       {showExamples && (
         <div className="exampleRow">
-          <span>Try</span>
+          <span>{t('search.try')}</span>
           {EXAMPLE_CANCERS.map(c => (
             <button key={c} type="button" className="chip" onClick={() => go(c)}>
-              {resolveCancer(c).label}
+              {t(`cancers.${resolveCancer(c).id}`)}
             </button>
           ))}
         </div>

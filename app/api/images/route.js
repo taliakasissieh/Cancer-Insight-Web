@@ -5,10 +5,13 @@
   Now: ≤10 searches run with limited concurrency and cached for 24 h; filtering uses
   word boundaries (so "thrombus" and "prevention" are no longer rejected); licence links and
   attribution are returned so the gallery can meet CC BY / BY-SA attribution requirements.
+  Relevance rules live in lib/images.js (the cancer must be named in the file's own title or
+  description, never only in the source credit).
 */
 
 import { unstable_cache } from 'next/cache';
-import { resolveCancer } from '../../../lib/queries';
+import { aliasesFor, resolveCancer } from '../../../lib/queries';
+import { imageMatchContext, scoreImage } from '../../../lib/images';
 import { badRequest, errorResponse, json, readJson } from '../../../lib/http';
 
 export const maxDuration = 30;
@@ -40,129 +43,8 @@ function cleanArtist(value) {
   return text.length > 90 ? `${text.slice(0, 87).trimEnd()}…` : text;
 }
 
-function words(list) {
-  return new RegExp(
-    `\\b(?:${list.map(w => w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})\\b`,
-    'i'
-  );
-}
-
-const VISUAL_TERMS = words([
-  'histology',
-  'histopathology',
-  'histopathologic',
-  'pathology',
-  'micrograph',
-  'microscopy',
-  'microscopic',
-  'biopsy',
-  'specimen',
-  'cytology',
-  'immunohistochemistry',
-  'h&e',
-  'hematoxylin',
-  'tumor',
-  'tumour',
-  'neoplasm',
-  'lesion',
-  'carcinoma',
-  'adenocarcinoma',
-  'radiograph',
-  'x-ray',
-  'computed tomography',
-  'ct',
-  'mri',
-  'magnetic resonance',
-  'pet',
-  'mammogram',
-  'mammography',
-  'ultrasound',
-  'ultrasonography',
-  'gross pathology',
-  'diagram',
-  'schematic',
-  'illustration',
-  'metastasis',
-  'metastatic',
-  'immunofluorescence',
-  'segmentation',
-]);
-
-const STRONG_TERMS = words([
-  'histology',
-  'histopathology',
-  'micrograph',
-  'microscopy',
-  'biopsy',
-  'immunohistochemistry',
-  'computed tomography',
-  'ct',
-  'mri',
-  'magnetic resonance',
-  'ultrasonography',
-  'mammography',
-  'gross pathology',
-  'segmentation',
-]);
-
-const BLOCKED = words([
-  'bus',
-  'autobus',
-  'vehicle',
-  'street',
-  'campaign',
-  'awareness',
-  'ribbon',
-  'fundraiser',
-  'fundraising',
-  'charity',
-  'poster',
-  'advertisement',
-  'logo',
-  'mascot',
-  'marathon',
-  't-shirt',
-  'stamp',
-  'coin',
-  'billboard',
-  'military',
-  'soldier',
-  'army',
-  'yearbook',
-  'newspaper',
-  'portrait of',
-  'annual report',
-  'book scan',
-  'scanned page',
-  'title page',
-  'table of contents',
-  'internet archive',
-  'archive.org',
-  'digitized by',
-]);
-
 const DOCUMENT_FILE = /\.(pdf|djvu|djv|docx?|pptx?|xlsx?|txt|rtf|od[tsp])(?:$|\?)/i;
 const IMAGE_FILE = /\.(jpe?g|png|gif|webp|tiff?|svg)(?:$|\?)/i;
-
-function score(item, phrases) {
-  const titleL = item.title.toLowerCase();
-  const all = `${titleL} ${item.description.toLowerCase()} ${item.credit.toLowerCase()}`;
-
-  const diseaseRe = words(phrases);
-  const inTitle = diseaseRe.test(titleL);
-  const inText = diseaseRe.test(all);
-  if (!inText) return null;
-  if (!VISUAL_TERMS.test(all)) return null;
-  if (BLOCKED.test(all)) return null;
-  if (!inTitle && !STRONG_TERMS.test(all)) return null;
-
-  let s = inTitle ? 14 : 6;
-  if (STRONG_TERMS.test(all)) s += 8;
-  if (/\b(histopathology|micrograph|histology)\b/i.test(all)) s += 4;
-  if (/\b(ct|mri|computed tomography|magnetic resonance)\b/i.test(all)) s += 3;
-  if (item.license) s += 1;
-  return s;
-}
 
 async function searchCommonsRaw(query) {
   const url = new URL(COMMONS_API);
@@ -228,8 +110,9 @@ async function runLimited(tasks, concurrency = 4) {
   return results;
 }
 
-async function findImagesRaw(slug, label, phrasesKey) {
+async function findImagesRaw(slug, label, phrasesKey, aliasesKey = '') {
   const phrases = phrasesKey.split('|').filter(Boolean);
+  const ctx = imageMatchContext(phrases, aliasesKey.split('|').filter(Boolean));
   const candidates = [...new Set([label.toLowerCase(), ...phrases])];
   const diseases = candidates
     .filter(p => !(p.endsWith('s') && candidates.includes(p.slice(0, -1))))
@@ -243,7 +126,7 @@ async function findImagesRaw(slug, label, phrasesKey) {
     if (!item.thumbnail || !item.file) continue;
     if (DOCUMENT_FILE.test(item.title) || DOCUMENT_FILE.test(item.file)) continue;
     if (!IMAGE_FILE.test(item.file)) continue;
-    const s = score(item, phrases);
+    const s = scoreImage(item, ctx);
     if (s == null) continue;
     const prev = best.get(item.file);
     if (!prev || s > prev.score) best.set(item.file, { ...item, score: s });
@@ -260,7 +143,7 @@ async function findImagesRaw(slug, label, phrasesKey) {
     }));
 }
 
-const findImages = unstable_cache(findImagesRaw, ['ci-commons-images-v1'], {
+const findImages = unstable_cache(findImagesRaw, ['ci-commons-images-v2'], {
   revalidate: 60 * 60 * 24,
 });
 
@@ -272,7 +155,12 @@ export async function POST(request) {
 
   try {
     const phrases = [...resolved.phrases, ...resolved.mesh.map(m => m.toLowerCase())];
-    const images = await findImages(resolved.slug, resolved.label, phrases.join('|'));
+    const images = await findImages(
+      resolved.slug,
+      resolved.label,
+      phrases.join('|'),
+      aliasesFor(resolved.id).join('|')
+    );
     return json({
       cancer: { label: resolved.label, slug: resolved.slug },
       source: { name: 'Wikimedia Commons', url: 'https://commons.wikimedia.org' },

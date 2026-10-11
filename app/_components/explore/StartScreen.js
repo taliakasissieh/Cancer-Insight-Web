@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import CancerSearch from '../CancerSearch';
+import { useI18n } from '../I18n';
 import { CANCERS } from '../../../lib/queries';
 
 const FEED_COVERED = Object.entries(CANCERS)
@@ -9,19 +10,16 @@ const FEED_COVERED = Object.entries(CANCERS)
   .map(([id, c]) => ({ id, label: c.label }));
 
 export default function StartScreen({ onSearch, savedCount }) {
+  const { t, path, locale } = useI18n();
   return (
     <section className="pageHead">
       <div className="pageHeadInner">
         <div className="narrow">
-          <h1>Explore cancer research</h1>
-          <p className="lede">
-            Choose a cancer type. You’ll see its most recent research papers, how large its PubMed
-            literature is, which study designs it contains, treatment evidence and scientific
-            images.
-          </p>
+          <h1>{t('start.title')}</h1>
+          <p className="lede">{t('start.lede')}</p>
           <CancerSearch onSearch={onSearch} autoFocus />
           <p className="small muted" style={{ marginTop: 24 }}>
-            A recent-research feed with treatment tags is available for:{' '}
+            {t('start.feed')}{' '}
             {FEED_COVERED.map((c, i) => (
               <span key={c.id}>
                 <button
@@ -30,16 +28,16 @@ export default function StartScreen({ onSearch, savedCount }) {
                   style={{ padding: '0 4px', minHeight: 0 }}
                   onClick={() => onSearch(c.id)}
                 >
-                  {c.label}
+                  {t(`cancers.${c.id}`)}
                 </button>
-                {i < FEED_COVERED.length - 1 ? ', ' : '.'}
+                {i < FEED_COVERED.length - 1 ? (locale === 'ar' ? '، ' : ', ') : '.'}
               </span>
             ))}{' '}
-            Every other cancer is searched directly in PubMed.
+            {t('start.feedRest')}
           </p>
           {savedCount > 0 && (
             <p className="small">
-              <Link href="/explore?view=saved">Open your {savedCount} saved papers</Link>
+              <Link href={path('/explore?view=saved')}>{t('start.openSaved', { n: savedCount })}</Link>
             </p>
           )}
         </div>

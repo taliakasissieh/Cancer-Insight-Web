@@ -1,8 +1,12 @@
+'use client';
+
 import CountLink from './CountLink';
+import { useI18n } from './I18n';
 import { fmtShare } from '../../lib/format';
 
-/** Horizontal share bars; counts link to PubMed. */
-export default function ShareList({ rows, showShare = true }) {
+/** Horizontal share bars; counts link to the search behind them when a url is given. */
+export default function ShareList({ rows, showShare = true, site = 'pubmed' }) {
+  const { locale } = useI18n();
   const max = Math.max(0.0001, ...rows.map(r => r.share || 0));
   return (
     <ul className="shareList">
@@ -16,8 +20,10 @@ export default function ShareList({ rows, showShare = true }) {
             />
           </span>
           <span className="shareValue">
-            <CountLink count={r.count} url={r.url} />
-            {showShare && r.share != null && <span className="muted">{fmtShare(r.share)}</span>}
+            <CountLink count={r.count} url={r.url} site={site} />
+            {showShare && r.share != null && (
+              <span className="muted">{fmtShare(r.share, undefined, locale)}</span>
+            )}
           </span>
         </li>
       ))}

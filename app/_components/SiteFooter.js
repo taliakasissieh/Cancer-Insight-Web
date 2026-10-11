@@ -1,77 +1,73 @@
 import Link from 'next/link';
 import Logo from './Logo';
+import { localePath, makeT } from '../../lib/i18n/index.js';
 
-export default function SiteFooter() {
+const GROUPS = [
+  {
+    key: 'footer.tools',
+    links: [
+      ['/explore', 'footer.exploreResearch'],
+      ['/cancers', 'footer.cancers'],
+      ['/research-gap-atlas', 'footer.atlas'],
+      ['/cancer-map', 'footer.map'],
+      ['/research-vs-burden', 'footer.burden'],
+      ['/explore?view=saved', 'footer.savedPapers'],
+    ],
+  },
+  {
+    key: 'footer.learn',
+    links: [
+      ['/methodology', 'footer.methodology'],
+      ['/data', 'footer.data'],
+      ['/faq', 'footer.faq'],
+      ['/about', 'footer.about'],
+    ],
+  },
+  {
+    key: 'footer.site',
+    links: [
+      ['/contact', 'footer.contact'],
+      ['/privacy-policy', 'footer.privacy'],
+      ['/terms', 'footer.terms'],
+    ],
+  },
+];
+
+export default function SiteFooter({ locale = 'en' }) {
+  const t = makeT(locale);
+  const path = p => localePath(locale, p);
   return (
     <footer className="siteFooter">
       <div className="siteFooterInner">
         <div className="footerBrand">
-          <Link href="/" className="brand">
+          <Link href={path('/')} className="brand">
             <Logo size={26} />
-            <span className="brandName">Cancer Insight</span>
+            <span className="brandName">{t('meta.siteName')}</span>
           </Link>
-          <p>
-            An independent, educational explorer of cancer research literature. Every count links to
-            the PubMed search that reproduces it.
-          </p>
+          <p>{t('footer.blurb')}</p>
         </div>
 
-        <nav className="footerNav" aria-label="Footer">
-          <div>
-            <h2>Tools</h2>
-            <ul>
-              <li>
-                <Link href="/explore">Explore research</Link>
-              </li>
-              <li>
-                <Link href="/research-gap-atlas">Research Gap Atlas</Link>
-              </li>
-              <li>
-                <Link href="/explore?view=saved">Saved papers</Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h2>Learn</h2>
-            <ul>
-              <li>
-                <Link href="/methodology">Methodology</Link>
-              </li>
-              <li>
-                <Link href="/faq">FAQ</Link>
-              </li>
-              <li>
-                <Link href="/about">About</Link>
-              </li>
-            </ul>
-          </div>
-          <div>
-            <h2>Site</h2>
-            <ul>
-              <li>
-                <Link href="/contact">Contact</Link>
-              </li>
-              <li>
-                <Link href="/privacy-policy">Privacy</Link>
-              </li>
-              <li>
-                <Link href="/terms">Terms &amp; disclaimer</Link>
-              </li>
-            </ul>
-          </div>
+        <nav className="footerNav" aria-label={t('footer.label')}>
+          {GROUPS.map(group => (
+            <div key={group.key}>
+              <h2>{t(group.key)}</h2>
+              <ul>
+                {group.links.map(([href, key]) => (
+                  <li key={href}>
+                    <Link href={path(href)}>{t(key)}</Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </nav>
       </div>
 
       <div className="footerLegal">
         <p>
-          <strong>Educational use only.</strong> Cancer Insight does not diagnose, recommend
-          treatments or give medical advice. Discuss health decisions with a qualified clinician.
+          <strong>{t('common.educationalOnly')}</strong> {t('footer.legal')}
         </p>
-        <p>
-          Data: NCBI PubMed and PubMed Central (U.S. National Library of Medicine), the Cure Cancer
-          With AI research API and Wikimedia Commons. Cancer Insight is not affiliated with these
-          organisations.
-        </p>
+        <p>{t('footer.dataSources')}</p>
       </div>
     </footer>
   );
