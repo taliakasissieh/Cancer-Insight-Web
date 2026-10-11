@@ -17,8 +17,8 @@ import {
 import { cachedPost } from '../../../lib/client/api';
 import { download, fileStem, papersCsv, papersRis } from '../../../lib/client/exports';
 import { track } from '../../../lib/client/track';
-import { fmtInt } from '../../../lib/format';
-import { resolveTreatment } from '../../../lib/queries';
+import { localizeError } from '../../../lib/i18n/labels.js';
+import { useI18n } from '../I18n';
 
 const DEFAULTS = {
   q: '',
@@ -32,17 +32,12 @@ const DEFAULTS = {
 };
 
 const SOURCES = {
-  feed: {
-    title: 'Recent research',
-    blurb: 'Newest relevant records, with treatment tags',
-  },
-  bestmatch: {
-    title: 'PubMed Best Match',
-    blurb: 'Most relevant records across all years',
-  },
+  feed: { title: 'papers.sourceFeed', blurb: 'papers.sourceFeedBlurb' },
+  bestmatch: { title: 'papers.sourceBest', blurb: 'papers.sourceBestBlurb' },
 };
 
 export default function Papers({ data, saved, footprint }) {
+  const { t, locale } = useI18n();
   const cancer = data.cancer.input;
   const [source, setSource] = useState('feed');
   const [best, setBest] = useState({ status: 'idle', data: null, error: '' });
@@ -70,7 +65,7 @@ export default function Papers({ data, saved, footprint }) {
   );
   const tagOptions = useMemo(() => {
     const counts = {};
-    for (const p of base) for (const t of treatmentTags(p)) counts[t] = (counts[t] || 0) + 1;
+    for (const p of base) for (const tag of treatmentTags(p)) counts[tag] = (counts[tag] || 0) + 1;
     return Object.entries(counts).sort((a, b) => b[1] - a[1]);
   }, [base]);
 
@@ -107,20 +102,35 @@ export default function Papers({ data, saved, footprint }) {
     return list;
   }, [base, f, saved]);
 
+  const tagName = tag => {
+    const v = t(`treatments.${tag}`);
+    return v === `treatments.${tag}` ? tag : v;
+  };
   const active = [];
-  if (f.q) active.push(['q', `Text: ${f.q}`]);
+  if (f.q) active.push(['q', t('papers.chipText', { q: f.q })]);
+  if (f.evidence !== 'all') active.push(['evidence', t(`evidence.filters.${f.evidence}`)]);
+  if (f.access === 'free') active.push(['access', t('papers.chipFree')]);
+  if (f.access === 'abstract') active.push(['access', t('papers.chipAbstract')]);
+  if (f.treatment !== 'all') active.push(['treatment', t('papers.chipTag', { tag: tagName(f.treatment) })]);
+  if (f.from) active.push(['from', t('papers.chipFrom', { y: String(f.from) })]);
+  if (f.to) active.push(['to', t('papers.chipTo', { y: String(f.to) })]);
+  if (f.savedOnly) active.push(['savedOnly', t('papers.chipSaved')]);
+  /* Export files stay in English (they are citations and data). */
+  const activeEnglish = [];
+  if (f.q) activeEnglish.push(`Text: ${f.q}`);
   if (f.evidence !== 'all')
-    active.push(['evidence', EVIDENCE_FILTERS.find(x => x.id === f.evidence)?.label]);
-  if (f.access === 'free') active.push(['access', 'Free full text']);
-  if (f.access === 'abstract') active.push(['access', 'Has abstract']);
-  if (f.treatment !== 'all') active.push(['treatment', `Tag: ${f.treatment}`]);
-  if (f.from) active.push(['from', `From ${f.from}`]);
-  if (f.to) active.push(['to', `To ${f.to}`]);
-  if (f.savedOnly) active.push(['savedOnly', 'Saved only']);
+    activeEnglish.push(EVIDENCE_FILTERS.find(x => x.id === f.evidence)?.label || f.evidence);
+  if (f.access === 'free') activeEnglish.push('Free full text');
+  if (f.access === 'abstract') activeEnglish.push('Has abstract');
+  if (f.treatment !== 'all') activeEnglish.push(`Tag: ${f.treatment}`);
+  if (f.from) activeEnglish.push(`From ${f.from}`);
+  if (f.to) activeEnglish.push(`To ${f.to}`);
+  if (f.savedOnly) activeEnglish.push('Saved only');
 
   const set = (k, v) => setF(prev => ({ ...prev, [k]: v }));
   const clear = k => setF(prev => ({ ...prev, [k]: DEFAULTS[k] }));
 
+  /* English: it is written into export files. */
   const sourceLabel =
     source === 'feed'
       ? data.provenance.pubmed.used
@@ -132,7 +142,7 @@ export default function Papers({ data, saved, footprint }) {
     cancer: data.cancer.label,
     query: data.cancer.term,
     source: sourceLabel,
-    filters: active.map(a => a[1]).join('; ') || 'none',
+    filters: activeEnglish.join('; ') || 'none',
   });
 
   async function exportAs(kind) {
@@ -171,15 +181,17 @@ export default function Papers({ data, saved, footprint }) {
           onClick={() => setPanelOpen(o => !o)}
         >
           <Icon name="filter" size={16} />
-          {panelOpen ? 'Hide filters' : `Filters${active.length ? ` (${active.length})` : ''}`}
+          {panelOpen
+            ? t('papers.hideFilters')
+            : `${t('papers.showFilters')}${active.length ? ` (${active.length})` : ''}`}
         </button>
         <aside
           id="paper-filters"
           className={`filterPanel ${panelOpen ? 'isOpen' : ''}`}
-          aria-label="Paper filters"
+          aria-label={t('papers.filtersLabel')}
         >
           <div>
-            <h2>Records to show</h2>
+            <h2>{t('papers.recordsToShow')}</h2>
             <div className="sourceSwitch" style={{ marginTop: 8 }}>
               {Object.entries(SOURCES).map(([id, s]) => (
                 <button
@@ -188,25 +200,25 @@ export default function Papers({ data, saved, footprint }) {
                   aria-pressed={source === id}
                   onClick={() => setSource(id)}
                 >
-                  <strong>{s.title}</strong>
-                  <span>{s.blurb}</span>
+                  <strong>{t(s.title)}</strong>
+                  <span>{t(s.blurb)}</span>
                 </button>
               ))}
             </div>
           </div>
 
           <label className="field">
-            Search within these records
+            {t('papers.searchWithin')}
             <input
               type="search"
               value={f.q}
               onChange={e => set('q', e.target.value)}
-              placeholder="Title, abstract, author, MeSH…"
+              placeholder={t('papers.searchPlaceholder')}
             />
           </label>
 
           <label className="field">
-            Evidence type
+            {t('papers.evidenceType')}
             <select
               value={f.evidence}
               onChange={e => {
@@ -216,29 +228,29 @@ export default function Papers({ data, saved, footprint }) {
             >
               {EVIDENCE_FILTERS.map(o => (
                 <option key={o.id} value={o.id}>
-                  {o.label}
+                  {t(`evidence.filters.${o.id}`)}
                 </option>
               ))}
             </select>
           </label>
 
           <label className="field">
-            Access
+            {t('papers.access')}
             <select value={f.access} onChange={e => set('access', e.target.value)}>
-              <option value="any">Any</option>
-              <option value="free">Free full text (PMC)</option>
-              <option value="abstract">Has an abstract</option>
+              <option value="any">{t('papers.any')}</option>
+              <option value="free">{t('papers.accessFree')}</option>
+              <option value="abstract">{t('papers.accessAbstract')}</option>
             </select>
           </label>
 
           {tagOptions.length > 0 && (
             <label className="field">
-              Treatment tag
+              {t('papers.treatmentTag')}
               <select value={f.treatment} onChange={e => set('treatment', e.target.value)}>
-                <option value="all">Any treatment</option>
-                {tagOptions.map(([t, n]) => (
-                  <option key={t} value={t}>
-                    {resolveTreatment(t)?.label || t} ({n})
+                <option value="all">{t('papers.anyTreatment')}</option>
+                {tagOptions.map(([tag, n]) => (
+                  <option key={tag} value={tag}>
+                    {tagName(tag)} ({n})
                   </option>
                 ))}
               </select>
@@ -248,9 +260,9 @@ export default function Papers({ data, saved, footprint }) {
           {years.length > 1 && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
               <label className="field">
-                From
+                {t('papers.from')}
                 <select value={f.from} onChange={e => set('from', e.target.value)}>
-                  <option value="">Any</option>
+                  <option value="">{t('papers.any')}</option>
                   {years.map(y => (
                     <option key={y} value={y}>
                       {y}
@@ -259,9 +271,9 @@ export default function Papers({ data, saved, footprint }) {
                 </select>
               </label>
               <label className="field">
-                To
+                {t('papers.to')}
                 <select value={f.to} onChange={e => set('to', e.target.value)}>
-                  <option value="">Any</option>
+                  <option value="">{t('papers.any')}</option>
                   {years.map(y => (
                     <option key={y} value={y}>
                       {y}
@@ -273,13 +285,13 @@ export default function Papers({ data, saved, footprint }) {
           )}
 
           <label className="field">
-            Order
+            {t('papers.order')}
             <select value={f.sort} onChange={e => set('sort', e.target.value)}>
               <option value="source">
-                {source === 'feed' ? 'Most relevant, then newest' : 'PubMed Best Match'}
+                {source === 'feed' ? t('papers.orderSourceFeed') : t('papers.orderSourceBest')}
               </option>
-              <option value="newest">Newest first</option>
-              <option value="oldest">Oldest first</option>
+              <option value="newest">{t('papers.newest')}</option>
+              <option value="oldest">{t('papers.oldest')}</option>
             </select>
           </label>
 
@@ -289,12 +301,12 @@ export default function Papers({ data, saved, footprint }) {
               checked={f.savedOnly}
               onChange={e => set('savedOnly', e.target.checked)}
             />
-            Saved papers only
+            {t('papers.savedOnly')}
           </label>
 
           {active.length > 0 && (
             <button type="button" className="btn btnQuiet btnSmall" onClick={() => setF(DEFAULTS)}>
-              Clear all filters
+              {t('papers.clearAll')}
             </button>
           )}
         </aside>
@@ -304,14 +316,14 @@ export default function Papers({ data, saved, footprint }) {
         <div className="listToolbar">
           <div>
             <h2 id="papers-h" style={{ fontSize: '1.3rem', margin: 0 }}>
-              {SOURCES[source].title}
+              {t(SOURCES[source].title)}
             </h2>
             <p className="muted" aria-live="polite">
               {source === 'bestmatch' && best.status === 'loading'
-                ? 'Loading PubMed Best Match…'
-                : `Showing ${fmtInt(filtered.length)} of ${fmtInt(base.length)} records`}
+                ? t('papers.loadingBest')
+                : t('papers.showing', { n: filtered.length, total: base.length })}
               {source === 'bestmatch' && best.data?.count != null
-                ? ` (top ${base.length} of ${fmtInt(best.data.count)} PubMed records)`
+                ? t('papers.topOf', { n: base.length, total: best.data.count })
                 : ''}
             </p>
           </div>
@@ -330,10 +342,10 @@ export default function Papers({ data, saved, footprint }) {
               className="btn btnSecondary btnSmall"
               disabled={!filtered.length}
               onClick={() => exportAs('ris')}
-              title="For Zotero, EndNote or Mendeley"
+              title={t('papers.risTitle')}
             >
               <Icon name="download" size={16} />
-              RIS citations
+              {t('papers.risCitations')}
             </button>
             <button
               type="button"
@@ -342,20 +354,21 @@ export default function Papers({ data, saved, footprint }) {
               onClick={() => exportAs('pdf')}
             >
               <Icon name="doc" size={16} />
-              {busyExport ? 'Preparing PDF…' : 'PDF report'}
+              {busyExport ? t('papers.preparingPdf') : t('papers.pdfReport')}
             </button>
           </div>
         </div>
+        {locale === 'ar' && <p className="small muted">{t('papers.exportsNote')}</p>}
 
         {active.length > 0 && (
-          <div className="activeFilters" aria-label="Active filters">
+          <div className="activeFilters" aria-label={t('papers.activeFilters')}>
             {active.map(([k, label]) => (
               <button
                 key={k + label}
                 type="button"
                 className="chip"
                 onClick={() => clear(k)}
-                aria-label={`Remove filter ${label}`}
+                aria-label={t('papers.removeFilter', { label })}
               >
                 {label}
                 <Icon name="close" size={14} />
@@ -367,21 +380,21 @@ export default function Papers({ data, saved, footprint }) {
         {source === 'feed' && data.provenance.pubmed.used && (
           <p className="notice small" style={{ marginTop: 14 }}>
             {data.provenance.feed.status === 'ok'
-              ? 'The research feed had few relevant records for this cancer, so the newest PubMed records were added. PubMed records have no treatment tags.'
-              : 'The research feed does not cover this cancer, so these are the newest PubMed records. PubMed records have no treatment tags.'}
+              ? t('papers.feedFewAdded')
+              : t('papers.feedNotCovered')}
           </p>
         )}
 
         {source === 'bestmatch' && best.status === 'error' && (
           <div className="emptyState" style={{ marginTop: 16 }} role="alert">
-            <h3>PubMed Best Match did not load</h3>
-            <p>{best.error}</p>
+            <h3>{t('papers.bestError')}</h3>
+            <p>{localizeError(t, locale, best.error)}</p>
             <button
               type="button"
               className="btn btnPrimary"
               onClick={() => setBest({ status: 'idle', data: null, error: '' })}
             >
-              Try again
+              {t('common.retry')}
             </button>
           </div>
         )}
@@ -396,15 +409,15 @@ export default function Papers({ data, saved, footprint }) {
 
         {!filtered.length && base.length > 0 && (
           <div className="emptyState" style={{ marginTop: 16 }}>
-            <h3>No records match these filters</h3>
-            <p>Remove a filter to see more of the {base.length} records.</p>
+            <h3>{t('papers.noMatchTitle')}</h3>
+            <p>{t('papers.noMatch', { n: base.length })}</p>
             <button type="button" className="btn btnSecondary" onClick={() => setF(DEFAULTS)}>
-              Clear all filters
+              {t('papers.clearAll')}
             </button>
           </div>
         )}
 
-        <ol className="paperList" aria-label="Research records">
+        <ol className="paperList" aria-label={t('papers.listLabel')}>
           {filtered.map(p => (
             <li key={paperKey(p)}>
               <PaperItem

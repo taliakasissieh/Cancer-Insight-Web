@@ -36,3 +36,27 @@ test('Arabic paths live under /ar', () => {
   assert.equal(stripLocale('/ar'), '/');
   assert.equal(stripLocale('/arabic-page'), '/arabic-page');
 });
+
+import { resolveArabicCancer } from '../lib/i18n/arabic-search.js';
+
+test('Arabic cancer names resolve to catalogue cancers', () => {
+  const cases = {
+    'سرطان البنكرياس': 'pancreatic',
+    'البنكرياس': 'pancreatic',
+    'سرطان الثدي': 'breast',
+    'سرطان عنق الرحم': 'cervical',
+    'سرطان بطانة الرحم': 'endometrial',
+    'سرطان الكبد': 'liver',
+    'سرطان الخلايا الكبدية': 'hepatocellular',
+    'سرطانُ الرِّئة': 'lung',
+    'سرطان الرئة غير صغير الخلايا': 'nsclc',
+    'لوكيميا': 'leukemia',
+    'سرطان الدم': 'leukemia',
+    'سرطان الغدة الدرقية': 'thyroid',
+    'سرطان المعده': 'stomach',
+    'ورم أرومي دبقي': 'glioblastoma',
+  };
+  for (const [input, id] of Object.entries(cases)) assert.equal(resolveArabicCancer(input), id, input);
+  assert.equal(resolveArabicCancer('سرطان'), null);
+  assert.equal(resolveArabicCancer('pancreatic'), null);
+});

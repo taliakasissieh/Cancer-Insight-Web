@@ -1,24 +1,33 @@
 import Link from 'next/link';
 import DocPage from '../../_components/DocPage';
 import {
-  ATLAS_DESIGN_IDS,
+  AtlasMeasuresTable,
+  AtlasRulesTable,
+  BurdenExcludedTable,
+  BurdenMapTable,
+  EvidenceTable,
+  FootprintTable,
+  TreatmentTable,
+  TrialConditionsTable,
+  TrialStatusTable,
+} from '../../_components/methodology/Tables';
+import {
   ATLAS_METHOD_VERSION,
   ATLAS_THRESHOLDS,
   BASELINE_TERM,
   CANCERS,
-  DESIGN_BY_ID,
-  DESIGNS,
-  FREE_FULL_TEXT,
-  THEMES,
-  TREATMENTS,
+  RETRACTED_TERM,
   resolveCancer,
 } from '../../../lib/queries';
+import { GLOBOCAN } from '../../../lib/burden';
+import { RESULTS_LAG_MONTHS } from '../../../lib/trials';
+import { languageAlternates } from '../../../lib/i18n/index.js';
 
 export const metadata = {
   title: 'Methodology',
   description:
-    'How Cancer Insight retrieves, checks, classifies and counts cancer research — including the exact PubMed queries and the Research Gap Atlas Method 3.0.',
-  alternates: { canonical: '/methodology' },
+    'How Cancer Insight retrieves, checks, classifies and counts cancer research — the exact PubMed and ClinicalTrials.gov queries, the Research Gap Atlas Method 3.0, the all-cancer map and the comparison with GLOBOCAN 2024 burden.',
+  alternates: { canonical: '/methodology', languages: languageAlternates('/methodology') },
 };
 
 const TOC = [
@@ -30,8 +39,15 @@ const TOC = [
   { id: 'footprint', label: 'PubMed counts' },
   { id: 'treatments', label: 'Treatment literature' },
   { id: 'gap-atlas', label: 'Research Gap Atlas' },
+  { id: 'map', label: 'All-cancer map' },
+  { id: 'trials', label: 'Clinical trials' },
+  { id: 'burden', label: 'Research compared with burden' },
+  { id: 'retractions', label: 'Retractions' },
+  { id: 'profiles', label: 'Cancer profiles' },
   { id: 'images', label: 'Images' },
   { id: 'exports', label: 'Exports and saved papers' },
+  { id: 'open-data', label: 'Open data' },
+  { id: 'languages', label: 'English and Arabic' },
   { id: 'reproducibility', label: 'Reproducibility' },
   { id: 'limitations', label: 'Limitations' },
   { id: 'versions', label: 'Version history' },
@@ -41,36 +57,27 @@ const FEED_CANCERS = Object.entries(CANCERS)
   .filter(([id, c]) => c.feed === id)
   .map(([, c]) => c.label.charAt(0).toLowerCase() + c.label.slice(1));
 
-const EVIDENCE_ROWS = [
-  ['Meta-analysis', 'Meta-Analysis', 'Evidence synthesis'],
-  ['Systematic review', 'Systematic Review', 'Evidence synthesis'],
-  [
-    'Randomized controlled trial',
-    'Randomized Controlled Trial (with phase when indexed)',
-    'Primary research',
-  ],
-  [
-    'Clinical trial',
-    'Clinical Trial; Phase I–IV; Controlled, Pragmatic, Equivalence or Adaptive Clinical Trial',
-    'Primary research',
-  ],
-  ['Guideline', 'Guideline; Practice Guideline; Consensus Development Conference', 'Guidance'],
-  ['Review', 'Review; Scoping Review', 'Evidence synthesis'],
-  ['Observational study', 'Observational Study', 'Primary research'],
-  ['Case report', 'Case Reports', 'Primary research'],
-  ['Trial protocol', 'Clinical Trial Protocol (not counted as a trial)', 'Other'],
-  ['Editorial, comment or letter', 'Editorial; Comment; Letter; News', 'Commentary'],
-  ['Journal article', 'Only “Journal Article” (design not indexed)', 'Design not indexed'],
-];
-
 export default function Methodology() {
   const pancreatic = resolveCancer('pancreatic');
   const t = ATLAS_THRESHOLDS;
+  const atlasRules = [
+    ['Much lower representation', `ratio below ${t.muchLower}`],
+    ['Lower representation (a signal)', `ratio below ${t.lower}`],
+    ['Higher representation (shown, never a signal)', `ratio above ${t.higher}`],
+    [
+      'Too few records',
+      `fewer than ${t.minRecords} records for the cancer, or fewer than ${t.minExpected} matching records expected at the oncology-wide share`,
+    ],
+    [
+      'Expected (population)',
+      'a low share of pediatric studies in cancers that occur mainly in adults, or of older-adult studies in cancers that occur mainly in children',
+    ],
+  ];
   return (
     <DocPage
       title="Methodology"
       intro="How Cancer Insight retrieves, checks, classifies and counts cancer research. The tables on this page are generated from the same code that runs the site."
-      updated="9 October 2026"
+      updated="11 October 2026"
       toc={TOC}
     >
       <h2 id="purpose">Purpose</h2>
@@ -97,6 +104,15 @@ export default function Methodology() {
           research records for {FEED_CANCERS.length} cancer types ({FEED_CANCERS.join(', ')}),
           including treatment-category tags. Cancer Insight re-checks every feed record and replaces
           its metadata with PubMed’s where a PubMed ID exists.
+        </li>
+        <li>
+          <strong>ClinicalTrials.gov</strong> (U.S. National Library of Medicine), via its data API
+          version 2: registered clinical studies for each cancer.
+        </li>
+        <li>
+          <strong>GLOBOCAN 2024</strong> (Global Cancer Observatory, International Agency for
+          Research on Cancer): worldwide estimates of new cases and deaths, used to compare research
+          with burden.
         </li>
         <li>
           <strong>Wikimedia Commons</strong>: openly licensed scientific images.
@@ -156,26 +172,7 @@ export default function Methodology() {
         Evidence types come from PubMed publication types, using one classifier everywhere on the
         site. When a record has several types, the first matching row below wins.
       </p>
-      <div className="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Label shown</th>
-              <th>PubMed publication types</th>
-              <th>Family</th>
-            </tr>
-          </thead>
-          <tbody>
-            {EVIDENCE_ROWS.map(([label, types, family]) => (
-              <tr key={label}>
-                <td>{label}</td>
-                <td>{types}</td>
-                <td>{family}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <EvidenceTable />
       <ul>
         <li>Randomized controlled trials always count as clinical trials.</li>
         <li>
@@ -198,38 +195,7 @@ export default function Methodology() {
         11 publication years, and for each study design below. Each count is a separate PubMed
         search and links to it.
       </p>
-      <div className="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Measure</th>
-              <th>Added to the cancer query</th>
-            </tr>
-          </thead>
-          <tbody>
-            {DESIGNS.map(d => (
-              <tr key={d.id}>
-                <td>{d.label}</td>
-                <td>
-                  <code>AND {d.term}</code>
-                </td>
-              </tr>
-            ))}
-            <tr>
-              <td>{FREE_FULL_TEXT.label}</td>
-              <td>
-                <code>AND {FREE_FULL_TEXT.term}</code>
-              </td>
-            </tr>
-            <tr>
-              <td>A publication year, e.g. 2024</td>
-              <td>
-                <code>AND (&quot;2024&quot;[dp] : &quot;2024&quot;[dp])</code>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <FootprintTable />
       <p>
         Read these counts with three cautions: PubMed indexes more journals than it used to, so
         growth over time partly reflects coverage; the current year is incomplete; and publication
@@ -243,26 +209,7 @@ export default function Methodology() {
         cancer’s literature, the study designs among them, how many were published in the last five
         years and how many have a free full text. Example records are PubMed Best Match.
       </p>
-      <div className="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Category</th>
-              <th>PubMed terms</th>
-            </tr>
-          </thead>
-          <tbody>
-            {Object.entries(TREATMENTS).map(([id, tr]) => (
-              <tr key={id}>
-                <td>{tr.label}</td>
-                <td>
-                  <code>{tr.term}</code>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <TreatmentTable />
       <p>
         A comparison of two categories compares literature: how much has been published and in which
         designs. It does not compare effectiveness or safety, and the two lists of example records
@@ -279,93 +226,14 @@ export default function Methodology() {
 share(oncology) = records(oncology AND measure) ÷ records(oncology)
 ratio           = share(cancer) ÷ share(oncology)`}
       </code>
-      <div className="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Reading</th>
-              <th>Rule</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Much lower representation</td>
-              <td>ratio below {t.muchLower}</td>
-            </tr>
-            <tr>
-              <td>Lower representation (a signal)</td>
-              <td>ratio below {t.lower}</td>
-            </tr>
-            <tr>
-              <td>Higher representation (shown, never a signal)</td>
-              <td>ratio above {t.higher}</td>
-            </tr>
-            <tr>
-              <td>Too few records</td>
-              <td>
-                fewer than {t.minRecords} records for the cancer, or fewer than {t.minExpected}{' '}
-                matching records expected at the oncology-wide share
-              </td>
-            </tr>
-            <tr>
-              <td>Expected (population)</td>
-              <td>
-                a low share of pediatric studies in cancers that occur mainly in adults, or of
-                older-adult studies in cancers that occur mainly in children
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <AtlasRulesTable rows={atlasRules} />
       <p>
         These thresholds are exploratory design choices, not accepted standards. Because the atlas
         compares shares across the whole index rather than a sample, sampling error does not apply;
         the uncertainty lies in how well each query captures its concept.
       </p>
       <h3>Measures</h3>
-      <div className="tableWrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Measure</th>
-              <th>PubMed terms</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ATLAS_DESIGN_IDS.map(id => (
-              <tr key={id}>
-                <td>{DESIGN_BY_ID[id].label}</td>
-                <td>
-                  <code>{DESIGN_BY_ID[id].term}</code>
-                </td>
-              </tr>
-            ))}
-            {THEMES.map(th => (
-              <tr key={th.id}>
-                <td>
-                  {th.label}
-                  {th.kind === 'population' ? ' (title/abstract only)' : ''}
-                </td>
-                <td>
-                  <code>{th.term}</code>
-                </td>
-              </tr>
-            ))}
-            <tr>
-              <td>{FREE_FULL_TEXT.label}</td>
-              <td>
-                <code>{FREE_FULL_TEXT.term}</code>
-              </td>
-            </tr>
-            <tr>
-              <td>Published in the last three years</td>
-              <td>
-                <code>(&quot;YYYY−2&quot;[dp] : &quot;YYYY&quot;[dp])</code>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <AtlasMeasuresTable />
       <p>
         Population themes use title/abstract wording only, so they count studies that focus on a
         population rather than every study that enrolled it. The oncology baseline is:
@@ -414,6 +282,141 @@ ratio           = share(cancer) ÷ share(oncology)`}
         </li>
       </ul>
 
+      <h2 id="map">All-cancer map</h2>
+      <p>
+        The map applies the atlas to every cancer in the catalogue ({Object.keys(CANCERS).length}{' '}
+        cancers) and every atlas measure at once. Each cell is the same ratio as in the atlas — the
+        cancer’s share of records matching the measure divided by the oncology-wide share — and
+        links to the PubMed search behind it. Counts are cached for a day, so the map fills quickly
+        after its first build.
+      </p>
+      <ul>
+        <li>
+          Colours use a diverging scale centred on a ratio of 1: brown for lower representation,
+          blue for higher, and a pale neutral between 0.8 and 1.25. Every cell also shows its value,
+          so colour is never the only cue. The map is built as a table that screen readers can
+          navigate, and it can be downloaded as CSV.
+        </li>
+        <li>
+          Only ratios below {t.lower} are signals, exactly as in the atlas. The extra colour steps
+          are there to make the picture readable, not to create new categories.
+        </li>
+        <li>
+          The map compares each cancer with oncology overall. Comparing cancers with each other
+          should be done with care: their queries differ in breadth, and a broad query (such as
+          head and neck cancer) includes several diseases.
+        </li>
+      </ul>
+
+      <h2 id="trials">Clinical trials</h2>
+      <p>
+        Trial figures come from ClinicalTrials.gov (data API version 2). For each cancer one
+        condition search is sent — ClinicalTrials.gov adds its own synonyms — every matching study
+        is downloaded with a small set of fields (identifier, status, phase, study type, whether
+        results are posted, start and completion dates, lead sponsor type and site countries), and
+        every figure is counted from that single list. The list can be downloaded as CSV, one row
+        per study, with the categories used on the page, so any number can be checked. Up to 40,000
+        studies are counted per cancer; if a search returns more, the page says so.
+      </p>
+      <p>
+        The cancer name is sent as the condition, except for the cancers below, where the
+        registry’s usual term is used:
+      </p>
+      <TrialConditionsTable />
+      <p>
+        The study-type split counts every registered study. Statuses, phases, sponsors, countries
+        and start years count interventional trials only. Statuses are grouped as follows:
+      </p>
+      <TrialStatusTable />
+      <h3>Completed without results posted</h3>
+      <p>
+        This measure counts interventional trials whose status is “Completed”, whose primary
+        completion date (or completion date, if the primary date is missing) is at least{' '}
+        {RESULTS_LAG_MONTHS} months ago, and which have no results section on ClinicalTrials.gov.
+        The share is out of all completed interventional trials past the same date.
+      </p>
+      <ul>
+        <li>
+          <strong>It is not proof that results were never shared.</strong> Many trials report in
+          journals or elsewhere instead, and many studies — for example phase 1 trials, or trials
+          outside U.S. law — are not required to post results on ClinicalTrials.gov.
+        </li>
+        <li>
+          The {RESULTS_LAG_MONTHS}-month allowance is deliberately longer than the 12 months U.S. law
+          gives most trials it covers, so recently finished trials are not counted.
+        </li>
+        <li>
+          Statuses are reported by sponsors and are not always kept up to date; “status not verified
+          recently” is ClinicalTrials.gov’s own label for records it considers out of date.
+        </li>
+        <li>
+          Countries are those listed as trial sites. A trial with sites in several countries counts
+          once in each, so country counts add up to more than the number of trials.
+        </li>
+      </ul>
+
+      <h2 id="burden">Research compared with burden</h2>
+      <p>
+        This comparison sets each cancer’s share of recent research beside its share of deaths
+        (or new cases) worldwide.
+      </p>
+      <code className="formula">
+        {`research share = records(cancer, last 5 complete years) ÷ records(oncology, same years)
+burden share   = deaths(cancer) ÷ deaths(all cancers)     (or new cases)
+ratio          = research share ÷ burden share`}
+      </code>
+      <ul>
+        <li>
+          <strong>Burden:</strong> {GLOBOCAN.edition} estimates — {GLOBOCAN.product}, {GLOBOCAN.scope}{' '}
+          — transcribed from the world fact sheet and checked twice against it. Shares are of all
+          cancers, including non-melanoma skin cancer, as GLOBOCAN reports them.
+        </li>
+        <li>
+          <strong>Research:</strong> each cancer’s PubMed query (the same one used everywhere on the
+          site) limited to the last five complete publication years, divided by the oncology
+          baseline for the same years.
+        </li>
+        <li>
+          A ratio above 1 means the cancer’s share of recent research is larger than its share of
+          deaths; below 1, smaller. Research shares overlap — one paper can be about several
+          cancers — so they do not add up to 100%.
+        </li>
+        <li>
+          <strong>Burden is one reason among many to study a cancer.</strong> Survival, curability,
+          how many people live with the disease and scientific opportunity matter too. The ratio
+          describes where attention goes; it never says how much research a cancer should get.
+        </li>
+      </ul>
+      <p>Catalogue cancers are matched to GLOBOCAN sites as follows:</p>
+      <BurdenMapTable />
+      <p>These catalogue entries are not compared:</p>
+      <BurdenExcludedTable />
+      <p className="small">
+        Citation: {GLOBOCAN.citation}
+      </p>
+
+      <h2 id="retractions">Retractions</h2>
+      <p>
+        Retracted records are those PubMed indexes with the publication type “Retracted
+        Publication”:
+      </p>
+      <code className="formula">{`(cancer query) AND ${RETRACTED_TERM}`}</code>
+      <p>
+        Cancer profiles report how many of a cancer’s records are retracted, the rate per 10,000
+        records, and the most recently published retracted records. Retractions reach PubMed after
+        the journal publishes a notice, so the count lags; and a retraction can be for honest error
+        as well as misconduct. Papers lists and exports carry a retraction warning wherever such a
+        record appears.
+      </p>
+
+      <h2 id="profiles">Cancer profiles</h2>
+      <p>
+        Each catalogue cancer has a profile page that gathers, on one page, the figures described
+        above: its PubMed literature, its row of the all-cancer map, its clinical trials, its
+        retractions and, where GLOBOCAN reports it, its burden. Every figure is computed by the
+        same code as the full tool it comes from and links to it.
+      </p>
+
       <h2 id="images">Images</h2>
       <p>
         Images come from Wikimedia Commons searches for the cancer combined with histopathology,
@@ -447,10 +450,28 @@ ratio           = share(cancer) ÷ share(oncology)`}
         </li>
       </ul>
 
+      <h2 id="open-data">Open data</h2>
+      <p>
+        The figures behind every analysis can be fetched as JSON (and some as CSV) from stable
+        addresses listed on the <Link href="/data">open data page</Link>. Each response includes
+        the searches that produced it. The data keep the terms of their original sources; burden
+        figures in particular are IARC’s and should be cited to IARC.
+      </p>
+
+      <h2 id="languages">English and Arabic</h2>
+      <p>
+        The whole site is available in Arabic at <Link href="/ar">/ar</Link>, laid out right to
+        left. Searches in Arabic are matched to the same catalogue, so the same PubMed and
+        ClinicalTrials.gov queries — which are always in English — produce the same numbers in both
+        languages. Paper titles and abstracts are shown in their original language, and exported
+        files stay in English so they work in reference managers. Numbers use Western digits in
+        both languages.
+      </p>
+
       <h2 id="reproducibility">Reproducibility</h2>
       <p>
-        PubMed counts are cached for up to 24 hours and record lists for up to 12 hours, so a number
-        can lag PubMed by a day. Opening a count’s link runs the same query on PubMed; small
+        PubMed counts and ClinicalTrials.gov lists are cached for up to 24 hours and record lists
+        for up to 12 hours, so a number can lag its source by a day. Opening a count’s link runs the same query on PubMed; small
         differences are normal as records are added and re-indexed. Requests follow NCBI’s usage
         policy (identified tool, contact address, rate limits and retries).
       </p>
@@ -464,6 +485,14 @@ ratio           = share(cancer) ÷ share(oncology)`}
         <li>Title/abstract matching catches incidental mentions and misses unusual wording.</li>
         <li>The research feed’s coverage and tagging rules are controlled by its provider.</li>
         <li>Deduplication relies on PubMed IDs, DOIs and titles and can miss duplicates.</li>
+        <li>
+          ClinicalTrials.gov is one registry among several; trials registered only elsewhere (for
+          example in the EU or WHO registries) are not counted.
+        </li>
+        <li>
+          GLOBOCAN figures are modelled estimates; for countries with limited cancer registration
+          they carry wide uncertainty.
+        </li>
       </ul>
       <p>
         If something looks wrong, <Link href="/contact">tell us</Link> — include the cancer, the
@@ -473,7 +502,13 @@ ratio           = share(cancer) ÷ share(oncology)`}
       <h2 id="versions">Version history</h2>
       <ul>
         <li>
-          <strong>October 2026</strong> — Research Gap Atlas Method 3.0; shared query catalogue;
+          <strong>11 October 2026</strong> — clinical trials from ClinicalTrials.gov; research
+          compared with GLOBOCAN 2024 burden; all-cancer map; cancer profiles; retraction counts;
+          open data; Arabic edition. The head and neck cancer query was narrowed to mouth,
+          otorhinolaryngologic and salivary gland headings, so its counts are lower than before.
+        </li>
+        <li>
+          <strong>9 October 2026</strong> — Research Gap Atlas Method 3.0; shared query catalogue;
           PubMed counts with linked queries; evidence-type classifier; retraction warnings.
         </li>
         <li>

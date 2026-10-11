@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import DocPage from '../../_components/DocPage';
+import { languageAlternates } from '../../../lib/i18n/index.js';
 
 export const metadata = {
   title: 'Contact',
   description:
     'Contact Cancer Insight about incorrect research information, broken links, image attribution, privacy or the methodology.',
-  alternates: { canonical: '/contact' },
+  alternates: { canonical: '/contact', languages: languageAlternates('/contact') },
 };
 
 export default function Contact() {
@@ -25,14 +26,15 @@ export default function Contact() {
       <p>Include as much of this as you can — it lets us reproduce the problem:</p>
       <ul>
         <li>
-          the cancer type you searched and the page (Overview, Papers, Treatments, Gap Atlas…);
+          the cancer type you searched and the page (Overview, Papers, Treatments, Trials, Gap
+          Atlas, cancer map, research vs burden…);
         </li>
-        <li>the paper title and its PubMed ID or DOI;</li>
+        <li>the paper title and its PubMed ID or DOI, or the trial’s NCT number;</li>
         <li>what looks wrong, and what you expected.</li>
       </ul>
       <p>
-        Some information comes from PubMed or the research feed; we can explain it, but corrections
-        to the records themselves have to be made at the source.
+        Some information comes from PubMed, ClinicalTrials.gov, GLOBOCAN or the research feed; we can
+        explain it, but corrections to the records themselves have to be made at the source.
       </p>
 
       <h2>Images and attribution</h2>

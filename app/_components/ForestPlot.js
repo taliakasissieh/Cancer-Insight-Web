@@ -8,6 +8,7 @@
 */
 
 import { useEffect, useRef, useState } from 'react';
+import { useI18n } from './I18n';
 import { fmtRatio, fmtShare } from '../../lib/format';
 
 const MIN = 0.1;
@@ -35,10 +36,12 @@ function useWidth(initial) {
 export default function ForestPlot({
   rows,
   groups,
-  title = 'Representation relative to oncology overall',
+  title,
   compact = false,
   idPrefix = 'fp',
 }) {
+  const { t, locale } = useI18n();
+  const rtl = locale === 'ar';
   const [ref, W] = useWidth(compact ? 480 : 760);
   const narrow = W < 560;
   const labelW = narrow ? Math.min(132, Math.round(W * 0.36)) : compact ? 150 : 250;
@@ -79,9 +82,9 @@ export default function ForestPlot({
   const titleId = `${idPrefix}-title`;
 
   return (
-    <div className="forest" ref={ref}>
+    <div className="forest" ref={ref} dir="ltr">
       <svg viewBox={`0 0 ${W} ${H}`} width={W} height={H} role="group" aria-labelledby={titleId}>
-        <title id={titleId}>{title}</title>
+        <title id={titleId}>{title || t('atlas.profileTitle')}</title>
         <rect
           className="fpZone"
           x={x(MIN)}
@@ -89,38 +92,38 @@ export default function ForestPlot({
           width={x(0.5) - x(MIN)}
           height={plotBottom - top}
         />
-        {ticks.map(t => (
-          <g key={t}>
+        {ticks.map(tick => (
+          <g key={tick}>
             <line
-              className={t === 1 ? 'fpNull' : 'fpGrid'}
-              x1={x(t)}
-              x2={x(t)}
+              className={tick === 1 ? 'fpNull' : 'fpGrid'}
+              x1={x(tick)}
+              x2={x(tick)}
               y1={top}
               y2={plotBottom}
-              strokeDasharray={t === 1 ? undefined : '3 4'}
+              strokeDasharray={tick === 1 ? undefined : '3 4'}
             />
-            <text className="fpTick" x={x(t)} y={plotBottom + 16} textAnchor="middle">
-              {t === 1 && !narrow ? '1× (same)' : `${t}×`}
+            <text className="fpTick" x={x(tick)} y={plotBottom + 16} textAnchor="middle">
+              {tick === 1 && !narrow ? t('atlas.plot.same') : `${tick}×`}
             </text>
           </g>
         ))}
         {showShare && (
           <>
             <text className="fpTick" x={x1 + 62} y={top - 0} textAnchor="end" dy="-1">
-              ratio
+              {t('atlas.plot.ratio')}
             </text>
             <text className="fpTick" x={W - 4} y={top - 0} textAnchor="end" dy="-1">
-              share
+              {t('atlas.plot.share')}
             </text>
           </>
         )}
         {!compact && !narrow && (
           <>
             <text className="fpTick" x={x0} y={H - 1} textAnchor="start">
-              ← lower share than oncology
+              {t('atlas.plot.lowerSide')}
             </text>
             <text className="fpTick" x={x1} y={H - 1} textAnchor="end">
-              higher share →
+              {t('atlas.plot.higherSide')}
             </text>
           </>
         )}
@@ -146,11 +149,18 @@ export default function ForestPlot({
                 ? 'var(--ochre)'
                 : 'var(--ink)';
           const value = has ? fmtRatio(item.ratio) : '—';
-          const aria = `${item.label}: ${has ? `${value} the oncology-wide share` : 'not available'}${
+          const aria = `${
+            has
+              ? t('atlas.plot.ariaValue', { label: item.label, value })
+              : `${item.label}: ${t('atlas.plot.notAvailable')}`
+          }${
             item.share != null
-              ? `, ${fmtShare(item.share)} of records versus ${fmtShare(item.baselineShare)} across oncology`
+              ? t('atlas.plot.ariaShares', {
+                  share: fmtShare(item.share, undefined, locale),
+                  baselineShare: fmtShare(item.baselineShare, undefined, locale),
+                })
               : ''
-          }${context ? ', expected for this cancer’s population' : ''}. Opens the PubMed search.`;
+          }${context ? t('atlas.plot.ariaContext') : ''}${t('atlas.plot.ariaOpen')}`;
 
           const content = (
             <g className="fpRow">
@@ -163,7 +173,13 @@ export default function ForestPlot({
                 fill="transparent"
                 rx="4"
               />
-              <text className="fpLabel" x={8} y={cy + 4.5}>
+              <text
+                className="fpLabel"
+                x={8}
+                y={cy + 4.5}
+                direction={rtl ? 'rtl' : 'ltr'}
+                textAnchor={rtl ? 'end' : 'start'}
+              >
                 {narrow || compact ? item.short || item.label : item.label}
               </text>
               {has && (
@@ -210,7 +226,7 @@ export default function ForestPlot({
               </text>
               {showShare && item.share != null && (
                 <text className="fpTick" x={W - 4} y={cy + 4.5} textAnchor="end">
-                  {fmtShare(item.share)}
+                  {fmtShare(item.share, undefined, locale)}
                 </text>
               )}
             </g>
@@ -233,18 +249,18 @@ export default function ForestPlot({
           );
         })}
       </svg>
-      <div className="fpLegend" aria-hidden="true">
+      <div className="fpLegend" aria-hidden="true" dir={rtl ? 'rtl' : 'ltr'}>
         <span>
-          <i className="fpKey similar" /> share relative to oncology
+          <i className="fpKey similar" /> {t('atlas.plot.keySimilar')}
         </span>
         <span>
-          <i className="fpKey lower" /> lower representation (&lt; 0.5×)
+          <i className="fpKey lower" /> {t('atlas.plot.keyLower')}
         </span>
         <span>
-          <i className="fpKey context" /> explained by population or too few records
+          <i className="fpKey context" /> {t('atlas.plot.keyContext')}
         </span>
         <span>
-          <i className="fpKey zone" /> below 0.5×
+          <i className="fpKey zone" /> {t('atlas.plot.keyZone')}
         </span>
       </div>
     </div>

@@ -182,7 +182,7 @@ details > summary {
 
 .skipLink {
   position: absolute;
-  left: 12px;
+  inset-inline-start: 12px;
   top: -60px;
   z-index: 100;
   background: var(--ink);
@@ -704,6 +704,24 @@ details > summary {
   font-weight: 600;
 }
 
+/* ---------- saved ---------- */
+
+.savedOn {
+  margin: 14px 0 -12px;
+  padding-inline-start: 20px;
+}
+
+/* ---------- open data ---------- */
+
+.citeBox {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--r-s);
+  background: var(--sky);
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
 /* ---------- trials ---------- */
 
 .resultsPanel {
@@ -1115,7 +1133,7 @@ details > summary {
   border: 1px dashed var(--rule-strong);
   border-radius: var(--r-m);
   background: var(--paper);
-  text-align: left;
+  text-align: start;
 }
 .emptyState h3 {
   margin-bottom: 6px;
@@ -1139,7 +1157,7 @@ details > summary {
 }
 .searchInputWrap .icon {
   position: absolute;
-  left: 14px;
+  inset-inline-start: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--muted);
@@ -1148,7 +1166,8 @@ details > summary {
 .searchInput {
   width: 100%;
   min-height: 52px;
-  padding: 10px 14px 10px 44px;
+  padding-block: 10px;
+  padding-inline: 44px 14px;
   border: 1px solid var(--control);
   border-radius: var(--r-s);
   background: var(--paper);
@@ -1254,24 +1273,20 @@ details > summary {
 .toolList {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0;
-  border-top: 2px solid var(--ink);
+  gap: 16px;
   list-style: none;
   margin: 0;
   padding: 0;
 }
 .toolList li {
-  padding: 22px 24px 8px 0;
-  border-right: 1px solid var(--rule);
-}
-.toolList li + li {
-  padding-left: 24px;
-}
-.toolList li:last-child {
-  border-right: 0;
+  padding: 20px 22px 6px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--teal-bright);
+  border-radius: var(--r-m);
 }
 .toolList h3 {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   margin-bottom: 6px;
 }
 .toolList h3 a {
@@ -1284,7 +1299,30 @@ details > summary {
 }
 .toolList p {
   color: var(--ink-2);
-  font-size: 0.98rem;
+  font-size: 0.97rem;
+}
+.dataBand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px 32px;
+  padding: 24px 28px;
+  border-radius: var(--r-l);
+  background: var(--navy);
+  color: #fff;
+}
+.dataBand h2 {
+  color: #fff;
+  margin-bottom: 4px;
+}
+.dataBand p {
+  margin: 0;
+  max-width: 70ch;
+  color: #dbe7ee;
+}
+.dataBand .btn {
+  background: #fff;
 }
 .toolAnswers {
   font-size: 0.9rem;
@@ -1346,7 +1384,7 @@ details > summary {
 }
 .limitsGrid ul {
   margin: 0;
-  padding-left: 1.1em;
+  padding-inline-start: 1.1em;
 }
 .limitsGrid li {
   margin-bottom: 6px;
@@ -1619,12 +1657,12 @@ details > summary {
   border-radius: 4px;
 }
 .shareValue {
-  text-align: right;
+  text-align: end;
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
 }
 .shareValue .muted {
-  margin-left: 6px;
+  margin-inline-start: 6px;
   font-size: 0.85rem;
 }
 
@@ -1653,7 +1691,7 @@ details > summary {
   gap: 8px;
 }
 .mixLegend .num {
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 .swatch {
   width: 10px;
@@ -1677,10 +1715,6 @@ details > summary {
   color: var(--ink);
 }
 
-.nextSteps {
-  display: grid;
-  gap: 10px;
-}
 .nextStep {
   display: block;
   padding: 14px 16px;
@@ -1703,6 +1737,16 @@ details > summary {
 .nextStep span {
   font-size: 0.92rem;
   color: var(--ink-2);
+}
+.nextStepButton {
+  width: 100%;
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+}
+.nextSteps {
+  display: grid;
+  gap: 10px;
 }
 
 /* ---------- papers ---------- */
@@ -1738,7 +1782,7 @@ details > summary {
 .sourceSwitch button {
   display: grid;
   gap: 2px;
-  text-align: left;
+  text-align: start;
   padding: 10px 12px;
   border: 1px solid var(--control);
   border-radius: var(--r-s);
@@ -1787,13 +1831,14 @@ details > summary {
 
 .paperItem {
   position: relative;
-  padding: 22px 0 22px 20px;
+  padding-block: 22px;
+  padding-inline: 20px 0;
   border-bottom: 1px solid var(--rule);
 }
 .paperItem::before {
   content: '';
   position: absolute;
-  left: 0;
+  inset-inline-start: 0;
   top: 24px;
   bottom: 24px;
   width: 3px;
@@ -2016,7 +2061,7 @@ details > summary {
 .dataTable td {
   padding: 10px 12px;
   border-bottom: 1px solid var(--rule);
-  text-align: left;
+  text-align: start;
   vertical-align: top;
 }
 .dataTable thead th {
@@ -2027,7 +2072,7 @@ details > summary {
 }
 .dataTable td.numCell,
 .dataTable th.numCell {
-  text-align: right;
+  text-align: end;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
@@ -2051,7 +2096,7 @@ details > summary {
   border-radius: 3px;
   background: var(--teal-bright);
   vertical-align: middle;
-  margin-right: 8px;
+  margin-inline-end: 8px;
 }
 
 /* ---------- images ---------- */
@@ -2295,7 +2340,7 @@ details > summary {
 }
 .claims ul {
   margin: 0;
-  padding-left: 1.1em;
+  padding-inline-start: 1.1em;
 }
 .claims li {
   margin-bottom: 6px;
@@ -2363,7 +2408,7 @@ details > summary {
 }
 .prose ul,
 .prose ol {
-  padding-left: 1.2em;
+  padding-inline-start: 1.2em;
   margin: 0 0 1em;
 }
 .prose li {
@@ -2397,7 +2442,7 @@ details > summary {
 .prose td {
   border-bottom: 1px solid var(--rule);
   padding: 8px 10px;
-  text-align: left;
+  text-align: start;
   vertical-align: top;
 }
 .prose thead th {
@@ -2471,6 +2516,9 @@ details > summary {
   .overviewGrid {
     grid-template-columns: minmax(0, 1fr);
   }
+  .toolList {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .pipeline {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -2527,17 +2575,14 @@ details > summary {
   .siteNav ul a[aria-current='page'] {
     box-shadow: inset 3px 0 0 var(--teal-bright);
   }
+  [dir='rtl'] .siteNav ul a[aria-current='page'] {
+    box-shadow: inset -3px 0 0 var(--teal-bright);
+  }
   .savedLink {
     justify-content: center;
   }
   .toolList {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .toolList li,
-  .toolList li + li {
-    padding: 18px 0 6px;
-    border-right: 0;
-    border-bottom: 1px solid var(--rule);
   }
   .limitsGrid,
   .claims,
@@ -2628,14 +2673,14 @@ details > summary {
   }
   .dataTable th:first-child,
   .dataTable td:first-child {
-    padding-left: 0;
+    padding-inline-start: 0;
   }
   .dataTable th:last-child,
   .dataTable td:last-child {
-    padding-right: 0;
+    padding-inline-end: 0;
   }
   .paperItem {
-    padding-left: 14px;
+    padding-inline-start: 14px;
   }
   .limitsGrid {
     padding: 20px;

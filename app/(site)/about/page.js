@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import DocPage from '../../_components/DocPage';
+import { languageAlternates } from '../../../lib/i18n/index.js';
 
 export const metadata = {
   title: 'About',
   description:
     'Cancer Insight is an independent, educational explorer of cancer research that keeps the original evidence visible and every number reproducible.',
-  alternates: { canonical: '/about' },
+  alternates: { canonical: '/about', languages: languageAlternates('/about') },
 };
 
 export default function About() {
@@ -50,9 +51,28 @@ export default function About() {
         </li>
         <li>
           Build a <Link href="/research-gap-atlas">Research Gap Atlas</Link> to see which designs
-          and themes are less represented than across oncology overall.
+          and themes are less represented than across oncology overall, or see every cancer at once
+          on the <Link href="/cancer-map">cancer map</Link>.
+        </li>
+        <li>
+          See a cancer’s registered clinical trials from ClinicalTrials.gov: where they stand, their
+          phases, sponsors and countries, and how many completed trials have no results posted.
+        </li>
+        <li>
+          Compare each cancer’s share of research with its share of deaths and new cases worldwide
+          on <Link href="/research-vs-burden">research vs burden</Link>.
+        </li>
+        <li>
+          Open a <Link href="/cancers">cancer profile</Link> that brings these together, including
+          retracted papers.
         </li>
         <li>Save papers in your browser and export them as CSV, RIS citations or a PDF report.</li>
+        <li>
+          Use the <Link href="/data">open data</Link> addresses to check or reuse any figure.
+        </li>
+        <li>
+          Use the whole site in <Link href="/ar">Arabic</Link>.
+        </li>
       </ul>
 
       <h2>What it is not</h2>
@@ -63,8 +83,9 @@ export default function About() {
 
       <h2>Sources and independence</h2>
       <p>
-        Research data comes from NCBI PubMed and PubMed Central, the Cure Cancer With AI research
-        API and Wikimedia Commons. Cancer Insight is independent and is not affiliated with these
+        Research data comes from NCBI PubMed and PubMed Central, ClinicalTrials.gov, the Cure Cancer
+        With AI research API and Wikimedia Commons; burden figures come from GLOBOCAN 2024
+        (International Agency for Research on Cancer). Cancer Insight is independent and is not affiliated with these
         organisations. The <Link href="/methodology">methodology</Link> documents every rule and
         query.
       </p>

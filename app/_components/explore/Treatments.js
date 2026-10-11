@@ -5,11 +5,14 @@ import CountLink from '../CountLink';
 import PaperItem from '../PaperItem';
 import QueryBox from '../QueryBox';
 import Icon from '../Icon';
+import { useI18n } from '../I18n';
 import { cachedPost } from '../../../lib/client/api';
 import { track } from '../../../lib/client/track';
-import { fmtInt, fmtShare, lowerFirst } from '../../../lib/format';
+import { fmtShare, lowerFirst } from '../../../lib/format';
 import { DEFAULT_TREATMENT_KEYS, resolveTreatment } from '../../../lib/queries';
 import { paperKey, treatmentTags } from '../../../lib/evidence';
+import { cancerName, localizeError } from '../../../lib/i18n/labels.js';
+import { richText } from '../../../lib/i18n/rich.js';
 
 function useTreatmentProfile(cancer, key) {
   const [state, setState] = useState({ status: 'idle', data: null, error: '' });
@@ -27,26 +30,42 @@ function useTreatmentProfile(cancer, key) {
   return state;
 }
 
-function rowsFor(d) {
+/* Names in the page language. English keeps lower-case inside sentences. */
+function useNames() {
+  const { t, locale } = useI18n();
+  const treatment = (key, inSentence = false) => {
+    const id = resolveTreatment(key)?.id || key;
+    const dictKey = `treatments.${id}`;
+    const label = t(dictKey) === dictKey ? resolveTreatment(key)?.label || key : t(dictKey);
+    return inSentence && locale !== 'ar' ? lowerFirst(label) : label;
+  };
+  const cancer = (c, inSentence = true) => {
+    const name = cancerName(t, c);
+    return inSentence && locale !== 'ar' ? lowerFirst(name) : name;
+  };
+  return { treatment, cancer };
+}
+
+function rowsFor(d, t) {
   if (!d) return [];
   return [
     ...d.designs.map(x => ({
       id: x.id,
-      label: x.label,
+      label: t(`measures.label.${x.id}`),
       count: x.count,
       url: x.url,
       share: x.share,
     })),
     {
       id: 'recent',
-      label: `Published ${d.recent.label}`,
+      label: t('tx.recentRow', { range: d.recent.label }),
       count: d.recent.count,
       url: d.recent.url,
       share: d.recent.share,
     },
     {
       id: 'fft',
-      label: 'Free full text available',
+      label: t('tx.fftRow'),
       count: d.freeFullText.count,
       url: d.freeFullText.url,
       share: d.freeFullText.share,
@@ -55,57 +74,65 @@ function rowsFor(d) {
 }
 
 function Caution() {
+  const { t } = useI18n();
   return (
     <p className="notice noticeWarn small">
-      <strong>Read as literature, not as results.</strong> These numbers show how much has been
-      published and in which study designs. A treatment with more records, more trials or more
-      recent papers is not shown to be more effective, safer or more suitable for anyone.
+      <strong>{t('tx.cautionStrong')}</strong> {t('tx.cautionBody')}
     </p>
   );
 }
 
-function Profile({ state, cancerLabel, feedPapers, saved }) {
+function Profile({ state, cancer, feedPapers, saved }) {
+  const { t, locale } = useI18n();
+  const names = useNames();
   if (state.status === 'loading' || state.status === 'idle') {
     return (
       <div aria-busy="true">
         <p className="loadingLine">
           <span className="spinner" aria-hidden="true" />
-          Counting PubMed records and finding the most relevant examples…
+          {t('tx.loading')}
         </p>
         <div className="skeleton" style={{ height: 260, marginTop: 12 }} />
       </div>
     );
   }
   if (state.status === 'error') {
-    return <p className="notice noticeError">{state.error}</p>;
+    return <p className="notice noticeError">{localizeError(t, locale, state.error)}</p>;
   }
   const d = state.data;
-  const rows = rowsFor(d);
-  const subject = lowerFirst(cancerLabel);
+  const rows = rowsFor(d, t);
+  const subject = names.cancer(cancer);
+  const tName = names.treatment(d.treatment.id);
   return (
     <div className="stack">
       <section className="panel" aria-labelledby="tp-h">
-        <h2 id="tp-h">
-          {d.treatment.label} in {subject} research
-        </h2>
+        <h2 id="tp-h">{t('tx.profileTitle', { treatment: tName, cancer: subject })}</h2>
         <p className="footprintLead" style={{ fontSize: '1.15rem' }}>
-          <CountLink count={d.total.count} url={d.total.url} /> PubMed records mention{' '}
-          {lowerFirst(d.treatment.label)} — {fmtShare(d.total.shareOfCancer)} of all{' '}
-          <CountLink count={d.cancerTotal.count} url={d.cancerTotal.url} /> {subject} records.
+          {richText(
+            t('tx.profileLead', {
+              treatment: names.treatment(d.treatment.id, true),
+              share: fmtShare(d.total.shareOfCancer, undefined, locale),
+              cancer: subject,
+            }),
+            {
+              count: <CountLink count={d.total.count} url={d.total.url} />,
+              total: <CountLink count={d.cancerTotal.count} url={d.cancerTotal.url} />,
+            }
+          )}
         </p>
         <div className="tableWrap">
           <table className="dataTable">
             <caption className="visuallyHidden">
-              Study designs among PubMed records on {d.treatment.label} in {subject}
+              {t('tx.caption', { treatment: tName, cancer: subject })}
             </caption>
             <thead>
               <tr>
-                <th scope="col">Among these records</th>
+                <th scope="col">{t('tx.among')}</th>
                 <th scope="col" className="numCell">
-                  Records
+                  {t('tx.records')}
                 </th>
                 <th scope="col" className="numCell">
-                  Share
+                  {t('tx.share')}
                 </th>
               </tr>
             </thead>
@@ -116,23 +143,21 @@ function Profile({ state, cancerLabel, feedPapers, saved }) {
                   <td className="numCell">
                     <CountLink count={r.count} url={r.url} />
                   </td>
-                  <td className="numCell">{fmtShare(r.share)}</td>
+                  <td className="numCell">{fmtShare(r.share, undefined, locale)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-        <QueryBox term={d.query.term} title="PubMed query for this treatment" />
+        <QueryBox term={d.query.term} title={t('tx.queryTitle')} />
       </section>
 
       {feedPapers.length > 0 && (
         <section aria-labelledby="tp-feed-h">
           <div className="sectionHead">
             <div>
-              <h3 id="tp-feed-h">Tagged in the recent research feed</h3>
-              <p className="muted small">
-                {feedPapers.length} of the recent records carry this treatment tag.
-              </p>
+              <h3 id="tp-feed-h">{t('tx.taggedTitle')}</h3>
+              <p className="muted small">{t('tx.taggedNote', { n: feedPapers.length })}</p>
             </div>
           </div>
           <ol className="paperList">
@@ -142,7 +167,7 @@ function Profile({ state, cancerLabel, feedPapers, saved }) {
                   paper={p}
                   headingLevel={4}
                   saved={saved.isSaved(p)}
-                  onToggleSave={paper => saved.toggle(paper, { cancer: cancerLabel })}
+                  onToggleSave={paper => saved.toggle(paper, { cancer: cancer.label })}
                 />
               </li>
             ))}
@@ -153,11 +178,8 @@ function Profile({ state, cancerLabel, feedPapers, saved }) {
       <section aria-labelledby="tp-ex-h">
         <div className="sectionHead">
           <div>
-            <h3 id="tp-ex-h">Most relevant PubMed records</h3>
-            <p className="muted small">
-              PubMed Best Match for the query above, across all years. These are examples, not a
-              summary of the evidence.
-            </p>
+            <h3 id="tp-ex-h">{t('tx.examplesTitle')}</h3>
+            <p className="muted small">{t('tx.examplesNote')}</p>
           </div>
         </div>
         {d.examples.papers.length ? (
@@ -168,77 +190,88 @@ function Profile({ state, cancerLabel, feedPapers, saved }) {
                   paper={p}
                   headingLevel={4}
                   saved={saved.isSaved(p)}
-                  onToggleSave={paper => saved.toggle(paper, { cancer: cancerLabel })}
+                  onToggleSave={paper => saved.toggle(paper, { cancer: cancer.label })}
                 />
               </li>
             ))}
           </ol>
         ) : (
-          <p className="muted">PubMed returned no records for this combination.</p>
+          <p className="muted">{t('tx.noRecords')}</p>
         )}
       </section>
     </div>
   );
 }
 
-function Compare({ a, b, cancerLabel }) {
+function Compare({ a, b, cancer }) {
+  const { t, locale } = useI18n();
+  const names = useNames();
   const da = a.data;
   const db = b.data;
   const ready = da && db;
-  const ra = rowsFor(da);
-  const rb = rowsFor(db);
+  const ra = rowsFor(da, t);
+  const rb = rowsFor(db, t);
   if (a.status === 'error' || b.status === 'error') {
-    return <p className="notice noticeError">{a.error || b.error}</p>;
+    return <p className="notice noticeError">{localizeError(t, locale, a.error || b.error)}</p>;
   }
   if (!ready) {
     return (
       <div aria-busy="true">
         <p className="loadingLine">
           <span className="spinner" aria-hidden="true" />
-          Counting PubMed records for both treatments…
+          {t('tx.compareLoading')}
         </p>
         <div className="skeleton" style={{ height: 300, marginTop: 12 }} />
       </div>
     );
   }
-  const subject = lowerFirst(cancerLabel);
+  const subject = names.cancer(cancer);
+  const nameA = names.treatment(da.treatment.id);
+  const nameB = names.treatment(db.treatment.id);
   return (
     <div className="stack">
       <section className="panel" aria-labelledby="cmp-h">
         <h2 id="cmp-h">
-          {da.treatment.label} and {lowerFirst(db.treatment.label)} in {subject} research
+          {t('tx.compareTitle', {
+            a: nameA,
+            b: names.treatment(db.treatment.id, true),
+            cancer: subject,
+          })}
         </h2>
-        <p className="panelNote">
-          Counts are PubMed records that mention each treatment within {subject} records. A record
-          can mention both. Shares are of each treatment’s own records.
-        </p>
+        <p className="panelNote">{t('tx.compareNote', { cancer: subject })}</p>
         <div className="tableWrap">
           <table className="dataTable">
-            <caption className="visuallyHidden">Comparison of PubMed literature</caption>
+            <caption className="visuallyHidden">{t('tx.compareCaption')}</caption>
             <thead>
               <tr>
-                <th scope="col">Measure</th>
+                <th scope="col">{t('tx.measure')}</th>
                 <th scope="col" className="numCell">
-                  {da.treatment.label}
+                  {nameA}
                 </th>
                 <th scope="col" className="numCell">
-                  {db.treatment.label}
+                  {nameB}
                 </th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <th scope="row">Records mentioning the treatment</th>
+                <th scope="row">{t('tx.mentioning')}</th>
                 <td className="numCell">
                   <CountLink count={da.total.count} url={da.total.url} />
                   <div className="small muted">
-                    {fmtShare(da.total.shareOfCancer)} of {subject}
+                    {t('tx.ofCancer', {
+                      share: fmtShare(da.total.shareOfCancer, undefined, locale),
+                      cancer: subject,
+                    })}
                   </div>
                 </td>
                 <td className="numCell">
                   <CountLink count={db.total.count} url={db.total.url} />
                   <div className="small muted">
-                    {fmtShare(db.total.shareOfCancer)} of {subject}
+                    {t('tx.ofCancer', {
+                      share: fmtShare(db.total.shareOfCancer, undefined, locale),
+                      cancer: subject,
+                    })}
                   </div>
                 </td>
               </tr>
@@ -247,11 +280,11 @@ function Compare({ a, b, cancerLabel }) {
                   <th scope="row">{r.label}</th>
                   <td className="numCell">
                     <CountLink count={r.count} url={r.url} />
-                    <div className="small muted">{fmtShare(r.share)}</div>
+                    <div className="small muted">{fmtShare(r.share, undefined, locale)}</div>
                   </td>
                   <td className="numCell">
                     <CountLink count={rb[i]?.count} url={rb[i]?.url} />
-                    <div className="small muted">{fmtShare(rb[i]?.share)}</div>
+                    <div className="small muted">{fmtShare(rb[i]?.share, undefined, locale)}</div>
                   </td>
                 </tr>
               ))}
@@ -259,18 +292,19 @@ function Compare({ a, b, cancerLabel }) {
           </table>
         </div>
         <div className="profileGrid" style={{ marginTop: 12 }}>
-          <QueryBox term={da.query.term} title={`Query: ${da.treatment.label}`} />
-          <QueryBox term={db.query.term} title={`Query: ${db.treatment.label}`} />
+          <QueryBox term={da.query.term} title={t('tx.queryFor', { treatment: nameA })} />
+          <QueryBox term={db.query.term} title={t('tx.queryFor', { treatment: nameB })} />
         </div>
       </section>
 
       <div className="profileGrid">
         {[da, db].map(d => (
-          <section key={d.treatment.id} aria-label={`Example records for ${d.treatment.label}`}>
-            <h3>Example records: {lowerFirst(d.treatment.label)}</h3>
-            <p className="muted small">
-              Top PubMed Best Match records. They are not paired across columns.
-            </p>
+          <section
+            key={d.treatment.id}
+            aria-label={t('tx.examplesFor', { treatment: names.treatment(d.treatment.id) })}
+          >
+            <h3>{t('tx.examplesForTitle', { treatment: names.treatment(d.treatment.id, true) })}</h3>
+            <p className="muted small">{t('tx.examplesForNote')}</p>
             <ol className="paperList">
               {d.examples.papers.slice(0, 3).map(p => (
                 <li key={paperKey(p)}>
@@ -286,12 +320,14 @@ function Compare({ a, b, cancerLabel }) {
 }
 
 export default function Treatments({ data, saved, treatment, onTreatmentChange }) {
+  const { t } = useI18n();
+  const names = useNames();
   const cancer = data.cancer.input;
   const options = useMemo(() => {
     const feed = Object.fromEntries(data.treatments);
-    const keys = [...new Set([...data.treatments.map(t => t[0]), ...DEFAULT_TREATMENT_KEYS])];
+    const keys = [...new Set([...data.treatments.map(x => x[0]), ...DEFAULT_TREATMENT_KEYS])];
     return keys
-      .map(k => ({ key: k, label: resolveTreatment(k)?.label || k, feedCount: feed[k] || 0 }))
+      .map(k => ({ key: k, feedCount: feed[k] || 0 }))
       .sort((x, y) => y.feedCount - x.feedCount);
   }, [data.treatments]);
 
@@ -318,17 +354,13 @@ export default function Treatments({ data, saved, treatment, onTreatmentChange }
   return (
     <div>
       <div className="viewIntro">
-        <h2>Treatment literature</h2>
-        <p>
-          See how much PubMed research mentions each treatment category for{' '}
-          {lowerFirst(data.cancer.label)}, which study designs it includes, and the most relevant
-          records. Compare two categories side by side.
-        </p>
+        <h2>{t('tx.title')}</h2>
+        <p>{t('tx.intro', { cancer: names.cancer(data.cancer) })}</p>
       </div>
 
-      <div className="modeSwitch" role="group" aria-label="Mode">
+      <div className="modeSwitch" role="group" aria-label={t('tx.modeLabel')}>
         <button type="button" aria-pressed={mode === 'profile'} onClick={() => setMode('profile')}>
-          One treatment
+          {t('tx.one')}
         </button>
         <button
           type="button"
@@ -338,12 +370,12 @@ export default function Treatments({ data, saved, treatment, onTreatmentChange }
             track('treatment_comparison', { cancer_type: cancer });
           }}
         >
-          Compare two
+          {t('tx.compare')}
         </button>
       </div>
 
       {mode === 'profile' ? (
-        <div role="group" aria-label="Treatment category" className="treatmentPicker">
+        <div role="group" aria-label={t('tx.category')} className="treatmentPicker">
           {options.map(o => (
             <button
               key={o.key}
@@ -352,9 +384,9 @@ export default function Treatments({ data, saved, treatment, onTreatmentChange }
               aria-pressed={o.key === selected}
               onClick={() => choose(o.key)}
             >
-              {o.label}
+              {names.treatment(o.key)}
               {o.feedCount > 0 && (
-                <span className="chipCount" title="Records tagged in the recent research feed">
+                <span className="chipCount" title={t('tx.feedCountTitle')}>
                   {o.feedCount}
                 </span>
               )}
@@ -364,23 +396,23 @@ export default function Treatments({ data, saved, treatment, onTreatmentChange }
       ) : (
         <div className="profileGrid" style={{ maxWidth: 640, marginBottom: 8 }}>
           <label className="field">
-            First treatment
+            {t('tx.first')}
             <select value={selected} onChange={e => choose(e.target.value)}>
               {options.map(o => (
                 <option key={o.key} value={o.key}>
-                  {o.label}
+                  {names.treatment(o.key)}
                 </option>
               ))}
             </select>
           </label>
           <label className="field">
-            Second treatment
+            {t('tx.second')}
             <select value={other} onChange={e => setOther(e.target.value)}>
               {options
                 .filter(o => o.key !== selected)
                 .map(o => (
                   <option key={o.key} value={o.key}>
-                    {o.label}
+                    {names.treatment(o.key)}
                   </option>
                 ))}
             </select>
@@ -389,8 +421,7 @@ export default function Treatments({ data, saved, treatment, onTreatmentChange }
       )}
       {mode === 'profile' && data.treatments.length > 0 && (
         <p className="small muted" style={{ marginTop: 4 }}>
-          Numbers beside a category count records tagged with it in the recent research feed (
-          {fmtInt(data.papers.length)} records).
+          {t('tx.feedCountNote', { n: data.papers.length })}
         </p>
       )}
 
@@ -399,19 +430,13 @@ export default function Treatments({ data, saved, treatment, onTreatmentChange }
       </div>
 
       {mode === 'profile' ? (
-        <Profile
-          state={primary}
-          cancerLabel={data.cancer.label}
-          feedPapers={feedPapers}
-          saved={saved}
-        />
+        <Profile state={primary} cancer={data.cancer} feedPapers={feedPapers} saved={saved} />
       ) : (
-        <Compare a={primary} b={secondary} cancerLabel={data.cancer.label} />
+        <Compare a={primary} b={secondary} cancer={data.cancer} />
       )}
 
       <p className="small muted" style={{ marginTop: 24 }}>
-        <Icon name="info" size={14} /> Treatment categories are matched with PubMed terms (MeSH and
-        title/abstract wording). Open any query to see exactly what was counted.
+        <Icon name="info" size={14} /> {t('tx.footer')}
       </p>
     </div>
   );

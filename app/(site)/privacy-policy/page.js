@@ -1,11 +1,12 @@
 import Link from 'next/link';
 import DocPage from '../../_components/DocPage';
+import { languageAlternates } from '../../../lib/i18n/index.js';
 
 export const metadata = {
   title: 'Privacy policy',
   description:
     'What Cancer Insight collects, which services receive your searches, how analytics works and how to opt out.',
-  alternates: { canonical: '/privacy-policy' },
+  alternates: { canonical: '/privacy-policy', languages: languageAlternates('/privacy-policy') },
 };
 
 const TOC = [
@@ -22,7 +23,7 @@ const TOC = [
 
 export default function PrivacyPolicy() {
   return (
-    <DocPage title="Privacy policy" updated="9 October 2026" toc={TOC}>
+    <DocPage title="Privacy policy" updated="11 October 2026" toc={TOC}>
       <h2 id="summary">Summary</h2>
       <ul>
         <li>
@@ -47,6 +48,10 @@ export default function PrivacyPolicy() {
       </p>
       <ul>
         <li>NCBI E-utilities (PubMed), operated by the U.S. National Library of Medicine;</li>
+        <li>
+          the ClinicalTrials.gov data API, also operated by the U.S. National Library of Medicine,
+          for registered trials;
+        </li>
         <li>the Cure Cancer With AI research API, for recent records and treatment tags;</li>
         <li>the Wikimedia Commons API, for images.</li>
       </ul>
@@ -59,9 +64,10 @@ export default function PrivacyPolicy() {
       <h2 id="analytics">Analytics and cookies</h2>
       <p>
         Cancer Insight uses Google Analytics 4 to understand which features are used. It records
-        page views, approximate location (such as country or city), device and browser type, and
-        events such as starting a search (including the cancer type searched), changing views,
-        saving papers, opening sources and downloading exports. Google Analytics sets first-party
+        page views (including whether you use the English or Arabic pages), approximate location
+        (such as country or city), device and browser type, and events such as starting a search
+        (including the cancer type searched), changing views, saving papers, opening sources and
+        downloading exports. Google Analytics sets first-party
         cookies (named
         <code>_ga</code>) to distinguish visits.
       </p>
@@ -85,7 +91,8 @@ export default function PrivacyPolicy() {
       <p>
         When you save a paper, its title, journal, date, identifiers and links are stored in your
         browser’s local storage. They are not sent to Cancer Insight. Clearing site data removes
-        them.
+        them. The language you read the site in is set by the page address (pages under /ar are in
+        Arabic); no language setting is stored.
       </p>
 
       <h2 id="hosting">Hosting and logs</h2>

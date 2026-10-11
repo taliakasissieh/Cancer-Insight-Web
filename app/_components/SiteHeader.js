@@ -29,6 +29,13 @@ export default function SiteHeader() {
 
   useEffect(() => setOpen(false), [pathname]);
 
+  /* Keep the current search (cancer, view, treatment) when switching language. The explorer
+     updates the address without a navigation, so the query is read when the link is used —
+     including middle-click and copy-link, which read the link on mouse down or focus. */
+  const keepQuery = e => {
+    e.currentTarget.href = otherHref + window.location.search + window.location.hash;
+  };
+
   return (
     <header className="siteHeader">
       <a className="skipLink" href="#main">
@@ -81,10 +88,9 @@ export default function SiteHeader() {
             hrefLang={otherLocale}
             lang={otherLocale}
             title={t('meta.otherLanguageLabel')}
-            onClick={e => {
-              // Keep the current search (cancer, view, treatment) when switching language.
-              e.currentTarget.href = otherHref + window.location.search + window.location.hash;
-            }}
+            onClick={keepQuery}
+            onMouseDown={keepQuery}
+            onFocus={keepQuery}
           >
             {t('meta.otherLanguageName')}
           </a>

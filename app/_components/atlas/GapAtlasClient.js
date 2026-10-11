@@ -7,94 +7,126 @@ import CountLink from '../CountLink';
 import ForestPlot from '../ForestPlot';
 import QueryBox from '../QueryBox';
 import Icon from '../Icon';
+import { useI18n } from '../I18n';
 import { postJson } from '../../../lib/client/api';
 import { download, fileStem, toCsv } from '../../../lib/client/exports';
 import { track } from '../../../lib/client/track';
-import { fmtDateTime, fmtInt, fmtRatio, fmtShare, lowerFirst } from '../../../lib/format';
+import { fmtDateTime, fmtRatio, fmtShare, lowerFirst } from '../../../lib/format';
+import { cancerName, evidenceLabel, localizeError } from '../../../lib/i18n/labels.js';
+import { classifyEvidence } from '../../../lib/evidence';
+import { richText } from '../../../lib/i18n/rich.js';
 
-const GROUPS = [
-  { id: 'design', label: 'Study design' },
-  { id: 'theme', label: 'Research themes' },
-  { id: 'population', label: 'Population focus' },
-  { id: 'access', label: 'Access' },
-  { id: 'time', label: 'Recency' },
-];
+const GROUP_IDS = ['design', 'theme', 'population', 'access', 'time'];
 
-const STATUS_TEXT = {
-  'much-lower': 'Much lower',
-  lower: 'Lower',
-  similar: 'Similar',
-  higher: 'Higher',
-  context: 'Expected (population)',
-  insufficient: 'Too few records',
-  unavailable: 'Unavailable',
-};
+function useAtlasText() {
+  const { t, locale } = useI18n();
+  /* Cancer name inside a sentence (English lower-cases it; Arabic does not). */
+  const inSentence = cancer => {
+    const name = cancerName(t, cancer);
+    return locale === 'ar' ? name : lowerFirst(name);
+  };
+  const measureLabel = m => {
+    if (m.id === 'recent-share') {
+      const years = String(m.label).match(/(\d{4})\D+(\d{4})/);
+      return years ? t('measures.label.recent-share', { from: years[1], to: years[2] }) : m.label;
+    }
+    const key = `measures.label.${m.id}`;
+    return t(key) === key ? m.label : t(key);
+  };
+  const measureShort = m => {
+    const key = `measures.short.${m.id}`;
+    return t(key) === key ? m.short : t(key);
+  };
+  return { t, locale, inSentence, measureLabel, measureShort };
+}
 
 function StatusPill({ status }) {
-  return <span className={`statusPill status-${status}`}>{STATUS_TEXT[status] || status}</span>;
+  const { t } = useI18n();
+  const key = `atlas.status.${status}`;
+  return <span className={`statusPill status-${status}`}>{t(key) === key ? status : t(key)}</span>;
 }
 
-function periodLabel(w) {
-  return w.id === 'historical' ? `Before ${w.end + 1}` : `${w.start}–${w.end}`;
+function periodLabel(w, t) {
+  return w.id === 'historical' ? t('atlas.before', { year: String(w.end + 1) }) : `${w.start}–${w.end}`;
 }
 
-function Signal({ s, cancerLabel }) {
+function Signal({ s, measure, cancer }) {
+  const { t, locale, inSentence, measureLabel, measureShort } = useAtlasText();
   const b = s.basis;
+  const group = measure?.group || 'theme';
+  const label = measure ? measureLabel(measure) : s.title;
+  const inText = locale === 'ar' ? label : group === 'design' ? label : lowerFirst(label);
   return (
     <li className="signal" data-level={s.level}>
       <div className="signalTop">
-        <span className="signalLevel">
-          {s.level === 'much-lower' ? 'Much lower representation' : 'Lower representation'}
-        </span>
-        <span className="muted">{s.category}</span>
+        <span className="signalLevel">{t(`atlas.level.${s.level}`)}</span>
+        <span className="muted">{t(`measures.groups.${group}`)}</span>
       </div>
-      <h3>{s.title}</h3>
-      <p>{s.summary}</p>
+      <h3>{t(`atlas.signalTitle.${group}`, { measure: inText })}</h3>
+      <p>
+        {t('atlas.signalSummary', {
+          share: fmtShare(b.share, undefined, locale),
+          cancer: inSentence(cancer),
+          count: b.count,
+          total: b.total,
+          short: measure ? measureShort(measure) : '',
+          baselineShare: fmtShare(b.baselineShare, undefined, locale),
+          ratio: fmtRatio(b.ratio, locale),
+        })}
+      </p>
       <details>
-        <summary>Why this is shown</summary>
+        <summary>{t('atlas.whyShown')}</summary>
         <div className="signalBasis">
           <div className="tableWrap">
             <table className="dataTable">
               <thead>
                 <tr>
-                  <th scope="col">Literature</th>
+                  <th scope="col">{t('atlas.literature')}</th>
                   <th scope="col" className="numCell">
-                    Matching
+                    {t('atlas.matching')}
                   </th>
                   <th scope="col" className="numCell">
-                    All records
+                    {t('atlas.allRecords')}
                   </th>
                   <th scope="col" className="numCell">
-                    Share
+                    {t('atlas.share')}
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
-                  <th scope="row">{cancerLabel}</th>
+                  <th scope="row">{cancerName(t, cancer)}</th>
                   <td className="numCell">
                     <CountLink count={b.count} url={s.url} />
                   </td>
-                  <td className="numCell">{fmtInt(b.total)}</td>
-                  <td className="numCell">{fmtShare(b.share)}</td>
+                  <td className="numCell">
+                    <CountLink count={b.total} />
+                  </td>
+                  <td className="numCell">{fmtShare(b.share, undefined, locale)}</td>
                 </tr>
                 <tr>
-                  <th scope="row">All oncology</th>
+                  <th scope="row">{t('atlas.allOncology')}</th>
                   <td className="numCell">
                     <CountLink count={b.baselineCount} url={s.baselineUrl} />
                   </td>
-                  <td className="numCell">{fmtInt(b.baselineTotal)}</td>
-                  <td className="numCell">{fmtShare(b.baselineShare)}</td>
+                  <td className="numCell">
+                    <CountLink count={b.baselineTotal} />
+                  </td>
+                  <td className="numCell">{fmtShare(b.baselineShare, undefined, locale)}</td>
                 </tr>
               </tbody>
             </table>
           </div>
           <p className="small" style={{ margin: 0 }}>
-            Ratio: {fmtShare(b.share)} ÷ {fmtShare(b.baselineShare)} ={' '}
-            <strong>{fmtRatio(b.ratio)}</strong>, below the {fmtRatio(b.threshold)} threshold.
+            {t('atlas.ratioLine', {
+              share: fmtShare(b.share, undefined, locale),
+              baselineShare: fmtShare(b.baselineShare, undefined, locale),
+              ratio: fmtRatio(b.ratio, locale),
+              threshold: fmtRatio(b.threshold, locale),
+            })}
           </p>
           <p className="small muted" style={{ margin: 0 }}>
-            {s.caution}
+            {t(`atlas.caution.${group}`)}
           </p>
         </div>
       </details>
@@ -103,41 +135,47 @@ function Signal({ s, cancerLabel }) {
 }
 
 export default function GapAtlasClient() {
+  const { t, locale, inSentence, measureLabel } = useAtlasText();
+  const { path } = useI18n();
   const [cancer, setCancer] = useState('');
   const [state, setState] = useState({ status: 'idle', data: null, error: '' });
   const token = useRef(0);
   const resultsRef = useRef(null);
+  const base = path('/research-gap-atlas');
 
-  const run = useCallback(async (input, { push = true } = {}) => {
-    const my = ++token.current;
-    setCancer(input);
-    setState({ status: 'loading', data: null, error: '' });
-    if (push) {
-      const url = `/research-gap-atlas?cancer=${encodeURIComponent(input)}`;
-      if (url !== window.location.pathname + window.location.search) {
-        window.history.pushState(null, '', url);
+  const run = useCallback(
+    async (input, { push = true } = {}) => {
+      const my = ++token.current;
+      setCancer(input);
+      setState({ status: 'loading', data: null, error: '' });
+      if (push) {
+        const url = `${base}?cancer=${encodeURIComponent(input)}`;
+        if (url !== window.location.pathname + window.location.search) {
+          window.history.pushState(null, '', url);
+        }
       }
-    }
-    track('gap_atlas_search', { cancer_type: input });
-    try {
-      const data = await postJson('/api/gaps', { cancer: input });
-      if (token.current !== my) return;
-      setState({ status: 'ok', data, error: '' });
-      document.title = `${data.cancer.label} research coverage | Cancer Insight`;
-      track('gap_atlas_success', { cancer_type: input, signal_count: data.signals.length });
-      requestAnimationFrame(() => {
-        const el = resultsRef.current;
-        if (!el) return;
-        el.focus({ preventScroll: true });
-        const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-        el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
-      });
-    } catch (error) {
-      if (token.current !== my) return;
-      setState({ status: 'error', data: null, error: error.message });
-      track('gap_atlas_error', { cancer_type: input });
-    }
-  }, []);
+      track('gap_atlas_search', { cancer_type: input });
+      try {
+        const data = await postJson('/api/gaps', { cancer: input });
+        if (token.current !== my) return;
+        setState({ status: 'ok', data, error: '' });
+        document.title = `${t('atlas.docTitle', { cancer: cancerName(t, data.cancer) })} | Cancer Insight`;
+        track('gap_atlas_success', { cancer_type: input, signal_count: data.signals.length });
+        requestAnimationFrame(() => {
+          const el = resultsRef.current;
+          if (!el) return;
+          el.focus({ preventScroll: true });
+          const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+          el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+        });
+      } catch (error) {
+        if (token.current !== my) return;
+        setState({ status: 'error', data: null, error: localizeError(t, locale, error.message) });
+        track('gap_atlas_error', { cancer_type: input });
+      }
+    },
+    [base, t, locale]
+  );
 
   useEffect(() => {
     const read = () => {
@@ -155,7 +193,10 @@ export default function GapAtlasClient() {
   }, [run]);
 
   const d = state.data;
+  const groups = GROUP_IDS.map(id => ({ id, label: t(`measures.groups.${id}`) }));
+  const measureById = d ? Object.fromEntries(d.measures.map(m => [m.id, m])) : {};
 
+  /* Exports stay in English: they are data files meant to be cited and shared. */
   function exportCsv() {
     const rows = [
       ['# Cancer Insight Research Gap Atlas', `Method ${d.methodVersion}`],
@@ -219,31 +260,27 @@ export default function GapAtlasClient() {
         <div className="pageHeadInner">
           <div className="atlasHeadGrid">
             <div>
-              <h1 id="atlas-title">Research Gap Atlas</h1>
-              <p className="lede">
-                See which study designs and research themes make up a smaller share of a cancer’s
-                PubMed literature than of oncology overall — and check every count yourself.
-              </p>
+              <h1 id="atlas-title">{t('atlas.title')}</h1>
+              <p className="lede">{t('atlas.lede')}</p>
               <CancerSearch
                 onSearch={c => run(c)}
                 initialValue={cancer}
-                buttonLabel="Build atlas"
+                buttonLabel={t('search.buildAtlas')}
               />
             </div>
-            <aside className="atlasPromise" aria-label="How to read the atlas">
+            <aside className="atlasPromise" aria-label={t('atlas.howLabel')}>
               <p>
-                <strong>Shares, not totals.</strong> Large and small literatures are compared by
-                proportion, so a common cancer does not look better covered just because it is
-                common.
+                <strong>{t('atlas.promise1Strong')}</strong> {t('atlas.promise1')}
               </p>
               <p>
-                <strong>A prompt, not proof.</strong> A lower share can reflect biology,
-                epidemiology or indexing rather than neglect. The atlas never claims a real research
-                gap.
+                <strong>{t('atlas.promise2Strong')}</strong> {t('atlas.promise2')}
+              </p>
+              <p>
+                <strong>{t('atlas.promise3Strong')}</strong> {t('atlas.promise3')}{' '}
+                <Link href={path('/methodology#gap-atlas')}>{t('common.readMethod')}</Link>.
               </p>
               <p style={{ marginBottom: 0 }}>
-                <strong>Reproducible.</strong> Every number opens the PubMed search that produced
-                it. <Link href="/methodology#gap-atlas">Read the method</Link>.
+                <Link href={path('/cancer-map')}>{t('atlas.mapLink')}</Link>
               </p>
             </aside>
           </div>
@@ -253,11 +290,8 @@ export default function GapAtlasClient() {
       <div className="viewBody">
         {state.status === 'idle' && (
           <div className="emptyState">
-            <h2>Choose a cancer to build its atlas</h2>
-            <p>
-              The atlas runs about 45 PubMed count searches. The first run for a cancer usually
-              takes 5–15 seconds; results are then cached for a day.
-            </p>
+            <h2>{t('atlas.idleTitle')}</h2>
+            <p>{t('atlas.idle')}</p>
           </div>
         )}
 
@@ -265,8 +299,7 @@ export default function GapAtlasClient() {
           <div aria-busy="true" aria-live="polite">
             <p className="loadingLine">
               <span className="spinner" aria-hidden="true" />
-              Counting PubMed records for {cancer} and for oncology overall. The first run usually
-              takes 5–15 seconds.
+              {t('atlas.loading', { cancer: inSentence(cancer) })}
             </p>
             <div className="skeleton" style={{ height: 420, marginTop: 16 }} />
           </div>
@@ -274,14 +307,14 @@ export default function GapAtlasClient() {
 
         {state.status === 'error' && (
           <div className="emptyState" role="alert">
-            <h2>The atlas could not be built</h2>
+            <h2>{t('atlas.errorTitle')}</h2>
             <p>{state.error}</p>
             <button
               type="button"
               className="btn btnPrimary"
               onClick={() => run(cancer, { push: false })}
             >
-              Try again
+              {t('common.retry')}
             </button>
           </div>
         )}
@@ -290,77 +323,81 @@ export default function GapAtlasClient() {
           <div ref={resultsRef} tabIndex={-1} style={{ outline: 'none' }}>
             <div className="resultIntro">
               <div>
-                <h2>{d.cancer.label}: research coverage</h2>
+                <h2>{t('atlas.resultTitle', { cancer: cancerName(t, d.cancer) })}</h2>
                 <p className="muted" style={{ margin: 0 }}>
-                  Based on <CountLink count={d.totals.records} url={d.totals.url} />{' '}
-                  {lowerFirst(d.cancer.label)} records and{' '}
-                  <CountLink count={d.baseline.total} url={d.baseline.url} /> oncology records in
-                  PubMed. Generated {fmtDateTime(d.generatedAt)} with method {d.methodVersion}.
+                  {richText(
+                    t('atlas.basedOn', {
+                      cancer: inSentence(d.cancer),
+                      date: fmtDateTime(d.generatedAt, locale),
+                      version: d.methodVersion,
+                    }),
+                    {
+                      count: <CountLink count={d.totals.records} url={d.totals.url} />,
+                      baseline: <CountLink count={d.baseline.total} url={d.baseline.url} />,
+                    }
+                  )}
                   {d.baseline.source !== 'live' && d.baseline.snapshotDate
-                    ? ` Some oncology counts used the ${d.baseline.snapshotDate} reference snapshot because live counts were unavailable.`
+                    ? t('atlas.snapshotNote', { date: d.baseline.snapshotDate })
                     : ''}
                 </p>
               </div>
               <div className="btnRow">
                 <button type="button" className="btn btnSecondary btnSmall" onClick={exportCsv}>
                   <Icon name="download" size={16} />
-                  Measures CSV
+                  {t('atlas.measuresCsv')}
                 </button>
                 <button type="button" className="btn btnSecondary btnSmall" onClick={exportJson}>
                   <Icon name="download" size={16} />
-                  Evidence JSON
+                  {t('atlas.evidenceJson')}
                 </button>
                 <Link
                   className="btn btnQuiet btnSmall"
-                  href={`/explore?cancer=${encodeURIComponent(d.cancer.input)}`}
+                  href={path(`/explore?cancer=${encodeURIComponent(d.cancer.input)}`)}
                 >
-                  Explore the papers
+                  {t('atlas.explorePapers')}
                 </Link>
               </div>
             </div>
 
-            <QueryBox term={d.cancer.term} title="PubMed query for this cancer" />
+            <QueryBox term={d.cancer.term} title={t('atlas.queryTitle')} />
 
             <section className="section" aria-labelledby="signals-h">
               <div className="sectionHead">
                 <div>
-                  <h2 id="signals-h">Lower-representation signals</h2>
+                  <h2 id="signals-h">{t('atlas.signalsTitle')}</h2>
                   <p className="muted">
-                    Measures where this cancer’s share is below {fmtRatio(d.thresholds.lower)} the
-                    oncology-wide share.
+                    {t('atlas.signalsNote', { ratio: fmtRatio(d.thresholds.lower, locale) })}
                   </p>
                 </div>
               </div>
               {d.totals.records < d.thresholds.minRecords ? (
                 <div className="emptyState">
-                  <h3>Too few records to compare</h3>
-                  <p>
-                    PubMed has {fmtInt(d.totals.records)} records for this query. Below{' '}
-                    {fmtInt(d.thresholds.minRecords)} records, shares move too much with a handful
-                    of papers to be compared with oncology, so no signals are shown. The counts
-                    below are still accurate and can be opened on PubMed.
-                  </p>
+                  <h3>{t('atlas.tooFewTitle')}</h3>
+                  <p>{t('atlas.tooFew', { n: d.totals.records, min: d.thresholds.minRecords })}</p>
                 </div>
               ) : d.signals.length ? (
                 <ul className="signalList">
                   {d.signals.map(s => (
-                    <Signal key={s.id} s={s} cancerLabel={d.cancer.label} />
+                    <Signal key={s.id} s={s} measure={measureById[s.measureId]} cancer={d.cancer} />
                   ))}
                 </ul>
               ) : (
                 <div className="emptyState">
-                  <h3>No measure fell below the threshold</h3>
+                  <h3>{t('atlas.noneTitle')}</h3>
                   <p>
-                    None of the {d.measures.length} measures is under {fmtRatio(d.thresholds.lower)}{' '}
-                    the oncology-wide share. That does not mean this literature has no gaps — only
-                    that these measures did not flag any.
+                    {t('atlas.none', {
+                      n: d.measures.length,
+                      ratio: fmtRatio(d.thresholds.lower, locale),
+                    })}
                   </p>
                 </div>
               )}
               {d.contextNotes.length > 0 && (
                 <div className="notice small" style={{ marginTop: 14 }}>
                   {d.contextNotes.map(n => (
-                    <p key={n.id}>{n.note}</p>
+                    <p key={n.id}>
+                      {t(`atlas.context.${n.id}`, { cancer: cancerName(t, d.cancer) })}
+                    </p>
                   ))}
                 </div>
               )}
@@ -369,63 +406,64 @@ export default function GapAtlasClient() {
             <section className="section" aria-labelledby="profile-h">
               <div className="sectionHead">
                 <div>
-                  <h2 id="profile-h">Representation profile</h2>
-                  <p className="muted">
-                    Each marker is this cancer’s share divided by the oncology-wide share; 1× means
-                    the same share. Select a row to open its PubMed search.
-                  </p>
+                  <h2 id="profile-h">{t('atlas.profileTitle')}</h2>
+                  <p className="muted">{t('atlas.profileNote')}</p>
                 </div>
               </div>
               <div className="panel">
                 <ForestPlot
-                  rows={d.measures}
-                  groups={GROUPS}
+                  rows={d.measures.map(m => ({
+                    ...m,
+                    label: measureLabel(m),
+                    short: t(`measures.short.${m.id}`),
+                  }))}
+                  groups={groups}
                   idPrefix="atlas"
-                  title={`${d.cancer.label}: representation relative to oncology`}
+                  title={t('atlas.plotTitle', { cancer: cancerName(t, d.cancer) })}
                 />
               </div>
               <details style={{ marginTop: 12 }}>
-                <summary>Show every number as a table</summary>
+                <summary>{t('common.showTable')}</summary>
                 <div className="tableWrap" style={{ marginTop: 10 }}>
                   <table className="dataTable">
-                    <caption className="visuallyHidden">All measures</caption>
+                    <caption className="visuallyHidden">{t('atlas.tableCaption')}</caption>
                     <thead>
                       <tr>
-                        <th scope="col">Measure</th>
+                        <th scope="col">{t('atlas.measure')}</th>
                         <th scope="col" className="numCell">
-                          {d.cancer.label}
+                          {cancerName(t, d.cancer)}
                         </th>
                         <th scope="col" className="numCell">
-                          Share
+                          {t('atlas.share')}
                         </th>
                         <th scope="col" className="numCell">
-                          Oncology
+                          {t('atlas.oncology')}
                         </th>
                         <th scope="col" className="numCell">
-                          Share
+                          {t('atlas.share')}
                         </th>
                         <th scope="col" className="numCell">
-                          Ratio
+                          {t('atlas.ratio')}
                         </th>
-                        <th scope="col">Reading</th>
+                        <th scope="col">{t('atlas.reading')}</th>
                       </tr>
                     </thead>
                     <tbody>
                       {d.measures.map(m => (
                         <tr key={m.id}>
                           <th scope="row">
-                            {m.label}
-                            <div className="small muted">{m.category}</div>
+                            {measureLabel(m)}
+                            <div className="small muted">{t(`measures.groups.${m.group}`)}</div>
                           </th>
                           <td className="numCell">
                             <CountLink count={m.count} url={m.url} />
                           </td>
-                          <td className="numCell">{fmtShare(m.share)}</td>
+                          <td className="numCell">{fmtShare(m.share, undefined, locale)}</td>
                           <td className="numCell">
                             <CountLink count={m.baselineCount} url={m.baselineUrl} />
                           </td>
-                          <td className="numCell">{fmtShare(m.baselineShare)}</td>
-                          <td className="numCell">{fmtRatio(m.ratio)}</td>
+                          <td className="numCell">{fmtShare(m.baselineShare, undefined, locale)}</td>
+                          <td className="numCell">{fmtRatio(m.ratio, locale)}</td>
                           <td>
                             <StatusPill status={m.status} />
                           </td>
@@ -438,23 +476,21 @@ export default function GapAtlasClient() {
             </section>
 
             <section className="section" aria-labelledby="time-h">
-              <h2 id="time-h">Records by publication period</h2>
+              <h2 id="time-h">{t('atlas.periodsTitle')}</h2>
               <p className="muted" style={{ maxWidth: '72ch' }}>
-                PubMed records for this cancer in each period. Yearly averages make periods of
-                different length comparable. PubMed’s journal coverage has grown over time, so
-                rising numbers reflect indexing as well as research activity.
+                {t('atlas.periodsNote')}
               </p>
               <div className="windowBars">
                 {d.timeWindows.map(w => (
                   <div key={w.id} className="windowBar">
-                    <span>{periodLabel(w)}</span>
+                    <span>{periodLabel(w, t)}</span>
                     <strong>
                       <CountLink count={w.records} url={w.url} />
                     </strong>
                     <span>
                       {w.perYear != null
-                        ? `about ${fmtInt(Math.round(w.perYear))} a year`
-                        : 'records in total'}
+                        ? t('atlas.perYear', { n: Math.round(w.perYear) })
+                        : t('atlas.inTotal')}
                     </span>
                   </div>
                 ))}
@@ -462,33 +498,35 @@ export default function GapAtlasClient() {
             </section>
 
             <section className="section" aria-labelledby="treat-h">
-              <h2 id="treat-h">Treatment categories</h2>
+              <h2 id="treat-h">{t('atlas.treatmentsTitle')}</h2>
               <p className="muted" style={{ maxWidth: '72ch' }}>
-                PubMed records that mention each category. These are never flagged as gaps: whether
-                a treatment is relevant depends on the biology of each cancer, and more records do
-                not mean a better treatment.
+                {t('atlas.treatmentsNote')}
               </p>
               <div className="tableWrap">
                 <table className="dataTable" style={{ maxWidth: 720 }}>
                   <thead>
                     <tr>
-                      <th scope="col">Treatment category</th>
+                      <th scope="col">{t('atlas.treatmentCol')}</th>
                       <th scope="col" className="numCell">
-                        Records
+                        {t('atlas.records')}
                       </th>
                       <th scope="col" className="numCell">
-                        Share of {lowerFirst(d.cancer.label)} records
+                        {t('atlas.shareOf', { cancer: inSentence(d.cancer) })}
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {d.treatments.map(t => (
-                      <tr key={t.id}>
-                        <th scope="row">{t.label}</th>
+                    {d.treatments.map(tr => (
+                      <tr key={tr.id}>
+                        <th scope="row">
+                          {t(`treatments.${tr.id}`) === `treatments.${tr.id}`
+                            ? tr.label
+                            : t(`treatments.${tr.id}`)}
+                        </th>
                         <td className="numCell">
-                          <CountLink count={t.count} url={t.url} />
+                          <CountLink count={tr.count} url={tr.url} />
                         </td>
-                        <td className="numCell">{fmtShare(t.share)}</td>
+                        <td className="numCell">{fmtShare(tr.share, undefined, locale)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -497,39 +535,37 @@ export default function GapAtlasClient() {
             </section>
 
             <section className="section" aria-labelledby="sample-h">
-              <h2 id="sample-h">Evidence behind this atlas</h2>
+              <h2 id="sample-h">{t('atlas.sampleTitle')}</h2>
               <p style={{ maxWidth: '72ch' }}>
-                The figures above are counts across all of PubMed. To make the queries inspectable,
-                the atlas also draws a small sample of real records. {d.sample.method}
+                {t('atlas.sampleIntro')} {t('atlas.sampleMethod')}
               </p>
               <p className="notice small" style={{ maxWidth: '78ch' }}>
-                The sample illustrates and audits the queries. It does not feed any signal, and its
-                spread across periods is set by design, not by publication volume.
+                {t('atlas.sampleNotice')}
               </p>
               <div className="tableWrap" style={{ marginTop: 14 }}>
                 <table className="dataTable">
-                  <caption className="visuallyHidden">Sample retrieval by period</caption>
+                  <caption className="visuallyHidden">{t('atlas.sampleCaption')}</caption>
                   <thead>
                     <tr>
-                      <th scope="col">Period</th>
+                      <th scope="col">{t('atlas.period')}</th>
                       <th scope="col" className="numCell">
-                        PubMed records
+                        {t('atlas.pubmedRecords')}
                       </th>
                       <th scope="col" className="numCell">
-                        Requested
+                        {t('atlas.requested')}
                       </th>
                       <th scope="col" className="numCell">
-                        Retrieved
+                        {t('atlas.retrievedCol')}
                       </th>
                       <th scope="col" className="numCell">
-                        Kept after relevance check
+                        {t('atlas.kept')}
                       </th>
                     </tr>
                   </thead>
                   <tbody>
                     {d.sample.perWindow.map(w => (
                       <tr key={w.id}>
-                        <th scope="row">{periodLabel(w)}</th>
+                        <th scope="row">{periodLabel(w, t)}</th>
                         <td className="numCell">
                           <CountLink count={w.totalRecords} url={w.url} />
                         </td>
@@ -542,77 +578,86 @@ export default function GapAtlasClient() {
                 </table>
               </div>
               <dl className="factList" style={{ marginTop: 16 }}>
-                <dt>Sampled records with an abstract</dt>
+                <dt>{t('atlas.withAbstract')}</dt>
                 <dd className="num">
-                  {d.sample.stats.withAbstract} of {d.sample.stats.total}
+                  {t('common.of', { a: d.sample.stats.withAbstract, b: d.sample.stats.total })}
                 </dd>
-                <dt>With a specific publication type</dt>
+                <dt>{t('atlas.withType')}</dt>
                 <dd className="num">
-                  {d.sample.stats.withSpecificType} of {d.sample.stats.total}
+                  {t('common.of', { a: d.sample.stats.withSpecificType, b: d.sample.stats.total })}
                 </dd>
-                <dt>With a free full text in PMC</dt>
+                <dt>{t('atlas.withPmc')}</dt>
                 <dd className="num">
-                  {d.sample.stats.withPmc} of {d.sample.stats.total}
+                  {t('common.of', { a: d.sample.stats.withPmc, b: d.sample.stats.total })}
                 </dd>
-                <dt>With a DOI</dt>
+                <dt>{t('atlas.withDoi')}</dt>
                 <dd className="num">
-                  {d.sample.stats.withDoi} of {d.sample.stats.total}
+                  {t('common.of', { a: d.sample.stats.withDoi, b: d.sample.stats.total })}
                 </dd>
-                <dt>Retracted</dt>
+                <dt>{t('atlas.retracted')}</dt>
                 <dd className="num">{d.sample.stats.retracted}</dd>
               </dl>
               <details style={{ marginTop: 14 }}>
-                <summary>View the {d.sample.papers.length} sampled records</summary>
+                <summary>{t('atlas.viewSample', { n: d.sample.papers.length })}</summary>
                 <ul className="sampleList">
-                  {d.sample.papers.map(p => (
-                    <li key={`${p.retrievalWindow}-${p.pmid}`}>
-                      {p.url ? (
-                        <a href={p.url} target="_blank" rel="noopener noreferrer">
-                          {p.title || 'Untitled record'}
-                        </a>
-                      ) : (
-                        p.title
-                      )}
-                      <div className="sampleMeta">
-                        <span>{p.evidenceType}</span>
-                        {p.retracted && (
-                          <span style={{ color: 'var(--rose)', fontWeight: 700 }}>Retracted</span>
+                  {d.sample.papers.map(p => {
+                    const w = d.sample.perWindow.find(x => x.id === p.retrievalWindow);
+                    return (
+                      <li key={`${p.retrievalWindow}-${p.pmid}`}>
+                        {p.url ? (
+                          <a href={p.url} target="_blank" rel="noopener noreferrer" className="ltrData">
+                            {p.title || t('paper.untitled')}
+                          </a>
+                        ) : (
+                          p.title
                         )}
-                        {p.journal && <span>{p.journal}</span>}
-                        {p.date && <span>{p.date}</span>}
-                        <span>Sampled from the {p.retrievalWindow} period</span>
-                      </div>
-                    </li>
-                  ))}
+                        <div className="sampleMeta">
+                          <span>{evidenceLabel(t, classifyEvidence(p.publicationTypes))}</span>
+                          {p.retracted && (
+                            <span style={{ color: 'var(--rose)', fontWeight: 700 }}>
+                              {t('atlas.retracted')}
+                            </span>
+                          )}
+                          {p.journal && <span className="ltrData">{p.journal}</span>}
+                          {p.date && <span>{p.date}</span>}
+                          <span>
+                            {t('atlas.sampledFrom', {
+                              period: w ? periodLabel(w, t) : p.retrievalWindow,
+                            })}
+                          </span>
+                        </div>
+                      </li>
+                    );
+                  })}
                 </ul>
               </details>
             </section>
 
             <section className="section" aria-labelledby="claims-h">
-              <h2 id="claims-h">What this atlas can and cannot claim</h2>
+              <h2 id="claims-h">{t('atlas.claimsTitle')}</h2>
               <div className="claims panel">
                 <div>
-                  <h3>It can show</h3>
+                  <h3>{t('atlas.canShow')}</h3>
                   <ul>
-                    <li>how this cancer’s indexed literature divides across designs and themes;</li>
-                    <li>where that division differs markedly from oncology overall;</li>
-                    <li>the exact PubMed query and count behind every figure.</li>
+                    <li>{t('atlas.can1')}</li>
+                    <li>{t('atlas.can2')}</li>
+                    <li>{t('atlas.can3')}</li>
                   </ul>
                 </div>
                 <div>
-                  <h3>It cannot show</h3>
+                  <h3>{t('atlas.cannotShow')}</h3>
                   <ul>
-                    <li>that a real scientific or clinical research gap exists;</li>
-                    <li>that a topic deserves more research or funding;</li>
-                    <li>that any treatment is better, worse or appropriate for anyone.</li>
+                    <li>{t('atlas.cannot1')}</li>
+                    <li>{t('atlas.cannot2')}</li>
+                    <li>{t('atlas.cannot3')}</li>
                   </ul>
                 </div>
               </div>
               <details style={{ marginTop: 14 }}>
-                <summary>Known limitations</summary>
+                <summary>{t('atlas.limitationsTitle')}</summary>
                 <ul style={{ marginTop: 8 }}>
-                  {d.limitations.map(l => (
-                    <li key={l}>{l}</li>
+                  {['lim1', 'lim2', 'lim3', 'lim4', 'lim5'].map(k => (
+                    <li key={k}>{t(`atlas.${k}`)}</li>
                   ))}
                 </ul>
               </details>

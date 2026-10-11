@@ -4,19 +4,21 @@ import { useState } from 'react';
 import Icon from './Icon';
 import { copyText } from '../../lib/client/exports';
 import { pubmedSearchUrl } from '../../lib/queries';
+import { useI18n } from './I18n';
 
-export default function QueryBox({ term, title = 'PubMed query', defaultOpen = false, note }) {
+export default function QueryBox({ term, title, defaultOpen = false, note }) {
+  const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   if (!term) return null;
   return (
     <details className="queryBox" open={defaultOpen}>
       <summary>
         <Icon name="search" size={16} />
-        {title}
+        {title || t('query.title')}
         <Icon name="chevron" size={16} />
       </summary>
       <div className="queryBody">
-        <code>{term}</code>
+        <code dir="ltr">{term}</code>
         {note ? (
           <p className="small muted" style={{ margin: '8px 0 0' }}>
             {note}
@@ -30,7 +32,7 @@ export default function QueryBox({ term, title = 'PubMed query', defaultOpen = f
             rel="noopener noreferrer"
           >
             <Icon name="external" size={16} />
-            Run on PubMed
+            {t('query.run')}
           </a>
           <button
             type="button"
@@ -41,7 +43,7 @@ export default function QueryBox({ term, title = 'PubMed query', defaultOpen = f
             }}
           >
             <Icon name={copied ? 'check' : 'copy'} size={16} />
-            {copied ? 'Copied' : 'Copy query'}
+            {copied ? t('query.copied') : t('query.copy')}
           </button>
         </div>
       </div>

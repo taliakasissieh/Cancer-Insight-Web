@@ -10,6 +10,8 @@ import { download, fileStem, toCsv } from '../../../lib/client/exports';
 import { track } from '../../../lib/client/track';
 import { fmtDateTime, fmtPartialDate, fmtShare } from '../../../lib/format';
 import { searchPageUrl, studyUrl } from '../../../lib/trials';
+import { resolveCancer } from '../../../lib/queries';
+import { localizeError } from '../../../lib/i18n/labels.js';
 
 const GROUP_ORDER = ['open', 'active', 'completed', 'stopped', 'unknown'];
 
@@ -40,7 +42,7 @@ function useTrials(cancer) {
   return [state, () => setRetry(r => r + 1)];
 }
 
-export default function Trials({ cancer, label }) {
+export default function Trials({ cancer }) {
   const { t, locale } = useI18n();
   const [state, retry] = useTrials(cancer);
 
@@ -62,7 +64,7 @@ export default function Trials({ cancer, label }) {
     return (
       <div className="emptyState" role="alert">
         <h2>{t('trials.title')}</h2>
-        <p>{state.error}</p>
+        <p>{localizeError(t, locale, state.error)}</p>
         <button type="button" className="btn btnPrimary" onClick={retry}>
           {t('common.retry')}
         </button>
@@ -150,7 +152,7 @@ export default function Trials({ cancer, label }) {
         </div>
 
         <div className="stack">
-          <ResultsPanel d={d} label={label} />
+          <ResultsPanel d={d} englishLabel={resolveCancer(cancer)?.label || cancer} />
           <SponsorPanel d={d} />
           <CountryPanel d={d} />
           <OpenTrialsPanel d={d} />
@@ -214,7 +216,7 @@ function PhasePanel({ d }) {
   );
 }
 
-function ResultsPanel({ d, label }) {
+function ResultsPanel({ d, englishLabel }) {
   const { t, locale } = useI18n();
   const r = d.results;
   const cutoff = fmtPartialDate(r.cutoff, locale);
@@ -227,7 +229,11 @@ function ResultsPanel({ d, label }) {
       ['nct_id', 'url'],
       ...r.overdueIds.map(id => [id, studyUrl(id)]),
     ];
-    download(`${fileStem(label, 'trials_without_posted_results')}.csv`, toCsv(rows), 'text/csv');
+    download(
+      `${fileStem(englishLabel, 'trials_without_posted_results')}.csv`,
+      toCsv(rows),
+      'text/csv'
+    );
     track('trials_overdue_csv', { count: r.overdueIds.length });
   }
 

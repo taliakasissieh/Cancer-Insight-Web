@@ -1,4 +1,6 @@
-import { EVIDENCE_FAMILIES } from '../../lib/evidence';
+'use client';
+
+import { useI18n } from './I18n';
 
 const ORDER = ['primary', 'synthesis', 'guidance', 'commentary', 'other', 'unclassified'];
 const COLOR = {
@@ -12,6 +14,7 @@ const COLOR = {
 
 /** Composition of a set of records by evidence family (from PubMed publication types). */
 export default function EvidenceMix({ byFamily = {}, total = 0 }) {
+  const { t } = useI18n();
   if (!total) return null;
   const parts = ORDER.filter(f => byFamily[f]).map(f => ({ f, n: byFamily[f] }));
   return (
@@ -20,7 +23,7 @@ export default function EvidenceMix({ byFamily = {}, total = 0 }) {
         className="mixBar"
         role="img"
         aria-label={parts
-          .map(p => `${EVIDENCE_FAMILIES[p.f].label}: ${p.n} of ${total}`)
+          .map(p => t('evidence.mixOf', { label: t(`evidence.families.${p.f}`), n: p.n, total }))
           .join('; ')}
       >
         {parts.map(p => (
@@ -29,12 +32,10 @@ export default function EvidenceMix({ byFamily = {}, total = 0 }) {
       </div>
       <ul className="mixLegend">
         {parts.map(p => (
-          <li key={p.f} title={EVIDENCE_FAMILIES[p.f].description}>
+          <li key={p.f} title={t(`evidence.familyNotes.${p.f}`)}>
             <span className="swatch" style={{ background: COLOR[p.f] }} />
-            {EVIDENCE_FAMILIES[p.f].label}
-            <span className="num">
-              {p.n} of {total}
-            </span>
+            {t(`evidence.families.${p.f}`)}
+            <span className="num">{t('common.of', { a: p.n, b: total })}</span>
           </li>
         ))}
       </ul>

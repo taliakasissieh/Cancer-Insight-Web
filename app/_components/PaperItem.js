@@ -11,9 +11,10 @@ import {
   paperTitle,
   treatmentTags,
 } from '../../lib/evidence';
-import { SOURCE_LABELS } from '../../lib/format';
 import { citation, copyText } from '../../lib/client/exports';
 import { track } from '../../lib/client/track';
+import { evidenceLabel } from '../../lib/i18n/labels.js';
+import { useI18n } from './I18n';
 
 const SECTION = /^([A-Z][A-Z0-9 ,&/()'-]{2,60}):\s+/;
 
@@ -38,21 +39,30 @@ function AbstractText({ text }) {
   );
 }
 
-function whyText(p) {
+function whyText(p, t, locale) {
   const r = p.relevance;
   const parts = [];
   if (r?.matchedIn?.length) {
     const where = r.matchedIn.filter(w => w !== 'feed tag');
     if (where.length) {
+      const names = where.map(w => {
+        const key = `paper.where.${w}`;
+        const v = t(key);
+        return v === key ? w : v;
+      });
+      const list = new Intl.ListFormat(locale === 'ar' ? 'ar' : 'en', {
+        style: 'long',
+        type: 'conjunction',
+      }).format(names);
       parts.push(
-        `${r.phrase ? `“${r.phrase}”` : 'The cancer'} appears in the ${where.join(', ').replace(/, ([^,]*)$/, ' and $1')}`
+        t('paper.whyIn', { what: r.phrase ? `“${r.phrase}”` : t('paper.whyCancer'), where: list })
       );
     }
-    if (r.matchedIn.includes('feed tag')) parts.push('the research feed tags it with this cancer');
+    if (r.matchedIn.includes('feed tag')) parts.push(t('paper.whyFeed'));
   } else if (p.evidenceSource?.startsWith('pubmed')) {
-    parts.push('it matches the PubMed query for this cancer');
+    parts.push(t('paper.whyQuery'));
   }
-  return parts.length ? `${parts.join('; ')}.` : '';
+  return parts.length ? `${parts.join(locale === 'ar' ? '؛ ' : '; ')}.` : '';
 }
 
 export default function PaperItem({
@@ -63,16 +73,19 @@ export default function PaperItem({
   showSource = true,
   headingLevel = 3,
 }) {
+  const { t, locale } = useI18n();
   const [copied, setCopied] = useState(false);
   const c = classifyEvidence(p.publication_types);
-  const title = paperTitle(p) || 'Untitled record';
+  const title = paperTitle(p) || t('paper.untitled');
   const abstract = paperAbstract(p);
   const authors = paperAuthors(p);
   const authorText = authors.length
-    ? authors.slice(0, 3).join(', ') + (authors.length > 3 ? ` and ${authors.length - 3} more` : '')
+    ? authors.length > 3
+      ? t('paper.moreAuthors', { names: authors.slice(0, 3).join(', '), n: authors.length - 3 })
+      : authors.join(', ')
     : '';
   const tags = treatmentTags(p);
-  const why = showWhy ? whyText(p) : '';
+  const why = showWhy ? whyText(p, t, locale) : '';
   const H = `h${headingLevel}`;
   const pmid = p.pubmedId || '';
 
@@ -81,25 +94,25 @@ export default function PaperItem({
   return (
     <article className="paperItem" data-family={c.family}>
       <div className="paperTypeLine">
-        <span className="typeTag">{c.label}</span>
-        {c.tags.map(t => (
-          <span key={t} className="flag flagSoft">
-            {t}
+        <span className="typeTag">{evidenceLabel(t, c)}</span>
+        {c.tags.map(tag => (
+          <span key={tag} className="flag flagSoft">
+            {t(`evidence.tags.${tag}`)}
           </span>
         ))}
         {c.retracted && (
           <span className="flag flagRetracted">
             <Icon name="alert" size={14} />
-            Retracted
+            {t('paper.retracted')}
           </span>
         )}
-        {p.pmc_url && <span className="flag flagFree">Free full text</span>}
-        {showSource && SOURCE_LABELS[p.evidenceSource] && (
-          <span className="muted">{SOURCE_LABELS[p.evidenceSource]}</span>
+        {p.pmc_url && <span className="flag flagFree">{t('paper.freeFullText')}</span>}
+        {showSource && p.evidenceSource && t(`sources.${p.evidenceSource}`) !== `sources.${p.evidenceSource}` && (
+          <span className="muted">{t(`sources.${p.evidenceSource}`)}</span>
         )}
       </div>
 
-      <H className="paperTitle">
+      <H className="paperTitle" lang="en" dir="ltr">
         {p.pubmed_url ? (
           <a
             href={p.pubmed_url}
@@ -114,7 +127,7 @@ export default function PaperItem({
         )}
       </H>
 
-      <div className="paperMeta">
+      <div className="paperMeta" dir="ltr" lang="en">
         {paperJournal(p) && <span className="journal">{paperJournal(p)}</span>}
         {paperDate(p) && <span>{paperDate(p)}</span>}
         {authorText && <span>{authorText}</span>}
@@ -122,23 +135,22 @@ export default function PaperItem({
 
       {c.retracted && (
         <p className="notice noticeError small" style={{ margin: '0 0 10px' }}>
-          PubMed marks this paper as retracted. Read the retraction notice before relying on any of
-          its findings.
+          {t('paper.retractedNotice')}
         </p>
       )}
 
       {why && (
         <p className="paperWhy">
-          <strong>Why it’s here:</strong> {why}
+          <strong>{t('paper.why')}</strong> {why}
         </p>
       )}
       {tags.length > 0 && (
         <p className="paperWhy">
-          <strong>Treatment tags:</strong>{' '}
+          <strong>{t('paper.treatmentTags')}</strong>{' '}
           <span className="tagList">
-            {tags.map(t => (
-              <span key={t} className="tag">
-                {t}
+            {tags.map(tag => (
+              <span key={tag} className="tag">
+                {t(`treatments.${tag}`) === `treatments.${tag}` ? tag : t(`treatments.${tag}`)}
               </span>
             ))}
           </span>
@@ -151,10 +163,12 @@ export default function PaperItem({
           onToggle={e => e.currentTarget.open && track('abstract_expand', { paper_id: pmid })}
         >
           <summary>
-            Abstract
+            {t('paper.abstract')}
             <Icon name="chevron" size={16} />
           </summary>
-          <AbstractText text={abstract} />
+          <div lang="en" dir="ltr">
+            <AbstractText text={abstract} />
+          </div>
         </details>
       )}
 
@@ -179,7 +193,7 @@ export default function PaperItem({
             rel="noopener noreferrer"
             onClick={() => trackSource('pmc')}
           >
-            Free full text
+            {t('paper.freeFullText')}
             <Icon name="external" size={14} />
           </a>
         )}
@@ -203,7 +217,7 @@ export default function PaperItem({
             onClick={() => onToggleSave(p)}
           >
             <Icon name="bookmark" size={16} filled={saved} />
-            {saved ? 'Saved' : 'Save'}
+            {saved ? t('paper.saved') : t('paper.save')}
           </button>
         )}
         <button
@@ -217,10 +231,10 @@ export default function PaperItem({
           }}
         >
           <Icon name={copied ? 'check' : 'quote'} size={16} />
-          {copied ? 'Citation copied' : 'Copy citation'}
+          {copied ? t('paper.citationCopied') : t('paper.copyCitation')}
         </button>
         <span className="visuallyHidden" aria-live="polite">
-          {copied ? 'Citation copied to clipboard' : ''}
+          {copied ? t('paper.citationCopiedLive') : ''}
         </span>
       </div>
     </article>

@@ -18,26 +18,29 @@ import { useSaved } from '../../../lib/client/saved';
 import { track } from '../../../lib/client/track';
 import { resolveCancer } from '../../../lib/queries';
 import { fmtDateTime } from '../../../lib/format';
+import { cancerName, localizeError } from '../../../lib/i18n/labels.js';
+import { richText } from '../../../lib/i18n/rich.js';
+import { useI18n } from '../I18n';
 
 const VIEWS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'papers', label: 'Papers' },
-  { id: 'treatments', label: 'Treatments' },
-  { id: 'trials', label: 'Trials' },
-  { id: 'images', label: 'Images' },
-  { id: 'saved', label: 'Saved' },
+  { id: 'overview' },
+  { id: 'papers' },
+  { id: 'treatments' },
+  { id: 'trials' },
+  { id: 'images' },
+  { id: 'saved' },
 ];
 const VIEW_IDS = VIEWS.map(v => v.id);
 /* Views that do not depend on the research-feed search finishing. */
 const INDEPENDENT_VIEWS = ['saved', 'trials'];
 
-function hrefFor({ cancer, view, treatment }) {
+function hrefFor({ cancer, view, treatment }, base = '/explore') {
   const params = new URLSearchParams();
   if (cancer) params.set('cancer', cancer);
   if (view && view !== 'overview') params.set('view', view);
   if (view === 'treatments' && treatment) params.set('treatment', treatment);
   const qs = params.toString();
-  return `/explore${qs ? `?${qs}` : ''}`;
+  return `${base}${qs ? `?${qs}` : ''}`;
 }
 
 function readLocation() {
@@ -68,17 +71,19 @@ export default function Explorer({
   const [retryKey, setRetryKey] = useState(0);
   const token = useRef(0);
   const saved = useSaved();
+  const { t, locale, path } = useI18n();
+  const base = path('/explore');
 
   const navigate = useCallback((next, { replace = false } = {}) => {
     const merged = { ...routeRef.current, ...next };
     routeRef.current = merged;
-    const url = hrefFor(merged);
+    const url = hrefFor(merged, base);
     if (url !== window.location.pathname + window.location.search) {
       window.history[replace ? 'replaceState' : 'pushState'](null, '', url);
     }
     setRoute(merged);
     if (next.view) window.scrollTo({ top: 0 });
-  }, []);
+  }, [base]);
 
   useEffect(() => {
     const onPop = () => {
@@ -97,7 +102,7 @@ export default function Explorer({
     if (!cancer) {
       setSearch(IDLE);
       setFootprint(IDLE);
-      document.title = 'Explore cancer research | Cancer Insight';
+      document.title = `${t('explorer.docTitleStart')} | Cancer Insight`;
       return;
     }
     const my = ++token.current;
@@ -109,12 +114,12 @@ export default function Explorer({
       .then(data => {
         if (token.current !== my) return;
         setSearch({ status: 'ok', data, error: '' });
-        document.title = `${data.cancer.label} research | Cancer Insight`;
+        document.title = `${t('explorer.docTitle', { cancer: cancerName(t, data.cancer) })} | Cancer Insight`;
         track('cancer_search_success', { cancer_type: cancer, result_count: data.papers.length });
       })
       .catch(error => {
         if (token.current !== my) return;
-        setSearch({ status: 'error', data: null, error: error.message });
+        setSearch({ status: 'error', data: null, error: localizeError(t, locale, error.message) });
         track('cancer_search_error', { cancer_type: cancer, status: error.status || 0 });
       });
 
@@ -125,10 +130,11 @@ export default function Explorer({
           token.current === my &&
           setFootprint({ status: 'error', data: null, error: error.message })
       );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [route.cancer, retryKey]);
 
   const data = search.data;
-  const label = data?.cancer?.label || resolved?.label || route.cancer;
+  const label = cancerName(t, data?.cancer || resolved || route.cancer) || route.cancer;
   const view = route.view;
 
   function tabClick(e, id) {
@@ -153,19 +159,17 @@ export default function Explorer({
         <div className="workspaceHeadInner">
           <div className="workspaceTop">
             <div>
-              <h1 id="workspace-title">{route.cancer ? label : 'Saved papers'}</h1>
+              <h1 id="workspace-title">{route.cancer ? label : t('saved.headerTitle')}</h1>
               {route.cancer ? (
                 <WorkspaceSummary search={search} footprint={footprint} />
               ) : (
-                <p className="workspaceSummary">
-                  Papers you saved in this browser, across all searches.
-                </p>
+                <p className="workspaceSummary">{t('saved.headerNote')}</p>
               )}
               {resolved && (
                 <QueryBox
                   term={resolved.term}
-                  title="PubMed query used for counts"
-                  note="The same query drives every PubMed count on this page. Opening it on PubMed reproduces the numbers (they can differ slightly as PubMed updates)."
+                  title={t('explorer.queryTitle')}
+                  note={t('explorer.queryNote')}
                 />
               )}
             </div>
@@ -173,7 +177,7 @@ export default function Explorer({
               <CancerSearch
                 compact
                 showExamples={false}
-                buttonLabel="Search"
+                buttonLabel={t('search.search')}
                 initialValue={route.cancer}
                 onSearch={c =>
                   navigate({ cancer: c, view: view === 'saved' ? 'overview' : view, treatment: '' })
@@ -184,16 +188,16 @@ export default function Explorer({
         </div>
       </section>
 
-      <nav className="tabBar" aria-label="Explorer views">
+      <nav className="tabBar" aria-label={t('explorer.viewsLabel')}>
         <div className="tabBarInner">
           {VIEWS.filter(v => route.cancer || v.id === 'saved').map(v => (
             <a
               key={v.id}
-              href={hrefFor({ cancer: route.cancer, view: v.id })}
+              href={hrefFor({ cancer: route.cancer, view: v.id }, base)}
               aria-current={view === v.id ? 'page' : undefined}
               onClick={e => tabClick(e, v.id)}
             >
-              {v.label}
+              {t(`explorer.views.${v.id}`)}
               {v.id === 'papers' && data ? (
                 <span className="chipCount muted">{data.papers.length}</span>
               ) : null}
@@ -206,12 +210,12 @@ export default function Explorer({
           {route.cancer && (
             <Link
               className="tabExternal"
-              href={`/research-gap-atlas?cancer=${encodeURIComponent(route.cancer)}`}
+              href={path(`/research-gap-atlas?cancer=${encodeURIComponent(route.cancer)}`)}
               onClick={() =>
                 track('gap_atlas_open', { cancer_type: route.cancer, location: 'explorer_tabs' })
               }
             >
-              Gap Atlas for {label}
+              {t('explorer.atlasFor', { cancer: label })}
             </Link>
           )}
         </div>
@@ -241,7 +245,7 @@ export default function Explorer({
         {search.status === 'ok' && view === 'images' && (
           <Images cancer={route.cancer} label={label} />
         )}
-        {view === 'trials' && route.cancer && <Trials cancer={route.cancer} label={label} />}
+        {view === 'trials' && route.cancer && <Trials cancer={route.cancer} />}
         {view === 'saved' && <Saved saved={saved} />}
       </div>
     </>
@@ -249,34 +253,36 @@ export default function Explorer({
 }
 
 function WorkspaceSummary({ search, footprint }) {
+  const { t, locale } = useI18n();
   const data = search.data;
   const fp = footprint.data;
   return (
     <p className="workspaceSummary" aria-live="polite">
       {fp?.total?.count != null ? (
         <>
-          PubMed indexes <CountLink count={fp.total.count} url={fp.total.url} /> records matching
-          this cancer.{' '}
+          {richText(t('explorer.summaryCount'), {
+            count: <CountLink count={fp.total.count} url={fp.total.url} />,
+          })}{' '}
         </>
       ) : footprint.status === 'loading' ? (
-        <>Counting PubMed records… </>
+        <>{t('explorer.summaryCounting')} </>
       ) : null}
-      {data && (
-        <>
-          Below: the {data.papers.length} most recent relevant records, retrieved{' '}
-          {fmtDateTime(data.provenance.retrievedAt)}.
-        </>
-      )}
+      {data &&
+        t('explorer.summaryBelow', {
+          n: data.papers.length,
+          date: fmtDateTime(data.provenance.retrievedAt, locale),
+        })}
     </p>
   );
 }
 
 function LoadingState({ label }) {
+  const { t } = useI18n();
   return (
     <div aria-busy="true" aria-live="polite">
       <p className="loadingLine">
         <span className="spinner" aria-hidden="true" />
-        Retrieving recent {label} research and enriching it with PubMed metadata…
+        {t('explorer.loading', { cancer: label })}
       </p>
       <div className="overviewGrid" style={{ marginTop: 20 }}>
         <div className="stack">
@@ -290,17 +296,18 @@ function LoadingState({ label }) {
 }
 
 function ErrorState({ message, onRetry }) {
+  const { t, path } = useI18n();
   return (
     <div className="emptyState" role="alert">
-      <h2>The search did not complete</h2>
+      <h2>{t('explorer.errorTitle')}</h2>
       <p>{message}</p>
       <div className="btnRow">
         <button type="button" className="btn btnPrimary" onClick={onRetry}>
-          Try again
+          {t('common.retry')}
         </button>
-        <Link className="btn btnSecondary" href="/methodology#sources">
+        <Link className="btn btnSecondary" href={path('/methodology#sources')}>
           <Icon name="info" size={16} />
-          Which cancers are covered?
+          {t('explorer.whichCancers')}
         </Link>
       </div>
     </div>

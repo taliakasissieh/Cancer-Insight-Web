@@ -1,8 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useI18n } from '../I18n';
 
 function Thumb({ src, alt }) {
+  const { t } = useI18n();
   const [failed, setFailed] = useState(false);
   if (failed) {
     return (
@@ -10,7 +12,7 @@ function Thumb({ src, alt }) {
         className="frame"
         style={{ display: 'grid', placeItems: 'center', color: '#b8cfdb', fontSize: '0.9rem' }}
       >
-        Preview unavailable — open the source page
+        {t('images.previewUnavailable')}
       </div>
     );
   }
@@ -24,8 +26,11 @@ import Icon from '../Icon';
 import { cachedPost } from '../../../lib/client/api';
 import { track } from '../../../lib/client/track';
 import { lowerFirst } from '../../../lib/format';
+import { localizeError } from '../../../lib/i18n/labels.js';
+import { resolveCancer } from '../../../lib/queries';
 
 export default function Images({ cancer, label }) {
+  const { t, locale } = useI18n();
   const [state, setState] = useState({ status: 'loading', images: [], error: '' });
 
   useEffect(() => {
@@ -43,19 +48,16 @@ export default function Images({ cancer, label }) {
   return (
     <div>
       <div className="viewIntro">
-        <h2>Scientific images</h2>
-        <p>
-          Openly licensed images of {lowerFirst(label)} from Wikimedia Commons, prioritising
-          histopathology, microscopy and medical imaging. They are educational illustrations, not
-          diagnostic references. Check each image’s licence on its source page before reuse.
-        </p>
+        <h2>{t('images.title')}</h2>
+        <p>{t('images.intro', { cancer: locale === 'ar' ? label : lowerFirst(label) })}</p>
+        {locale === 'ar' && <p className="small muted">{t('images.englishNote')}</p>}
       </div>
 
       {state.status === 'loading' && (
         <div aria-busy="true">
           <p className="loadingLine">
             <span className="spinner" aria-hidden="true" />
-            Searching Wikimedia Commons…
+            {t('images.loading')}
           </p>
           <div className="imageGrid" style={{ marginTop: 16 }}>
             {[0, 1, 2].map(i => (
@@ -65,22 +67,21 @@ export default function Images({ cancer, label }) {
         </div>
       )}
 
-      {state.status === 'error' && <p className="notice noticeError">{state.error}</p>}
+      {state.status === 'error' && (
+        <p className="notice noticeError">{localizeError(t, locale, state.error)}</p>
+      )}
 
       {state.status === 'ok' && !state.images.length && (
         <div className="emptyState">
-          <h3>No suitable images found</h3>
-          <p>
-            Wikimedia Commons has no openly licensed images that pass Cancer Insight’s relevance
-            filters for this search.
-          </p>
+          <h3>{t('images.noneTitle')}</h3>
+          <p>{t('images.none')}</p>
           <a
             className="btn btnSecondary"
-            href={`https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(label)}&title=Special:MediaSearch&type=image`}
+            href={`https://commons.wikimedia.org/w/index.php?search=${encodeURIComponent(resolveCancer(cancer)?.label || cancer)}&title=Special:MediaSearch&type=image`}
             target="_blank"
             rel="noopener noreferrer"
           >
-            Search Wikimedia Commons
+            {t('images.searchCommons')}
             <Icon name="external" size={14} />
           </a>
         </div>
@@ -92,7 +93,7 @@ export default function Images({ cancer, label }) {
             <li key={img.file} className="imageItem">
               <figure>
                 <Thumb src={img.thumbnail} alt={img.description || img.title} />
-                <figcaption>
+                <figcaption lang="en" dir="ltr">
                   <strong>{img.title}</strong>
                   {img.description && <span>{img.description}</span>}
                   <div className="attribution">
@@ -106,9 +107,9 @@ export default function Images({ cancer, label }) {
                         img.license
                       )
                     ) : (
-                      'licence not stated'
+                      t('images.noLicence')
                     )}
-                    {', via '}
+                    {`, ${t('images.via')} `}
                     <a
                       href={img.page || img.file}
                       target="_blank"
