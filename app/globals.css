@@ -555,6 +555,18 @@ details > summary {
   background: var(--ink);
   color: #fff;
 }
+/* Long tables keep their first column (the row's name) in view while scrolling sideways. */
+.dataTable.stickyFirst :is(th, td):first-child {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  padding-inline: 6px 10px;
+  background: var(--paper);
+  box-shadow: inset -1px 0 0 var(--rule);
+}
+[dir='rtl'] .dataTable.stickyFirst :is(th, td):first-child {
+  box-shadow: inset 1px 0 0 var(--rule);
+}
 .mapCancerCol {
   position: sticky;
   inset-inline-start: 0;

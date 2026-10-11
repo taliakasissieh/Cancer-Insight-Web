@@ -67,3 +67,12 @@ test('paper-set description keeps explicit denominators', () => {
   assert.deepEqual(d.byYear, { 2024: 1, 2019: 1 });
   assert.equal(dedupePapers(papers).length, 3);
 });
+
+test('placeholder titles are treated as missing', async () => {
+  const { paperTitle, isPlaceholderTitle } = await import('../lib/evidence.js');
+  assert.ok(isPlaceholderTitle('[Not Available].'));
+  assert.ok(isPlaceholderTitle('Not available'));
+  assert.ok(!isPlaceholderTitle('Availability of trials'));
+  assert.equal(paperTitle({ pubmed_title: '[Not Available].', title: '' }), '');
+  assert.equal(paperTitle({ pubmed_title: '[Not Available].', title: 'Feed title' }), 'Feed title');
+});

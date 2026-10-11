@@ -240,7 +240,7 @@ function Compare({ a, b, cancer }) {
         </h2>
         <p className="panelNote">{t('tx.compareNote', { cancer: subject })}</p>
         <div className="tableWrap">
-          <table className="dataTable">
+          <table className="dataTable stickyFirst">
             <caption className="visuallyHidden">{t('tx.compareCaption')}</caption>
             <thead>
               <tr>

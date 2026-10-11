@@ -12,6 +12,10 @@ import { fmtDateTime, fmtPartialDate, fmtShare } from '../../../lib/format';
 import { searchPageUrl, studyUrl } from '../../../lib/trials';
 import { resolveCancer } from '../../../lib/queries';
 import { localizeError } from '../../../lib/i18n/labels.js';
+import { makeT } from '../../../lib/i18n/index.js';
+
+/* Exported files stay in English so they work the same for everyone. */
+const tEn = makeT('en');
 
 const GROUP_ORDER = ['open', 'active', 'completed', 'stopped', 'unknown'];
 
@@ -224,7 +228,7 @@ function ResultsPanel({ d, englishLabel }) {
   function downloadIds() {
     const rows = [
       ['# Source', 'ClinicalTrials.gov', d.source.condition],
-      ['# Definition', t('trials.results.definition', { months: r.lagMonths })],
+      ['# Definition', tEn('trials.results.definition', { months: r.lagMonths })],
       ['# Retrieved', d.source.retrievedAt],
       ['nct_id', 'url'],
       ...r.overdueIds.map(id => [id, studyUrl(id)]),

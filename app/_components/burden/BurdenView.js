@@ -10,6 +10,10 @@ import { download, toCsv } from '../../../lib/client/exports';
 import { track } from '../../../lib/client/track';
 import { fmtDateTime, fmtRatio, fmtShare } from '../../../lib/format';
 import { richText } from '../../../lib/i18n/rich.js';
+import { makeT } from '../../../lib/i18n/index.js';
+
+/* Exported files stay in English so they work the same for everyone. */
+const tEn = makeT('en');
 
 function useWidth(initial) {
   const ref = useRef(null);
@@ -256,16 +260,16 @@ export default function BurdenView({ cancerCount }) {
 
   function exportCsv() {
     const header = [
-      t('burden.colCancer'),
-      t('burden.colCases'),
-      t('burden.colDeaths'),
-      t('burden.colRecords', { from: String(years.start), to: String(years.end) }),
-      t('burden.colRatioDeaths'),
-      t('burden.colRatioCases'),
+      tEn('burden.colCancer'),
+      tEn('burden.colCases'),
+      tEn('burden.colDeaths'),
+      tEn('burden.colRecords', { from: String(years.start), to: String(years.end) }),
+      tEn('burden.colRatioDeaths'),
+      tEn('burden.colRatioCases'),
       'PubMed',
     ];
     const rows = d.rows.map(r => [
-      t(`cancers.${r.id}`),
+      tEn(`cancers.${r.id}`),
       r.cases,
       r.deaths,
       r.records,
@@ -328,7 +332,7 @@ export default function BurdenView({ cancerCount }) {
       <section className="panel" aria-labelledby="burden-table-h">
         <h2 id="burden-table-h">{t('burden.tableTitle')}</h2>
         <div className="tableWrap">
-          <table className="dataTable">
+          <table className="dataTable stickyFirst">
             <thead>
               <tr>
                 <th scope="col">{t('burden.colCancer')}</th>
