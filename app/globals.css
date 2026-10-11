@@ -560,6 +560,7 @@ details > summary {
 }
 
 .panel {
+  min-width: 0;
   background: var(--paper);
   border: 1px solid var(--rule);
   border-radius: var(--r-m);
@@ -1105,6 +1106,7 @@ details > summary {
 }
 .stack {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 24px;
 }
 .footprintLead {
@@ -1599,6 +1601,10 @@ details > summary {
 .dataTable tbody th {
   font-weight: 600;
   color: var(--ink);
+}
+/* Notes under a number ("15.1% of pancreatic cancer") may wrap; the number itself does not. */
+.dataTable td.numCell .small {
+  white-space: normal;
 }
 .tableWrap {
   width: 100%;
@@ -2178,6 +2184,21 @@ details > summary {
   }
   .panel {
     padding: 18px;
+  }
+  .dataTable {
+    font-size: 0.88rem;
+  }
+  .dataTable th,
+  .dataTable td {
+    padding: 8px 6px;
+  }
+  .dataTable th:first-child,
+  .dataTable td:first-child {
+    padding-left: 0;
+  }
+  .dataTable th:last-child,
+  .dataTable td:last-child {
+    padding-right: 0;
   }
   .paperItem {
     padding-left: 14px;

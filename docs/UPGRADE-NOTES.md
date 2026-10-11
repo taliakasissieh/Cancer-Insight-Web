@@ -59,3 +59,17 @@ finding and how it was resolved.
   need a decision on how often to refresh PubMed counts.
 - A cross-cancer theme map (all cancers × all atlas measures) is possible with the same counts
   but would need roughly 15 cached requests per cancer.
+
+## Follow-up fixes — 11 October 2026
+
+Found by checking the live site on a phone after the upgrade was merged:
+
+- **Images tab showed pictures that were not of the searched cancer** (for pancreatic cancer: an
+  inguinal hernia CT, a head-and-neck cancer PET and pancreatic tuberculosis). They passed because
+  the cancer was named only in the Commons source credit. The cancer must now be named in the
+  file's own title or description; titles about a look-alike condition, a device or a different
+  tumour are rejected. Rules and tests: `lib/images.js`, `tests/images.test.mjs`. The image cache
+  key was bumped so old results are not reused.
+- **Treatments → Compare two made the whole page scroll sideways on phones.** Wide tables now
+  scroll inside their own box, share notes can wrap, and table spacing is tighter below 560 px,
+  so the three-column comparison fits a 360 px screen.
