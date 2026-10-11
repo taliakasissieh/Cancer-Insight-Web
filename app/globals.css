@@ -435,6 +435,275 @@ details > summary {
   }
 }
 
+/* ---------- all-cancer map ---------- */
+
+.mapControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px 20px;
+}
+.mapSort select {
+  min-width: 240px;
+}
+.progressBar {
+  height: 6px;
+  margin-top: 8px;
+  border-radius: 3px;
+  background: var(--rule);
+  overflow: hidden;
+}
+.progressBar span {
+  display: block;
+  height: 100%;
+  background: var(--teal-bright);
+  transition: width 0.3s ease;
+}
+.mapLegend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  font-size: 0.85rem;
+  color: var(--ink-2);
+}
+.mapLegendTitle {
+  font-weight: 600;
+}
+.mapLegend ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.mapLegend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mapLegend i {
+  width: 18px;
+  height: 14px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.mapLegend .keyContext,
+.mapCell.isContext {
+  background: var(--paper);
+  box-shadow: inset 0 0 0 1.5px var(--rule-strong);
+}
+.mapLegend .keyInsufficient,
+.mapCell.isInsufficient {
+  background: repeating-linear-gradient(
+    45deg,
+    #f3f6f8,
+    #f3f6f8 4px,
+    #e2e9ee 4px,
+    #e2e9ee 6px
+  );
+}
+.mapWrap {
+  border: 1px solid var(--rule);
+  border-radius: var(--r-m);
+  background: var(--paper);
+}
+.mapTable {
+  border-collapse: separate;
+  border-spacing: 2px;
+  font-size: 0.84rem;
+  min-width: 100%;
+}
+.mapTable th,
+.mapTable td {
+  padding: 0;
+}
+.mapTable thead th {
+  font-weight: 600;
+  color: var(--muted);
+  vertical-align: bottom;
+  text-align: center;
+}
+.mapGroup {
+  padding: 8px 4px 4px !important;
+  border-bottom: 2px solid var(--ink);
+  font-size: 0.78rem;
+  color: var(--ink-2) !important;
+}
+.mapMeasure {
+  min-width: 54px;
+  max-width: 70px;
+}
+.mapSortBtn {
+  width: 100%;
+  padding: 6px 2px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  font: inherit;
+  font-size: 0.76rem;
+  line-height: 1.2;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+.mapSortBtn:hover {
+  background: var(--sky);
+}
+.mapSortBtn.isActive {
+  background: var(--ink);
+  color: #fff;
+}
+.mapCancerCol {
+  position: sticky;
+  inset-inline-start: 0;
+  z-index: 1;
+  min-width: 150px;
+  padding: 0 10px !important;
+  background: var(--paper);
+  text-align: start !important;
+  font-weight: 600;
+}
+.mapTable tbody .mapCancerCol a {
+  color: var(--ink);
+  text-decoration: none;
+}
+.mapTable tbody .mapCancerCol a:hover {
+  color: var(--teal-strong);
+  text-decoration: underline;
+}
+.mapRecordsCol {
+  min-width: 72px;
+  padding: 0 8px !important;
+  text-align: end !important;
+}
+.mapCell {
+  height: 34px;
+  border-radius: 4px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.mapCell a {
+  display: block;
+  padding: 8px 2px;
+  color: var(--ink);
+  text-decoration: none;
+  direction: ltr;
+}
+.mapCell a:hover,
+.mapCell a:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+.mapCell.isContext a,
+.mapCell.isInsufficient a {
+  color: var(--muted);
+}
+.mapCell.isPending {
+  background: var(--sky);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+.mapPending {
+  display: inline-block;
+  width: 40px;
+  height: 10px;
+  border-radius: 3px;
+  background: var(--sky);
+}
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+.lowestList {
+  margin: 0;
+  padding-inline-start: 1.3em;
+}
+.lowestList li + li {
+  margin-top: 6px;
+}
+
+/* ---------- cancer profiles ---------- */
+
+.cancerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cancerCard {
+  display: grid;
+  gap: 6px;
+  height: 100%;
+  padding: 16px 18px;
+  border: 1px solid var(--rule);
+  border-radius: var(--r-m);
+  background: var(--paper);
+  color: var(--ink-2);
+  text-decoration: none;
+}
+.cancerCard strong {
+  font-family: var(--font-serif-stack);
+  font-size: 1.12rem;
+  color: var(--ink);
+}
+.cancerCard:hover {
+  border-color: var(--teal);
+  box-shadow: var(--shadow);
+  color: var(--ink-2);
+}
+.cancerCard:hover strong {
+  color: var(--teal-strong);
+}
+.cancerBar {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--sky);
+  overflow: hidden;
+}
+.cancerBar i {
+  display: block;
+  height: 100%;
+  max-width: 100%;
+  background: var(--navy);
+}
+.signalMini {
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+.signalMini li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.signalMini li .num {
+  font-weight: 700;
+  color: var(--ochre-strong);
+}
+.retractedList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.retractedList li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--rule);
+}
+.retractedList a {
+  display: block;
+  color: var(--rose);
+  font-weight: 600;
+}
+
 /* ---------- trials ---------- */
 
 .resultsPanel {
