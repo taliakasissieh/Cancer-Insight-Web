@@ -1,4 +1,4 @@
-import GapAtlasClient from './GapAtlasClient';
+import GapAtlasClient from '../../_components/atlas/GapAtlasClient';
 
 export const metadata = {
   title: 'Research Gap Atlas',

@@ -223,6 +223,35 @@ details > summary {
   line-height: 1.55;
 }
 
+/* ---------- languages ---------- */
+
+/* The language wrapper carries lang/dir without adding a box (body is a flex column). */
+.localeRoot {
+  display: contents;
+}
+.localeAr {
+  --font-sans-stack:
+    var(--font-arabic, 'IBM Plex Sans Arabic'), var(--font-sans, 'Source Sans 3'), 'Segoe UI',
+    system-ui, sans-serif;
+  --font-serif-stack:
+    var(--font-arabic-serif, 'Noto Naskh Arabic'), var(--font-arabic, 'IBM Plex Sans Arabic'),
+    var(--font-serif, 'Source Serif 4'), Georgia, serif;
+  font-family: var(--font-sans-stack);
+}
+/* Letter-spacing breaks the joining of Arabic letters. */
+.localeAr * {
+  letter-spacing: 0 !important;
+}
+.localeAr :is(h1, h2, h3, h4) {
+  line-height: 1.45;
+}
+/* Latin data inside Arabic pages (paper titles, queries, numbers) keeps its own direction. */
+.ltrData {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: start;
+}
+
 /* ---------- header ---------- */
 
 .siteHeader {
@@ -264,8 +293,8 @@ details > summary {
 .siteNav {
   display: flex;
   align-items: center;
-  gap: 18px;
-  margin-left: auto;
+  gap: 14px;
+  margin-inline-start: auto;
 }
 .siteNav ul {
   display: flex;
@@ -310,6 +339,23 @@ details > summary {
   color: var(--teal-strong);
 }
 
+.langLink {
+  padding: 7px 4px;
+  color: var(--ink-2);
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.langLink:hover {
+  color: var(--teal-strong);
+  text-decoration: underline;
+}
+.langLink:lang(ar) {
+  font-family: var(--font-arabic, 'IBM Plex Sans Arabic'), 'Noto Sans Arabic', 'Segoe UI', sans-serif;
+  font-size: 1rem;
+}
+
 .countBadge {
   min-width: 20px;
   padding: 0 6px;
@@ -324,7 +370,7 @@ details > summary {
 
 .menuButton {
   display: none;
-  margin-left: auto;
+  margin-inline-start: auto;
   align-items: center;
   gap: 6px;
   padding: 8px 12px;

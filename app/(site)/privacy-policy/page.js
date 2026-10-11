@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import DocPage from '../_components/DocPage';
+import DocPage from '../../_components/DocPage';
 
 export const metadata = {
   title: 'Privacy policy',

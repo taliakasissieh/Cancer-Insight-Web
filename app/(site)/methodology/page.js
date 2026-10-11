@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import DocPage from '../_components/DocPage';
+import DocPage from '../../_components/DocPage';
 import {
   ATLAS_DESIGN_IDS,
   ATLAS_METHOD_VERSION,
@@ -12,7 +12,7 @@ import {
   THEMES,
   TREATMENTS,
   resolveCancer,
-} from '../../lib/queries';
+} from '../../../lib/queries';
 
 export const metadata = {
   title: 'Methodology',

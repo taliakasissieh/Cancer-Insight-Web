@@ -1,7 +1,7 @@
 import Link from 'next/link';
-import CancerSearch from './_components/CancerSearch';
-import ForestPlot from './_components/ForestPlot';
-import { EXAMPLE_DATE, pancreaticExampleRows } from '../lib/example';
+import CancerSearch from '../_components/CancerSearch';
+import ForestPlot from '../_components/ForestPlot';
+import { EXAMPLE_DATE, pancreaticExampleRows } from '../../lib/example';
 
 export const metadata = {
   alternates: { canonical: '/' },

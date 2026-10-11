@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import CancerSearch from '../_components/CancerSearch';
-import CountLink from '../_components/CountLink';
-import ForestPlot from '../_components/ForestPlot';
-import QueryBox from '../_components/QueryBox';
-import Icon from '../_components/Icon';
-import { postJson } from '../../lib/client/api';
-import { download, fileStem, toCsv } from '../../lib/client/exports';
-import { track } from '../../lib/client/track';
-import { fmtDateTime, fmtInt, fmtRatio, fmtShare, lowerFirst } from '../../lib/format';
+import CancerSearch from '../CancerSearch';
+import CountLink from '../CountLink';
+import ForestPlot from '../ForestPlot';
+import QueryBox from '../QueryBox';
+import Icon from '../Icon';
+import { postJson } from '../../../lib/client/api';
+import { download, fileStem, toCsv } from '../../../lib/client/exports';
+import { track } from '../../../lib/client/track';
+import { fmtDateTime, fmtInt, fmtRatio, fmtShare, lowerFirst } from '../../../lib/format';
 
 const GROUPS = [
   { id: 'design', label: 'Study design' },

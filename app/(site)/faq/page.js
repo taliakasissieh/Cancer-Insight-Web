@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import DocPage from '../_components/DocPage';
-import Icon from '../_components/Icon';
+import DocPage from '../../_components/DocPage';
+import Icon from '../../_components/Icon';
 
 export const metadata = {
   title: 'Frequently asked questions',

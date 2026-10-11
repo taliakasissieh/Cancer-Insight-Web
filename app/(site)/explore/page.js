@@ -1,4 +1,4 @@
-import Explorer from '../_components/explore/Explorer';
+import Explorer from '../../_components/explore/Explorer';
 
 export const metadata = {
   title: 'Explore cancer research',
