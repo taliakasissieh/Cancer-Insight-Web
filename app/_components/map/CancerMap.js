@@ -24,6 +24,11 @@ export const STEPS = [
   { id: 'muchHigher', max: Infinity, bg: '#245f7c', fg: '#ffffff' },
 ];
 
+/** A row is complete when PubMed returned every count it needs. */
+export function rowComplete(row) {
+  return row?.total != null && Array.isArray(row.cells) && row.cells.every(c => c.status !== 'unavailable');
+}
+
 export function stepFor(ratio) {
   if (ratio == null || !Number.isFinite(ratio)) return null;
   return STEPS.find(s => ratio < s.max) || STEPS.at(-1);
@@ -48,13 +53,18 @@ export default function CancerMap() {
   const [indexError, setIndexError] = useState('');
   const started = useRef(false);
 
-  const load = useCallback(ids => {
+  /* attempt > 1 asks again for rows that failed or came back with counts PubMed could not
+     return under load; the different address skips every cache that holds the earlier answer. */
+  const load = useCallback((ids, { attempt = 1, concurrency = CONCURRENCY } = {}) => {
     let cursor = 0;
+    const incomplete = [];
     const worker = async () => {
       while (cursor < ids.length) {
         const id = ids[cursor++];
+        const url = `/api/map?cancer=${encodeURIComponent(id)}${attempt > 1 ? `&attempt=${attempt}` : ''}`;
         try {
-          const row = await cachedGet(`/api/map?cancer=${encodeURIComponent(id)}`);
+          const row = await cachedGet(url);
+          if (!rowComplete(row)) incomplete.push(id);
           setRows(r => ({ ...r, [id]: row }));
           setErrors(e => {
             const next = { ...e };
@@ -62,11 +72,12 @@ export default function CancerMap() {
             return next;
           });
         } catch (error) {
+          incomplete.push(id);
           setErrors(e => ({ ...e, [id]: error.message }));
         }
       }
     };
-    return Promise.all(Array.from({ length: CONCURRENCY }, worker));
+    return Promise.all(Array.from({ length: concurrency }, worker)).then(() => incomplete);
   }, []);
 
   useEffect(() => {
@@ -78,6 +89,8 @@ export default function CancerMap() {
         track('cancer_map_view', {});
         return load(idx.cancers.map(c => c.id));
       })
+      /* One automatic second pass, one row at a time, for anything that did not complete. */
+      .then(incomplete => (incomplete?.length ? load(incomplete, { attempt: 2, concurrency: 1 }) : null))
       .catch(error => setIndexError(error.message));
   }, [load]);
 
@@ -106,7 +119,16 @@ export default function CancerMap() {
 
   const done = Object.keys(rows).length;
   const total = index?.cancers.length || 0;
-  const missing = index ? index.cancers.map(c => c.id).filter(id => errors[id]) : [];
+  /* Rows that have either arrived or failed; the build is over when every row has settled. */
+  const settled = index ? index.cancers.filter(c => rows[c.id] || errors[c.id]).length : 0;
+  const missing = index
+    ? index.cancers.map(c => c.id).filter(id => errors[id] || (rows[id] && !rowComplete(rows[id])))
+    : [];
+  const [retrying, setRetrying] = useState(false);
+  const retryMissing = () => {
+    setRetrying(true);
+    load(missing, { attempt: Date.now(), concurrency: 1 }).finally(() => setRetrying(false));
+  };
 
   const lowest = useMemo(() => {
     const out = [];
@@ -179,10 +201,10 @@ export default function CancerMap() {
         </div>
       </div>
 
-      {done < total && (
+      {settled < total && (
         <div aria-live="polite">
           <p className="loadingLine" style={{ margin: 0 }}>
-            {missing.length === 0 && <span className="spinner" aria-hidden="true" />}
+            <span className="spinner" aria-hidden="true" />
             {t('map.progress', { done, total })}
           </p>
           <div className="progressBar" aria-hidden="true">
@@ -191,11 +213,20 @@ export default function CancerMap() {
           <p className="small muted" style={{ margin: '6px 0 0' }}>
             {t('map.progressNote')}
           </p>
-          {missing.length > 0 && Object.keys(rows).length + missing.length >= total && (
-            <button type="button" className="btn btnSecondary" style={{ marginTop: 8 }} onClick={() => load(missing)}>
-              {t('map.retry')}
-            </button>
-          )}
+        </div>
+      )}
+      {settled >= total && missing.length > 0 && (
+        <div className="notice small" aria-live="polite">
+          <p style={{ margin: 0 }}>{t('map.incomplete', { n: missing.length })}</p>
+          <button
+            type="button"
+            className="btn btnSecondary btnSmall"
+            style={{ marginTop: 8 }}
+            onClick={retryMissing}
+            disabled={retrying}
+          >
+            {retrying ? t('common.loading') : t('map.retry')}
+          </button>
         </div>
       )}
 
@@ -307,19 +338,34 @@ export default function CancerMap() {
 function MapCell({ cell, cancer, measure }) {
   const { t, locale, num } = useI18n();
   const context = cell.status === 'context';
-  const insufficient = cell.status === 'insufficient' || cell.status === 'unavailable';
-  const step = context || insufficient ? null : stepFor(cell.ratio);
-  const value = cell.ratio != null ? (cell.ratio < 10 ? cell.ratio.toFixed(2) : cell.ratio.toFixed(1)) : '—';
-  const note = context ? t('map.cellContext') : insufficient ? t('map.cellInsufficient') : '';
-  const label = `${t('map.cell', {
-    cancer,
-    measure,
-    ratio: fmtRatio(cell.ratio, locale),
-    count: num(cell.count),
-  })}${note ? ` (${note})` : ''}`;
+  const unavailable = cell.status === 'unavailable';
+  const insufficient = cell.status === 'insufficient';
+  const step = context || insufficient || unavailable ? null : stepFor(cell.ratio);
+  const value = unavailable
+    ? '?'
+    : cell.ratio != null
+      ? cell.ratio < 10
+        ? cell.ratio.toFixed(2)
+        : cell.ratio.toFixed(1)
+      : '—';
+  const note = context
+    ? t('map.cellContext')
+    : insufficient
+      ? t('map.cellInsufficient')
+      : unavailable
+        ? t('map.cellUnavailable')
+        : '';
+  const label = unavailable
+    ? `${cancer}, ${measure}: ${note}`
+    : `${t('map.cell', {
+        cancer,
+        measure,
+        ratio: fmtRatio(cell.ratio, locale),
+        count: num(cell.count),
+      })}${note ? ` (${note})` : ''}`;
   return (
     <td
-      className={`mapCell ${context ? 'isContext' : ''} ${insufficient ? 'isInsufficient' : ''}`}
+      className={`mapCell ${context ? 'isContext' : ''} ${insufficient ? 'isInsufficient' : ''} ${unavailable ? 'isUnavailable' : ''}`}
       style={step ? { background: step.bg, color: step.fg } : undefined}
     >
       <a href={cell.url} target="_blank" rel="noopener noreferrer" aria-label={label} title={label} style={step ? { color: step.fg } : undefined}>
@@ -348,6 +394,12 @@ function MapLegend() {
         <li>
           <i className="keyInsufficient" aria-hidden="true" />
           {t('map.legend.insufficient')}
+        </li>
+        <li>
+          <i className="keyUnavailable" aria-hidden="true">
+            ?
+          </i>
+          {t('map.legend.unavailable')}
         </li>
       </ul>
     </div>

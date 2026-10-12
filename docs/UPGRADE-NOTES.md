@@ -161,3 +161,22 @@ Found in the screen recordings of the live site after PR #3 was merged:
 - **CSV files downloaded from Arabic pages** (burden table, trials without posted results) now
   use English headings like every other export.
 - An Arabic column heading was reworded so "PubMed" and the years read in the right order.
+
+## Cancer map reliability — 11 October 2026 (PR #5)
+
+Found in the screen recording of the live cancer map on its first build:
+
+- **Counts PubMed could not return looked like "too few records".** When many counts are
+  requested at once, PubMed sometimes refuses some of them (HTTP 429). Those cells now show "?"
+  with their own legend entry ("PubMed did not answer — try again") instead of the hatched
+  "too few records" pattern, so a missing number is never read as a low one.
+- **The map retries by itself.** After the first pass, rows with a missing count are requested
+  again, one at a time. If anything is still missing, a notice explains it and offers a button
+  to try again.
+- **Incomplete answers are no longer cached.** Any open-data response with a failed count is sent
+  with `Cache-Control: no-store`, so the next visitor gets a fresh attempt instead of the
+  incomplete row for an hour (`lib/complete.js`, tests in `tests/complete.test.mjs`).
+- **PubMed retries are more patient:** four attempts with jittered back-off, honouring
+  `Retry-After`, because several server instances can share one API key.
+- **Number column headings can wrap**, so on phones a long heading (for example "Share of
+  pancreatic cancer records" in the Gap Atlas) no longer pushes the "%" out of view.

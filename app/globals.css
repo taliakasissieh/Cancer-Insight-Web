@@ -613,6 +613,24 @@ details > summary {
 .mapCell.isInsufficient a {
   color: var(--muted);
 }
+.mapLegend .keyUnavailable,
+.mapCell.isUnavailable {
+  background: var(--paper);
+  outline: 1.5px dashed var(--muted);
+  outline-offset: -3px;
+}
+.mapLegend .keyUnavailable {
+  display: inline-grid;
+  place-items: center;
+  font-style: normal;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--muted);
+}
+.mapCell.isUnavailable a {
+  color: var(--muted);
+  font-weight: 700;
+}
 .mapCell.isPending {
   background: var(--sky);
   animation: pulse 1.4s ease-in-out infinite;
@@ -2087,6 +2105,11 @@ details > summary {
   text-align: end;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+/* Column headings may wrap, so long headings never push numbers out of view on phones. */
+.dataTable thead th.numCell {
+  white-space: normal;
+  min-width: 5.5em;
 }
 .dataTable tbody th {
   font-weight: 600;
