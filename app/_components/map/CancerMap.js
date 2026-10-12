@@ -87,12 +87,16 @@ export default function CancerMap() {
       .then(idx => {
         setIndex(idx);
         track('cancer_map_view', {});
-        return load(idx.cancers.map(c => c.id));
+        /* Fill the table from the top, in the order it is shown (by name, in this language). */
+        const byName = idx.cancers
+          .map(c => c.id)
+          .sort((x, y) => t(`cancers.${x}`).localeCompare(t(`cancers.${y}`), locale));
+        return load(byName);
       })
       /* One automatic second pass, one row at a time, for anything that did not complete. */
       .then(incomplete => (incomplete?.length ? load(incomplete, { attempt: 2, concurrency: 1 }) : null))
       .catch(error => setIndexError(error.message));
-  }, [load]);
+  }, [load, t, locale]);
 
   const columns = useMemo(() => {
     if (!index) return [];
