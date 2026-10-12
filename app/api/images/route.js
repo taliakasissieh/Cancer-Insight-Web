@@ -9,7 +9,7 @@
   description, never only in the source credit).
 */
 
-import { unstable_cache } from 'next/cache';
+import { stableCache } from '../../../lib/cache.js';
 import { aliasesFor, resolveCancer } from '../../../lib/queries';
 import { imageMatchContext, scoreImage } from '../../../lib/images';
 import { badRequest, errorResponse, json, readJson } from '../../../lib/http';
@@ -88,7 +88,7 @@ async function searchCommonsRaw(query) {
   });
 }
 
-const searchCommons = unstable_cache(searchCommonsRaw, ['ci-commons-search-v1'], {
+const searchCommons = stableCache(searchCommonsRaw, ['ci-commons-search-v1'], {
   revalidate: 60 * 60 * 24,
 });
 
@@ -143,7 +143,7 @@ async function findImagesRaw(slug, label, phrasesKey, aliasesKey = '') {
     }));
 }
 
-const findImages = unstable_cache(findImagesRaw, ['ci-commons-images-v2'], {
+const findImages = stableCache(findImagesRaw, ['ci-commons-images-v2'], {
   revalidate: 60 * 60 * 24,
 });
 

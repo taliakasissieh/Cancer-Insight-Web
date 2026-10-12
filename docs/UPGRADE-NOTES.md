@@ -180,3 +180,22 @@ Found in the screen recording of the live cancer map on its first build:
   `Retry-After`, because several server instances can share one API key.
 - **Number column headings can wrap**, so on phones a long heading (for example "Share of
   pancreatic cancer records" in the Gap Atlas) no longer pushes the "%" out of view.
+
+## Caches that survive updates — 12 October 2026 (PR #6)
+
+Found in the screen recording of 12 October: after PR #5 was merged, the cancer map and the
+research-vs-burden page were slow again, as if they had never been built.
+
+- **Cause.** Next.js keys `unstable_cache` entries on the cached function's *source text*. The
+  bundled source changes from build to build, so every deployment silently emptied the PubMed,
+  ClinicalTrials.gov, research-feed and image caches.
+- **Fix.** `lib/cache.js` wraps `unstable_cache` with a bound function, whose source text is always
+  the same, so cache keys now depend only on the named key parts and the arguments. When the
+  shape or meaning of a cached result changes, bump the version in its key (the PubMed record
+  cache moved to `v2` for the title change in PR #4).
+- **Cancer map** rows load in the order they are shown, so the table fills from the top.
+- **"Brain tumors" is now "Brain tumor"** so sentences read "brain tumor records" and "brain
+  tumor research".
+
+After this is merged, the caches are empty one last time. Opening the cancer map once (about a
+minute) refills them; from then on updates no longer empty them.
